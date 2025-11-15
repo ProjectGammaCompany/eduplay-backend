@@ -1,0 +1,40 @@
+name: CD
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  docker-build-push:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        service: [ "eduplay-gateway", "eduplay-user" ]
+
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build Docker image
+        run: |
+          IMAGE=ghcr.io/${{ github.repository }}/${{ matrix.service }}:latest
+          echo "Building $IMAGE"
+          docker build -t $IMAGE ${{ matrix.service }}
+
+      - name: Push Docker image
+        run: |
+          IMAGE=ghcr.io/${{ github.repository }}/${{ matrix.service }}:latest
+          echo "Pushing $IMAGE"
+          docker push $IMAGE

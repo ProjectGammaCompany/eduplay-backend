@@ -1,0 +1,337 @@
+package postgres
+
+import (
+	"context"
+	dto "eduplay-user/internal/generated"
+	"eduplay-user/internal/model"
+	"eduplay-user/internal/storage"
+	"errors"
+	"fmt"
+	"time"
+
+	"github.com/jackc/pgx/v5/pgxpool"
+
+	_ "github.com/lib/pq"
+
+	pgx "github.com/jackc/pgx/v5"
+)
+
+type Storage struct {
+	db *pgxpool.Pool
+}
+
+func New(ctx context.Context, storagePath string) (*Storage, error) {
+	const op = "storage.postgres.New"
+
+	poolConfig, err := pgxpool.ParseConfig(storagePath)
+
+	if err != nil {
+		return nil, fmt.Errorf("%s - %s", op, err)
+	}
+
+	poolConfig.MaxConns = 13
+	poolConfig.MinConns = 5
+	db, err := pgxpool.NewWithConfig(ctx, poolConfig)
+
+	if err != nil {
+		return nil, fmt.Errorf("%s - %s", op, err)
+	}
+
+	return &Storage{db: db}, nil
+}
+
+func (s *Storage) Stop(ctx context.Context) error {
+	s.db.Close()
+	return nil
+}
+
+func (s *Storage) SignUpUser(ctx context.Context, name string, surname string, email string, organization string, phone string, password string) (string, error) {
+	const op = "storage.postgres.SignUpUser"
+
+	state := `SELECT userId FROM users WHERE login = $1`
+
+	res := s.db.QueryRow(ctx, state, email)
+	var id string
+	err := res.Scan(&id)
+
+	if errors.Is(err, pgx.ErrNoRows) {
+		state := `INSERT INTO users (name, surname, login, passwordHash, phone, organisation, email) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING userId;`
+		res := s.db.QueryRow(ctx, state, name, surname, email, password, phone, organization, email)
+
+		var id string
+		err = res.Scan(&id)
+
+		if err != nil {
+			return "", fmt.Errorf("%s: %w", op, err)
+		}
+		return id, nil
+	}
+
+	return "", storage.ErrUserAlreadyExists
+}
+
+func (s *Storage) SaveSession(ctx context.Context, userId string, refreshToken string, role string, accessLevel int64) error {
+	const op = "storage.postgres.SaveSession"
+
+	// authExpiry := time.Now().UTC().Add(3 * time.Hour).Add(15 * time.Minute)
+	refreshExpiry := time.Now().UTC().Add(3 * time.Hour).Add(time.Hour)
+	state := `INSERT INTO sessions (userId, refresh_token, refresh_expires) VALUES ($1, $2, $3) RETURNING sessionId;`
+	_, err := s.db.Exec(ctx, state, userId, refreshToken, refreshExpiry)
+	if err != nil {
+		return fmt.Errorf("%s: %w", op, err)
+	}
+
+	state = `UPDATE users SET role = $1 WHERE userId = $2;`
+	_, err = s.db.Exec(ctx, state, "user", userId)
+
+	if err != nil {
+		return fmt.Errorf("%s: %w", op, err)
+	}
+
+	state = `INSERT INTO userSubscriptions (userId, subscriptionLevel, date, expiresAt, sessions) VALUES ($1, $2, $3, $4, $5);`
+	_, err = s.db.Exec(ctx, state, userId, 0, time.Now().UTC().Add(3*time.Hour), time.Now().UTC().Add(3*time.Hour), 0)
+	if err != nil {
+		return fmt.Errorf("%s: %w", op, err)
+	}
+
+	return nil
+}
+
+func (s *Storage) UpdateSession(ctx context.Context, userId string, refreshToken string) error {
+	const op = "storage.postgres.UpdateSession"
+
+	// authExpiry := time.Now().UTC().Add(3 * time.Hour).Add(15 * time.Minute)
+	refreshExpiry := time.Now().UTC().Add(3 * time.Hour).Add(180 * 24 * time.Hour)
+	state := `UPDATE sessions SET refresh_token = $1, refresh_expires = $2, isActive = true WHERE userId = $3;`
+	_, err := s.db.Exec(ctx, state, refreshToken, refreshExpiry, userId)
+
+	if err != nil {
+		return fmt.Errorf("%s: %w", op, err)
+	}
+
+	return nil
+}
+
+func (s *Storage) SaveSubscription(ctx context.Context, userId string, subscriptionLevel int64, acquiringDate time.Time, subscriptionExpiry time.Time, sessionNums int64) error {
+	const op = "storage.postgres.SaveSubscription"
+
+	state := `INSERT INTO userSubscriptions (userId, subscriptionLevel, date, expiresAt, sessions) VALUES ($1, $2, $3, $4, $5);`
+	_, err := s.db.Exec(ctx, state, userId, subscriptionLevel, acquiringDate, subscriptionExpiry, sessionNums)
+
+	if err != nil {
+		return fmt.Errorf("%s: %w", op, err)
+	}
+
+	return nil
+
+}
+
+func (s *Storage) GetUserByEmail(ctx context.Context, email string) (*model.User, error) {
+	const op = "storage.postgres.GetUserByEmail"
+
+	state := `SELECT userId, name, surname, login, passwordHash, phone FROM users WHERE login = $1`
+	res := s.db.QueryRow(ctx, state, email)
+	user := &model.User{}
+	err := res.Scan(&user.Id, &user.Name, &user.Surname, &user.Email, &user.Password, &user.Phone)
+
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, storage.ErrUserNotFound
+		}
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return user, nil
+}
+
+func (s *Storage) GetSessionByUserId(ctx context.Context, userId string) (*model.Session, error) {
+	const op = "storage.postgres.GetSessionByUserId"
+
+	state := `SELECT refresh_token, isActive FROM sessions WHERE userId = $1`
+	res := s.db.QueryRow(ctx, state, userId)
+	session := &model.Session{}
+	err := res.Scan(&session.RefreshToken, &session.IsActive)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	state = `SELECT role FROM users WHERE userId = $1`
+	res = s.db.QueryRow(ctx, state, userId)
+	err = res.Scan(&session.Role)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	state = `SELECT subscriptionLevel FROM userSubscriptions WHERE userId = $1`
+	res = s.db.QueryRow(ctx, state, userId)
+	err = res.Scan(&session.AccessLevel)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return session, nil
+}
+
+func (s *Storage) GetUserByRefreshToken(ctx context.Context, refreshToken string) (*model.User, error) {
+	const op = "storage.postgres.GetUserByAuthToken"
+
+	state := `SELECT userId FROM sessions WHERE refresh_token = $1`
+	res := s.db.QueryRow(ctx, state, refreshToken)
+	var userId string
+	err := res.Scan(&userId)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	state = `SELECT userId, name, surname, login, passwordHash, phone FROM users WHERE userId = $1`
+	res = s.db.QueryRow(ctx, state, userId)
+	user := &model.User{}
+	err = res.Scan(&user.Id, &user.Name, &user.Surname, &user.Email, &user.Password, &user.Phone)
+
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return user, nil
+}
+
+func (s *Storage) CheckRefreshTokenExists(ctx context.Context, refreshToken string) (bool, time.Time, error) {
+	const op = "storage.postgres.CheckRefreshTokenExists"
+	state := `SELECT refresh_token, refresh_expires FROM sessions WHERE refresh_token = $1`
+	res := s.db.QueryRow(ctx, state, refreshToken)
+	// if err != nil {
+	// 	if errors.Is(err, pgx.ErrNoRows) {
+	// 		return false, time.Time{}, storage.ErrInvalidRefresh
+	// 	}
+	// 	return false, time.Time{}, fmt.Errorf("%s: %w", op, err)
+	// }
+	var token string
+	var expiry time.Time
+	err := res.Scan(&token, &expiry)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return false, time.Time{}, storage.ErrInvalidRefresh
+		}
+		return false, time.Time{}, fmt.Errorf("%s: %w", op, err)
+	}
+	// for res.Next() {
+	// 	err := res.Scan(&token, &expiry)
+	// 	if err != nil {
+	// 		return false, time.Time{}, fmt.Errorf("%s: %w", op, err)
+	// 	}
+	// }
+	// if res.Err() != nil {
+	// 	return false, time.Time{}, fmt.Errorf("%s: %w", op, res.Err())
+	// }
+
+	return token == refreshToken, expiry, nil
+}
+
+func (s *Storage) GetUserInfoByAuthToken(ctx context.Context, userID string) (*model.UserInfo, error) {
+	const op = "storage.postgres.GetUserInfoByAuthToken"
+
+	state := `SELECT name, surname, jobTitle, organisation, phone, email, city, shortOrganisationTitle, INN, organisationType, currentTarrif FROM users WHERE userId = $1`
+	res := s.db.QueryRow(ctx, state, userID)
+	user := &model.UserInfo{}
+	err := res.Scan(&user.Name, &user.Surname, &user.JobTitle, &user.Organisation, &user.Phone, &user.Email, &user.City,
+		&user.ShortOrgTitle, &user.INN, &user.OrganisationType, &user.CurrentTarrif)
+
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return user, nil
+}
+
+func (s *Storage) ChangeUserInfo(ctx context.Context, userInfo *dto.ChangeUserInfoIn, userID string) (*model.UserInfo, error) {
+	const op = "storage.postgres.ChangeUserInfo"
+
+	state := `UPDATE users SET (name, surname, jobTitle, organisation, phone, email, city, shortOrganisationTitle, INN, organisationType, currentTarrif) = ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) WHERE userId = $12 RETURNING name, surname, jobTitle, organisation, phone, email, city, shortOrganisationTitle, INN, organisationType, currentTarrif`
+	res := s.db.QueryRow(ctx, state, userInfo.Name, userInfo.Surname, userInfo.JobTitle, userInfo.Organisation, userInfo.Phone, userInfo.Email, userInfo.City, userInfo.ShortOrganisationTitle, userInfo.INN, userInfo.OrganisationType, userInfo.CurrentTarrif, userID)
+	user := &model.UserInfo{}
+	err := res.Scan(&user.Name, &user.Surname, &user.JobTitle, &user.Organisation, &user.Phone, &user.Email, &user.City,
+		&user.ShortOrgTitle, &user.INN, &user.OrganisationType, &user.CurrentTarrif)
+
+	fmt.Println(err)
+
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return user, nil
+}
+
+func (s *Storage) ChangeUserPassword(ctx context.Context, newHash, userID string) error {
+	const op = "storage.postgres.ChangeUserPassword"
+
+	state := `UPDATE users SET passwordHash = $1 WHERE userId = $2`
+
+	result, err := s.db.Exec(ctx, state, newHash, userID)
+	if err != nil {
+		return fmt.Errorf("%s: %w", op, err)
+	}
+
+	rowsAffected := result.RowsAffected()
+
+	if rowsAffected == 0 {
+		return fmt.Errorf("%s: password change failed: old password does not match", op)
+	}
+
+	return nil
+}
+
+func (s *Storage) DeleteAccount(ctx context.Context, userID string) error {
+	const op = "storage.postgres.DeleteAccount"
+
+	state := `DELETE FROM users WHERE userId = $1`
+
+	row, err := s.db.Exec(ctx, state, userID)
+	if err != nil {
+		return fmt.Errorf("%s: %w", op, err)
+	}
+
+	rowsAffected := row.RowsAffected()
+
+	if rowsAffected == 0 {
+		return fmt.Errorf("%s: account deletion failed: user not found", op)
+	}
+
+	return nil
+}
+
+func (s *Storage) GetUserPasswordById(ctx context.Context, userId string) (string, error) {
+	const op = "storage.postgres.GetUserPasswordById"
+
+	state := `SELECT passwordHash FROM users WHERE userId = $1`
+
+	res := s.db.QueryRow(ctx, state, userId)
+
+	var hash string
+
+	err := res.Scan(&hash)
+
+	if err != nil {
+		return "", fmt.Errorf("%s: %w", op, err)
+	}
+
+	return hash, nil
+}
+
+func (s *Storage) SignOutUser(ctx context.Context, userId string) error {
+	const op = "storage.postgres.LogOutUser"
+
+	state := `UPDATE sessions SET isActive = false WHERE userId = $1`
+
+	row, err := s.db.Exec(ctx, state, userId)
+	if err != nil {
+		return fmt.Errorf("%s: %w", op, err)
+	}
+
+	rowsAffected := row.RowsAffected()
+
+	if rowsAffected == 0 {
+		return fmt.Errorf("%s: logout failed: user not found", op)
+	}
+
+	return nil
+}

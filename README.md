@@ -1,1 +1,1 @@
-# eduplay-backend
+# backend

@@ -1,0 +1,8 @@
+env: "local"
+#storage_path: "postgresql://postgres:1234@localhost:5433/Docs"
+storage_path: "postgresql://postgres:postgres@localhost:5432/eduplay"
+# storage_path: "postgres://reshebnik_admin:hseReshebnikLaw896!@localhost:5432/reshebnik?sslmode=disable"
+secret_key: "EduplaySecretkey"
+grpc:
+  port: 35001
+  timeout: 5s

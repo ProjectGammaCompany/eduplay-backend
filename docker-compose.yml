@@ -1,0 +1,26 @@
+version: "3.8"
+
+services:
+  gateway:
+    build:
+      context: ./eduplay-gateway
+    image: eduplay-gateway:latest
+    container_name: eduplay-gateway
+    ports:
+      # - "8080:8080"
+      - "35000:35000"
+    environment:
+      - CONFIG_PATH=config.yaml
+    depends_on:
+      - user-service
+
+  user-service:
+    build:
+      context: ./eduplay-user
+    image: eduplay-user:latest
+    container_name: eduplay-user
+    ports:
+      # - "8081:8081"
+      - "35001:35001"
+    environment:
+      - CONFIG_PATH=config.yaml

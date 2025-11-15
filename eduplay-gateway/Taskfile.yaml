@@ -1,0 +1,9 @@
+version: "3"
+
+tasks: 
+  generate: 
+    aliases: 
+      - gen
+    desc: "Gen code from proto files" 
+    cmds: 
+      - protoc -I proto proto/clients/*.proto --go_out=internal/generated --go_opt=paths=source_relative --go-grpc_out=internal/generated proto/clients/service_users.proto --go-grpc_opt=paths=source_relative

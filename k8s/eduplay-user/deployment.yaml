@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: eduplay-user
+  namespace: eduplay
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: eduplay-user
+  template:
+    metadata:
+      labels:
+        app: eduplay-user
+    spec:
+      containers:
+        - name: user
+          image: ghcr.io/cactus91869/eduplay-user:latest
+          ports:
+            - containerPort: 35001
+          env:
+            - name: CONFIG_PATH
+              value: "/config/config.yaml"
