@@ -23,14 +23,25 @@ jobs:
         with:
           go-version: "1.24"
 
+      # - name: Cache golangci-lint
+      #   uses: actions/cache@v4
+      #   with:
+      #     path: ~/.cache/golangci-lint
+      #     key: ${{ runner.os }}-golangci-lint-${{ hashFiles('**/go.mod') }}
+
+      # - name: Install golangci-lint
+      #   uses: golangci/golangci-lint-action@v6
+      #   with:
+      #     version: v1.64.8
+
       - name: Install golangci-lint
-        uses: golangci/golangci-lint-action@v6
-        with:
-          version: latest
+        run: |
+          curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.64.8
 
       - name: Run linter
         working-directory: ${{ matrix.service }}
-        run: golangci-lint run --config=/dev/null --timeout=5m
+        # run: golangci-lint run --config=/dev/null --timeout=5m
+        run: golangci-lint run --timeout=5m
 
       - name: Run tests
         working-directory: ${{ matrix.service }}
