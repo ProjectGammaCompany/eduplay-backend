@@ -29,12 +29,12 @@ jobs:
 
       - name: Build Docker image
         run: |
-          IMAGE=ghcr.io/${{ github.repository }}/${{ matrix.service }}:latest
+          IMAGE=ghcr.io/projectgammacompany/${{ matrix.service }}:latest
           echo "Building $IMAGE"
           docker build -t $IMAGE ${{ matrix.service }}
 
       - name: Push Docker image
         run: |
-          IMAGE=ghcr.io/${{ github.repository }}/${{ matrix.service }}:latest
+          IMAGE=ghcr.io/projectgammacompany/${{ matrix.service }}:latest
           echo "Pushing $IMAGE"
           docker push $IMAGE

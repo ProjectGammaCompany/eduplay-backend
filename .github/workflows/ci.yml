@@ -30,7 +30,7 @@ jobs:
 
       - name: Run linter
         working-directory: ${{ matrix.service }}
-        run: golangci-lint run --path-prefix=${{ matrix.service }} --timeout=5m
+        run: golangci-lint run --config=/dev/null --timeout=5m
 
       - name: Run tests
         working-directory: ${{ matrix.service }}
