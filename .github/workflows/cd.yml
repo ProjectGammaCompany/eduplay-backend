@@ -1,10 +1,34 @@
-name: CD
+name: CD - Build & Push Images
 
 on:
   push:
     branches: [ main ]
 
 jobs:
+  update-manifests:
+  runs-on: ubuntu-latest
+  needs: docker-build-push
+
+  steps:
+    - uses: actions/checkout@v4
+
+    - name: Set short SHA
+      id: vars
+      run: echo "sha=${GITHUB_SHA::7}" >> $GITHUB_OUTPUT
+
+    - name: Update image tags in k8s manifests
+      run: |
+        sed -i "s#image: cactus91869/eduplay-gateway:.*#image: cactus91869/eduplay-gateway:sha-${{ steps.vars.outputs.sha }}#g" k8s/app/eduplay-gateway/deployment.yaml
+        sed -i "s#image: cactus91869/eduplay-user:.*#image: cactus91869/eduplay-user:sha-${{ steps.vars.outputs.sha }}#g" k8s/app/eduplay-user/deployment.yaml
+
+    - name: Commit & push
+      run: |
+        git config user.name "github-actions"
+        git config user.email "github-actions@users.noreply.github.com"
+        git add k8s/app/eduplay-gateway/deployment.yaml k8s/app/eduplay-user/deployment.yaml
+        git commit -m "deploy: sha-${{ steps.vars.outputs.sha }}" || exit 0
+        git push
+
   docker-build-push:
     runs-on: ubuntu-latest
 
@@ -12,29 +36,71 @@ jobs:
       matrix:
         service: [ "eduplay-gateway", "eduplay-user" ]
 
-    permissions:
-      contents: read
-      packages: write
-
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Log in to GHCR
+      - name: Set short SHA
+        id: vars
+        run: echo "sha=${GITHUB_SHA::7}" >> $GITHUB_OUTPUT
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASS }}
 
-      - name: Build Docker image
-        run: |
-          IMAGE=ghcr.io/projectgammacompany/${{ matrix.service }}:latest
-          echo "Building $IMAGE"
-          docker build -t $IMAGE ${{ matrix.service }}
+      - name: Build & push
+        uses: docker/build-push-action@v6
+        with:
+          context: ${{ matrix.service }}
+          push: true
+          tags: |
+            ${{ secrets.DOCKER_USERNAME }}/${{ matrix.service }}:sha-${{ steps.vars.outputs.sha }}
+            ${{ secrets.DOCKER_USERNAME }}/${{ matrix.service }}:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
-      - name: Push Docker image
-        run: |
-          IMAGE=ghcr.io/projectgammacompany/${{ matrix.service }}:latest
-          echo "Pushing $IMAGE"
-          docker push $IMAGE
+
+# name: CD
+
+# on:
+#   push:
+#     branches: [ main ]
+
+# jobs:
+#   docker-build-push:
+#     runs-on: ubuntu-latest
+
+#     strategy:
+#       matrix:
+#         service: [ "eduplay-gateway", "eduplay-user" ]
+
+#     permissions:
+#       contents: read
+#       packages: write
+
+#     steps:
+#       - name: Checkout repo
+#         uses: actions/checkout@v4
+
+#       - name: Log in to GHCR
+#         uses: docker/login-action@v3
+#         with:
+#           registry: ghcr.io
+#           username: ${{ github.actor }}
+#           password: ${{ secrets.GITHUB_TOKEN }}
+
+#       - name: Build Docker image
+#         run: |
+#           IMAGE=ghcr.io/projectgammacompany/${{ matrix.service }}:sha-<shortsha>
+#           echo "Building $IMAGE"
+#           docker build -t $IMAGE ${{ matrix.service }}
+
+#       - name: Push Docker image
+#         run: |
+#           IMAGE=ghcr.io/projectgammacompany/${{ matrix.service }}:sha-<shortsha>
+#           echo "Pushing $IMAGE"
+#           docker push $IMAGE

@@ -9,7 +9,7 @@ spec:
   source:
     repoURL: https://github.com/cactus91869/backend.git
     targetRevision: main
-    path: k8s
+    path: k8s/app
 
   destination:
     server: https://kubernetes.default.svc
@@ -19,5 +19,3 @@ spec:
     automated:
       prune: true
       selfHeal: true
-    syncOptions:
-      - CreateNamespace=true
