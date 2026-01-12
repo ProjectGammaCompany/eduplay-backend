@@ -1,0 +1,5 @@
+resources:
+  - eduplay-gateway/deployment.yaml
+  - eduplay-gateway/service.yaml
+  - eduplay-user/deployment.yaml
+  - eduplay-user/service.yaml
