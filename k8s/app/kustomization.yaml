@@ -1,4 +1,5 @@
 resources:
+  - namespace.yaml
   - eduplay-gateway/deployment.yaml
   - eduplay-gateway/service.yaml
   - eduplay-user/deployment.yaml
