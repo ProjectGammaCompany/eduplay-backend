@@ -4,7 +4,7 @@
 // - protoc             v5.29.2
 // source: service_users.proto
 
-package manual_user_service_v1
+package eduplay_user_v1
 
 import (
 	context "context"
@@ -22,9 +22,6 @@ const (
 	Users_SignUp_FullMethodName         = "/content.Users/SignUp"
 	Users_SignIn_FullMethodName         = "/content.Users/SignIn"
 	Users_Refresh_FullMethodName        = "/content.Users/Refresh"
-	Users_GetUserAccess_FullMethodName  = "/content.Users/GetUserAccess"
-	Users_GetUserInfo_FullMethodName    = "/content.Users/GetUserInfo"
-	Users_ChangeUserInfo_FullMethodName = "/content.Users/ChangeUserInfo"
 	Users_ChangePassword_FullMethodName = "/content.Users/ChangePassword"
 	Users_DeleteAccount_FullMethodName  = "/content.Users/DeleteAccount"
 	Users_SignOut_FullMethodName        = "/content.Users/SignOut"
@@ -37,9 +34,9 @@ type UsersClient interface {
 	SignUp(ctx context.Context, in *SignUpIn, opts ...grpc.CallOption) (*SignUpOut, error)
 	SignIn(ctx context.Context, in *SignInIn, opts ...grpc.CallOption) (*SignUpOut, error)
 	Refresh(ctx context.Context, in *RefreshIn, opts ...grpc.CallOption) (*RefreshOut, error)
-	GetUserAccess(ctx context.Context, in *GetUserAccessIn, opts ...grpc.CallOption) (*GetUserAccessOut, error)
-	GetUserInfo(ctx context.Context, in *GetUserAccessIn, opts ...grpc.CallOption) (*GetUserInfoOut, error)
-	ChangeUserInfo(ctx context.Context, in *ChangeUserInfoIn, opts ...grpc.CallOption) (*GetUserInfoOut, error)
+	// rpc GetUserAccess (GetUserAccessIn) returns (GetUserAccessOut);
+	// rpc GetUserInfo (GetUserAccessIn) returns (GetUserInfoOut);
+	// rpc ChangeUserInfo (ChangeUserInfoIn) returns (GetUserInfoOut);
 	ChangePassword(ctx context.Context, in *ChangePasswordIn, opts ...grpc.CallOption) (*Empty, error)
 	DeleteAccount(ctx context.Context, in *DeleteAccountIn, opts ...grpc.CallOption) (*Empty, error)
 	SignOut(ctx context.Context, in *DeleteAccountIn, opts ...grpc.CallOption) (*Empty, error)
@@ -83,36 +80,6 @@ func (c *usersClient) Refresh(ctx context.Context, in *RefreshIn, opts ...grpc.C
 	return out, nil
 }
 
-func (c *usersClient) GetUserAccess(ctx context.Context, in *GetUserAccessIn, opts ...grpc.CallOption) (*GetUserAccessOut, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(GetUserAccessOut)
-	err := c.cc.Invoke(ctx, Users_GetUserAccess_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *usersClient) GetUserInfo(ctx context.Context, in *GetUserAccessIn, opts ...grpc.CallOption) (*GetUserInfoOut, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(GetUserInfoOut)
-	err := c.cc.Invoke(ctx, Users_GetUserInfo_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *usersClient) ChangeUserInfo(ctx context.Context, in *ChangeUserInfoIn, opts ...grpc.CallOption) (*GetUserInfoOut, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(GetUserInfoOut)
-	err := c.cc.Invoke(ctx, Users_ChangeUserInfo_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 func (c *usersClient) ChangePassword(ctx context.Context, in *ChangePasswordIn, opts ...grpc.CallOption) (*Empty, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(Empty)
@@ -150,9 +117,9 @@ type UsersServer interface {
 	SignUp(context.Context, *SignUpIn) (*SignUpOut, error)
 	SignIn(context.Context, *SignInIn) (*SignUpOut, error)
 	Refresh(context.Context, *RefreshIn) (*RefreshOut, error)
-	GetUserAccess(context.Context, *GetUserAccessIn) (*GetUserAccessOut, error)
-	GetUserInfo(context.Context, *GetUserAccessIn) (*GetUserInfoOut, error)
-	ChangeUserInfo(context.Context, *ChangeUserInfoIn) (*GetUserInfoOut, error)
+	// rpc GetUserAccess (GetUserAccessIn) returns (GetUserAccessOut);
+	// rpc GetUserInfo (GetUserAccessIn) returns (GetUserInfoOut);
+	// rpc ChangeUserInfo (ChangeUserInfoIn) returns (GetUserInfoOut);
 	ChangePassword(context.Context, *ChangePasswordIn) (*Empty, error)
 	DeleteAccount(context.Context, *DeleteAccountIn) (*Empty, error)
 	SignOut(context.Context, *DeleteAccountIn) (*Empty, error)
@@ -174,15 +141,6 @@ func (UnimplementedUsersServer) SignIn(context.Context, *SignInIn) (*SignUpOut, 
 }
 func (UnimplementedUsersServer) Refresh(context.Context, *RefreshIn) (*RefreshOut, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Refresh not implemented")
-}
-func (UnimplementedUsersServer) GetUserAccess(context.Context, *GetUserAccessIn) (*GetUserAccessOut, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetUserAccess not implemented")
-}
-func (UnimplementedUsersServer) GetUserInfo(context.Context, *GetUserAccessIn) (*GetUserInfoOut, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetUserInfo not implemented")
-}
-func (UnimplementedUsersServer) ChangeUserInfo(context.Context, *ChangeUserInfoIn) (*GetUserInfoOut, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method ChangeUserInfo not implemented")
 }
 func (UnimplementedUsersServer) ChangePassword(context.Context, *ChangePasswordIn) (*Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ChangePassword not implemented")
@@ -268,60 +226,6 @@ func _Users_Refresh_Handler(srv interface{}, ctx context.Context, dec func(inter
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Users_GetUserAccess_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetUserAccessIn)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(UsersServer).GetUserAccess(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Users_GetUserAccess_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(UsersServer).GetUserAccess(ctx, req.(*GetUserAccessIn))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Users_GetUserInfo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetUserAccessIn)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(UsersServer).GetUserInfo(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Users_GetUserInfo_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(UsersServer).GetUserInfo(ctx, req.(*GetUserAccessIn))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Users_ChangeUserInfo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ChangeUserInfoIn)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(UsersServer).ChangeUserInfo(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Users_ChangeUserInfo_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(UsersServer).ChangeUserInfo(ctx, req.(*ChangeUserInfoIn))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 func _Users_ChangePassword_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(ChangePasswordIn)
 	if err := dec(in); err != nil {
@@ -394,18 +298,6 @@ var Users_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Refresh",
 			Handler:    _Users_Refresh_Handler,
-		},
-		{
-			MethodName: "GetUserAccess",
-			Handler:    _Users_GetUserAccess_Handler,
-		},
-		{
-			MethodName: "GetUserInfo",
-			Handler:    _Users_GetUserInfo_Handler,
-		},
-		{
-			MethodName: "ChangeUserInfo",
-			Handler:    _Users_ChangeUserInfo_Handler,
 		},
 		{
 			MethodName: "ChangePassword",

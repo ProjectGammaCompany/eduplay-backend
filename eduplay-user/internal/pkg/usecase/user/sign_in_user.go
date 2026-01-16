@@ -5,29 +5,32 @@ import (
 	"eduplay-user/internal/model"
 	"log/slog"
 
+	dto "eduplay-user/internal/generated"
+
 	errors "eduplay-user/internal/storage"
 
 	"golang.org/x/crypto/bcrypt"
 )
 
-func (a *UseCase) SignInUser(ctx context.Context, email string, password string) (*model.Session, error) {
+func (a *UseCase) SignInUser(ctx context.Context, in *dto.SignInIn) (*model.Session, error) {
 	const op = "Users.SignInUser"
 
 	log := a.log.With(
 		slog.String("op", op),
 	)
 
-	currUser, err := a.storage.GetUserByEmail(ctx, email)
+	currUser, err := a.storage.GetUserByEmail(ctx, in.Email)
 
 	if err != nil {
 		return nil, err
 	}
 
-	if !CheckPasswordHash(password, currUser.Password) {
+	if !CheckPasswordHash(in.Password, currUser.Password) {
 		return nil, errors.ErrIncorrectPassword
 	}
 
 	session, err := a.storage.GetSessionByUserId(ctx, currUser.Id)
+
 	if session.IsActive {
 		return nil, errors.ErrIsActive
 	}
@@ -35,7 +38,7 @@ func (a *UseCase) SignInUser(ctx context.Context, email string, password string)
 		return nil, err
 	}
 
-	newAccessToken, err := GenerateAuthToken(currUser.Id, currUser.Name, currUser.Surname, currUser.Email, session.AccessLevel, session.Role, a.secret)
+	newAccessToken, err := GenerateAuthToken(currUser.Id, currUser.Email, a.secret)
 	if err != nil {
 		return nil, err
 	}

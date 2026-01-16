@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package content; 
+
+option go_package = "eduplay-event.v1";
+
+service Events {
+    rpc SaveFile (SaveFileIn) returns (MessageOut);
+}
+
+message MessageOut {
+    string message = 1;
+}
+
+message SaveFileIn {
+    string filename = 1;
+    string fileUUID = 2;
+}

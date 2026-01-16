@@ -2,7 +2,7 @@ package user
 
 import (
 	"context"
-	dto "eduplay-user/internal/generated"
+	// dto "eduplay-user/internal/generated"
 	"log/slog"
 	"time"
 
@@ -10,14 +10,14 @@ import (
 )
 
 type storage interface {
-	SignUpUser(ctx context.Context, name string, surname string, email string, organization string, phone string, password string) (string, error)
-	SaveSession(ctx context.Context, userId string, refreshToken string, role string, accessLevel int64) error
+	SignUpUser(ctx context.Context, email string, password string) (string, error)
+	SaveSession(ctx context.Context, userId string, refreshToken string) error
 	UpdateSession(ctx context.Context, userId string, refreshToken string) error
 	GetUserByEmail(ctx context.Context, email string) (*model.User, error)
 	GetSessionByUserId(ctx context.Context, userId string) (*model.Session, error)
 	GetUserByRefreshToken(ctx context.Context, refreshToken string) (*model.User, error)
-	GetUserInfoByAuthToken(ctx context.Context, userID string) (*model.UserInfo, error)
-	ChangeUserInfo(ctx context.Context, userInfo *dto.ChangeUserInfoIn, userID string) (*model.UserInfo, error)
+	// GetUserInfoByAuthToken(ctx context.Context, userID string) (*model.UserInfo, error)
+	//  ChangeUserInfo(ctx context.Context, userInfo *dto.ChangeUserInfoIn, userID string) (*model.UserInfo, error)
 	ChangeUserPassword(ctx context.Context, newHash, authToken string) error
 	DeleteAccount(ctx context.Context, authToken string) error
 	CheckRefreshTokenExists(ctx context.Context, refreshToken string) (bool, time.Time, error)

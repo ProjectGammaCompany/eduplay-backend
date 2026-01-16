@@ -12,15 +12,15 @@ import (
 	jwt "github.com/dgrijalva/jwt-go"
 )
 
-func GenerateAuthToken(userId string, name string, surname string, email string, accessLevel int, role string, secret string) (string, error) {
+func GenerateAuthToken(userId string, email string, secret string) (string, error) {
 	claims := jwt.MapClaims{
-		"id":          userId,
-		"name":        name,
-		"surname":     surname,
-		"email":       email,
-		"accessLevel": accessLevel,
-		"role":        role,
-		"exp":         time.Now().Add(time.Minute * 30).Unix(),
+		"id": userId,
+		// "name":        name,
+		// "surname":     surname,
+		"email": email,
+		// "accessLevel": accessLevel,
+		// "role":        role,
+		"exp": time.Now().Add(time.Minute * 30).Unix(),
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
@@ -42,14 +42,10 @@ func GenerateRefreshToken() (string, error) {
 
 func GenerateSession(ctx context.Context,
 	userId string,
-	name string,
-	surname string,
 	email string,
-	accessLevel int,
-	role string,
 	secret string) (*model.Session, error) {
 
-	accessToken, err := GenerateAuthToken(userId, name, surname, email, accessLevel, role, secret)
+	accessToken, err := GenerateAuthToken(userId, email, secret)
 	if err != nil {
 		//TODO: deal with error
 		return &model.Session{}, err
@@ -64,6 +60,7 @@ func GenerateSession(ctx context.Context,
 	return &model.Session{
 		AccessToken:  accessToken,
 		RefreshToken: refreshToken,
-		Role:         role,
-		AccessLevel:  accessLevel}, nil
+		// Role:         role,
+		// AccessLevel:  accessLevel
+	}, nil
 }

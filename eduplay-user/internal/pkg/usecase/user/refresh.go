@@ -32,12 +32,12 @@ func (a *UseCase) RefreshSession(ctx context.Context, refreshToken string) (*mod
 		return nil, err
 	}
 
-	currSession, err := a.storage.GetSessionByUserId(ctx, currUser.Id)
-	if err != nil {
-		return nil, err
-	}
+	// currSession, err := a.storage.GetSessionByUserId(ctx, currUser.Id)
+	// if err != nil {
+	// 	return nil, err
+	// }
 
-	newAccessToken, err := GenerateAuthToken(currUser.Id, currUser.Name, currUser.Surname, currUser.Email, currSession.AccessLevel, currSession.Role, a.secret)
+	newAccessToken, err := GenerateAuthToken(currUser.Id, currUser.Email, a.secret)
 	if err != nil {
 		return nil, err
 	}

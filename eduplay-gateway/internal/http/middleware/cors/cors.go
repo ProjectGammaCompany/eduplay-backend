@@ -7,8 +7,8 @@ func CorsMiddleware(next http.Handler) http.Handler {
 		origin := r.Header.Get("Origin")
 
 		allowedOrigins := map[string]bool{
-			"http://localhost:3000":                true,
-			"http://reshebnik.projectswhynot.site": true,
+			"http://localhost:3000": true,
+			"http://hse-eduplay.ru": true,
 		}
 
 		if allowedOrigins[origin] {

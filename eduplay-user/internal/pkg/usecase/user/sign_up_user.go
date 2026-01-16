@@ -10,7 +10,7 @@ import (
 	"eduplay-user/internal/model"
 )
 
-func (a *UseCase) SignUpUser(ctx context.Context, name string, surname string, email string, organization string, phone string, password string) (*model.Session, error) {
+func (a *UseCase) SignUpUser(ctx context.Context, in *dto.SignUpIn) (*model.Session, error) {
 	const op = "sign_up_user.UseCase.SignUpUser"
 
 	log := a.log.With(
@@ -19,30 +19,30 @@ func (a *UseCase) SignUpUser(ctx context.Context, name string, surname string, e
 
 	log.Info("signing up user")
 
-	passwordHash, err := HashPassword(password)
+	passwordHash, err := HashPassword(in.Password)
 	if err != nil {
-		log.Error("failed to hash password", err.Error(), slog.String("password", password))
+		log.Error("failed to hash password", err.Error(), slog.String("password", in.Password))
 		return &model.Session{}, err
 	}
 
-	userId, err := a.storage.SignUpUser(ctx, name, surname, email, organization, phone, string(passwordHash))
+	userId, err := a.storage.SignUpUser(ctx, in.Email, string(passwordHash))
 	if err != nil {
-		log.Error("failed to sign up user", err.Error(), slog.String("email", email))
+		log.Error("failed to sign up user", err.Error(), slog.String("email", in.Email))
 		return &model.Session{}, err
 	}
 
-	role := dto.Role_USER
-	modelRole := role.String()
+	// role := dto.Role_USER
+	// modelRole := role.String()
 
-	userAccess := 0
+	// userAccess := 0
 
-	session, error := GenerateSession(ctx, userId, name, surname, email, userAccess, modelRole, a.secret)
+	session, error := GenerateSession(ctx, userId, in.Email, a.secret)
 	if error != nil {
 		log.Error("failed to generate session", error.Error(), slog.String("userId", userId))
 		return &model.Session{}, error
 	}
 
-	err = a.storage.SaveSession(ctx, userId, session.RefreshToken, session.Role, int64(session.AccessLevel))
+	err = a.storage.SaveSession(ctx, userId, session.RefreshToken)
 	if err != nil {
 		log.Error("failed to save session", err.Error(), slog.String("userId", userId))
 		return &model.Session{}, err
