@@ -9,8 +9,6 @@ import (
 	"log/slog"
 	"net/http"
 
-	errs "eduplay-gateway/internal/storage"
-
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/render"
 	"github.com/go-playground/validator/v10"
@@ -31,9 +29,9 @@ func New(log *slog.Logger, uc UseCase) http.HandlerFunc {
 
 		err := render.DecodeJSON(request.Body, &req)
 		if err != nil {
-			log.Error(errs.ErrInvalidRequest.Error(), slog.String("error", err.Error()))
+			log.Error(storage.ErrInvalidRequest.Error(), slog.String("error", err.Error()))
 			writer.WriteHeader(http.StatusBadRequest)
-			render.JSON(writer, request, errs.ErrInvalidRequest)
+			render.JSON(writer, request, storage.ErrInvalidRequest)
 			return
 		}
 
@@ -42,16 +40,16 @@ func New(log *slog.Logger, uc UseCase) http.HandlerFunc {
 		if err := validator.New().Struct(req); err != nil {
 			var validationErrors validator.ValidationErrors
 			errors.As(err, &validationErrors)
-			log.Error(errs.ErrValidationError.Error(), slog.String("error", err.Error()))
+			log.Error(storage.ErrValidationError.Error(), slog.String("error", err.Error()))
 			writer.WriteHeader(http.StatusBadRequest)
-			render.JSON(writer, request, errs.ErrValidationError.Error())
+			render.JSON(writer, request, storage.ErrValidationError.Error())
 			return
 		}
 
 		if req.Password != req.RepeatPassword {
 			log.Debug("Passwords don't match")
 			writer.WriteHeader(http.StatusBadRequest)
-			render.JSON(writer, request, errs.ErrPasswordsNotMatch.Error())
+			render.JSON(writer, request, storage.ErrPasswordsNotMatch.Error())
 			return
 		}
 
@@ -59,7 +57,7 @@ func New(log *slog.Logger, uc UseCase) http.HandlerFunc {
 		if err != nil {
 			if errors.Is(err, storage.ErrUserAlreadyExists) {
 				writer.WriteHeader(http.StatusConflict)
-				render.JSON(writer, request, errs.ErrUserAlreadyExists.Error())
+				render.JSON(writer, request, storage.ErrUserAlreadyExists.Error())
 				return
 			}
 			log.Error("failed to get credentials")

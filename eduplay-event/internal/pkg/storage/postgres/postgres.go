@@ -46,7 +46,7 @@ func (s *Storage) Stop(ctx context.Context) error {
 func (s *Storage) SaveFile(ctx context.Context, fileName string, fileUUID string) (string, error) {
 	const op = "storage.postgres.SaveFile"
 
-	var id string = strings.Split(fileUUID, ".")[0]
+	var id = strings.Split(fileUUID, ".")[0]
 
 	state := `SELECT count FROM files WHERE fileId = $1`
 

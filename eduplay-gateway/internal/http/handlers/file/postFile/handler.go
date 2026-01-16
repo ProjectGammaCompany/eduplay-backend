@@ -77,7 +77,7 @@ func New(log *slog.Logger, uc UseCase) http.HandlerFunc {
 		// TODO in actuality works with only one file
 
 		mForm := request.MultipartForm
-		for k, _ := range mForm.File {
+		for k := range mForm.File {
 			file, fileHeader, err := request.FormFile(k)
 			if err != nil {
 				log.Error("failed to get form file", slog.String("error", err.Error()))
@@ -86,7 +86,11 @@ func New(log *slog.Logger, uc UseCase) http.HandlerFunc {
 				return
 			}
 
-			defer file.Close()
+			defer func() {
+				if err := file.Close(); err != nil {
+					log.Error("failed to close file", slog.String("error", err.Error()))
+				}
+			}()
 
 			splitFileName := strings.Split(fileHeader.Filename, ".")
 
@@ -100,7 +104,12 @@ func New(log *slog.Logger, uc UseCase) http.HandlerFunc {
 				render.JSON(writer, request, lib.Error("error creating new file on server"))
 				return
 			}
-			defer dst.Close()
+
+			defer func() {
+				if err := dst.Close(); err != nil {
+					log.Error("failed to close destination file", slog.String("error", err.Error()))
+				}
+			}()
 
 			if _, err := io.Copy(dst, file); err != nil {
 				log.Error("failed to copy file to server", slog.String("error", err.Error()))
