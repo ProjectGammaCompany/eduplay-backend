@@ -2,13 +2,15 @@ CREATE TABLE events (
     eventId uuid PRIMARY KEY DEFAULT gen_random_uuid(),
     title text NOT NULL DEFAULT '',
     description text NOT NULL DEFAULT '', 
-    tags text[] NOT NULL DEFAULT '{}',
+    tags uuid[] NOT NULL DEFAULT '{}',
     cover VARCHAR(255) DEFAULT '',
     startDate TIMESTAMP,
     endDate TIMESTAMP, 
     private BOOLEAN DEFAULT false,
     password VARCHAR(255) DEFAULT '',
     ownerId uuid NOT NULL,
+    lastEditionDate TIMESTAMP DEFAULT now(), 
+    showRating BOOLEAN NOT NULL DEFAULT false,
     FOREIGN KEY (ownerId) REFERENCES users(userid) ON DELETE CASCADE
 )
 
@@ -40,8 +42,8 @@ CREATE TABLE tasks (
 
 CREATE TABLE conditions (
     conditionId uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-    prevBlockId uuid NOT NULL,
-    nextBlockId uuid NOT NULL,
+    prevBlockId uuid,
+    nextBlockId uuid,
     group text[] NOT NULL DEFAULT '{}',
     min INTEGER NOT NULL DEFAULT 0,
     max INTEGER NOT NULL DEFAULT 0,
@@ -56,3 +58,18 @@ CREATE TABLE options (
     isCorrect BOOLEAN DEFAULT false,
     FOREIGN KEY (taskId) REFERENCES tasks(taskId) ON DELETE CASCADE
 )
+
+CREATE TABLE tags (
+    tagId uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    name text NOT NULL DEFAULT ''
+)
+
+CREATE TABLE groups (
+    groupId uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    eventId uuid NOT NULL,
+    login text NOT NULL DEFAULT '',
+    password text NOT NULL DEFAULT '',
+    FOREIGN KEY (eventId) REFERENCES events(eventId) ON DELETE CASCADE
+)
+
+ALTER TABLE events ADD COLUMN lastEditionDate TIMESTAMP

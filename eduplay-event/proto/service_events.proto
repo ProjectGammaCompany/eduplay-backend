@@ -2,10 +2,23 @@ syntax = "proto3";
 
 package content; 
 
+import "google/protobuf/timestamp.proto";
+
 option go_package = "eduplay-event.v1";
 
 service Events {
     rpc SaveFile (SaveFileIn) returns (MessageOut);
+    rpc PostEvent (PostEventIn) returns (MessageOut);
+    rpc GetEvent (Id) returns (PostEventIn);
+    rpc GetRole (GetRoleIn) returns (GetRoleOut);
+    rpc GetGroups (Id) returns (GetGroupsOut);
+    rpc GetCollaborators (Id) returns (GetCollaboratorsOut);
+    rpc PostEventBlock (PostEventBlockIn) returns (MessageOut);
+    rpc GetEventBlocks (Id) returns (GetEventBlocksOut);
+}
+
+message Id {
+    string id = 1;
 }
 
 message MessageOut {
@@ -15,4 +28,74 @@ message MessageOut {
 message SaveFileIn {
     string filename = 1;
     string fileUUID = 2;
+}
+
+message PostEventIn {
+    string eventId = 1;
+    string title = 2;
+    string description = 3;
+    repeated string tags = 4;
+    string cover = 5;
+    optional google.protobuf.Timestamp startDate = 6;
+    optional google.protobuf.Timestamp endDate = 7;
+    bool private = 8;
+    string password = 9;
+    string ownerId = 10; 
+    optional google.protobuf.Timestamp lastEditionDate = 11;
+}
+
+message GetRoleIn {
+    string userId = 1;
+    string eventId = 2;
+}
+
+message GetRoleOut {
+    int64 role = 1;
+}
+
+message GetGroupsOut {
+    repeated Group groups = 1;
+}
+
+message Group {
+    string login = 1;
+    string password = 2; 
+}
+
+message GetCollaboratorsOut {
+    repeated User users = 1;
+}
+
+message User {
+    string id = 1;
+    string email = 2;
+    string avatar = 3;
+}
+
+message PostEventBlockIn {
+    string blockId = 1;
+    string eventId = 2; 
+    string name = 3; 
+    int64 order = 4; 
+    bool isParallel = 5; 
+}
+
+message Condition {
+    string previousBlockId = 1;
+    string nextBlockId = 2;
+    repeated string groupIds = 3; 
+    int64 min = 4; 
+    int64 max = 5; 
+}
+
+message BlockInfo {
+    string blockId = 1;
+    string name = 2; 
+    int64 order = 3; 
+    bool isParallel = 4;
+    repeated Condition conditions = 5;
+}
+
+message GetEventBlocksOut {
+    repeated BlockInfo blocks = 1;
 }

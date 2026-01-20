@@ -19,7 +19,14 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	Events_SaveFile_FullMethodName = "/content.Events/SaveFile"
+	Events_SaveFile_FullMethodName         = "/content.Events/SaveFile"
+	Events_PostEvent_FullMethodName        = "/content.Events/PostEvent"
+	Events_GetEvent_FullMethodName         = "/content.Events/GetEvent"
+	Events_GetRole_FullMethodName          = "/content.Events/GetRole"
+	Events_GetGroups_FullMethodName        = "/content.Events/GetGroups"
+	Events_GetCollaborators_FullMethodName = "/content.Events/GetCollaborators"
+	Events_PostEventBlock_FullMethodName   = "/content.Events/PostEventBlock"
+	Events_GetEventBlocks_FullMethodName   = "/content.Events/GetEventBlocks"
 )
 
 // EventsClient is the client API for Events service.
@@ -27,6 +34,13 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type EventsClient interface {
 	SaveFile(ctx context.Context, in *SaveFileIn, opts ...grpc.CallOption) (*MessageOut, error)
+	PostEvent(ctx context.Context, in *PostEventIn, opts ...grpc.CallOption) (*MessageOut, error)
+	GetEvent(ctx context.Context, in *Id, opts ...grpc.CallOption) (*PostEventIn, error)
+	GetRole(ctx context.Context, in *GetRoleIn, opts ...grpc.CallOption) (*GetRoleOut, error)
+	GetGroups(ctx context.Context, in *Id, opts ...grpc.CallOption) (*GetGroupsOut, error)
+	GetCollaborators(ctx context.Context, in *Id, opts ...grpc.CallOption) (*GetCollaboratorsOut, error)
+	PostEventBlock(ctx context.Context, in *PostEventBlockIn, opts ...grpc.CallOption) (*MessageOut, error)
+	GetEventBlocks(ctx context.Context, in *Id, opts ...grpc.CallOption) (*GetEventBlocksOut, error)
 }
 
 type eventsClient struct {
@@ -47,11 +61,88 @@ func (c *eventsClient) SaveFile(ctx context.Context, in *SaveFileIn, opts ...grp
 	return out, nil
 }
 
+func (c *eventsClient) PostEvent(ctx context.Context, in *PostEventIn, opts ...grpc.CallOption) (*MessageOut, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(MessageOut)
+	err := c.cc.Invoke(ctx, Events_PostEvent_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *eventsClient) GetEvent(ctx context.Context, in *Id, opts ...grpc.CallOption) (*PostEventIn, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(PostEventIn)
+	err := c.cc.Invoke(ctx, Events_GetEvent_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *eventsClient) GetRole(ctx context.Context, in *GetRoleIn, opts ...grpc.CallOption) (*GetRoleOut, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetRoleOut)
+	err := c.cc.Invoke(ctx, Events_GetRole_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *eventsClient) GetGroups(ctx context.Context, in *Id, opts ...grpc.CallOption) (*GetGroupsOut, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetGroupsOut)
+	err := c.cc.Invoke(ctx, Events_GetGroups_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *eventsClient) GetCollaborators(ctx context.Context, in *Id, opts ...grpc.CallOption) (*GetCollaboratorsOut, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetCollaboratorsOut)
+	err := c.cc.Invoke(ctx, Events_GetCollaborators_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *eventsClient) PostEventBlock(ctx context.Context, in *PostEventBlockIn, opts ...grpc.CallOption) (*MessageOut, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(MessageOut)
+	err := c.cc.Invoke(ctx, Events_PostEventBlock_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *eventsClient) GetEventBlocks(ctx context.Context, in *Id, opts ...grpc.CallOption) (*GetEventBlocksOut, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetEventBlocksOut)
+	err := c.cc.Invoke(ctx, Events_GetEventBlocks_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // EventsServer is the server API for Events service.
 // All implementations must embed UnimplementedEventsServer
 // for forward compatibility.
 type EventsServer interface {
 	SaveFile(context.Context, *SaveFileIn) (*MessageOut, error)
+	PostEvent(context.Context, *PostEventIn) (*MessageOut, error)
+	GetEvent(context.Context, *Id) (*PostEventIn, error)
+	GetRole(context.Context, *GetRoleIn) (*GetRoleOut, error)
+	GetGroups(context.Context, *Id) (*GetGroupsOut, error)
+	GetCollaborators(context.Context, *Id) (*GetCollaboratorsOut, error)
+	PostEventBlock(context.Context, *PostEventBlockIn) (*MessageOut, error)
+	GetEventBlocks(context.Context, *Id) (*GetEventBlocksOut, error)
 	mustEmbedUnimplementedEventsServer()
 }
 
@@ -64,6 +155,27 @@ type UnimplementedEventsServer struct{}
 
 func (UnimplementedEventsServer) SaveFile(context.Context, *SaveFileIn) (*MessageOut, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SaveFile not implemented")
+}
+func (UnimplementedEventsServer) PostEvent(context.Context, *PostEventIn) (*MessageOut, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method PostEvent not implemented")
+}
+func (UnimplementedEventsServer) GetEvent(context.Context, *Id) (*PostEventIn, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetEvent not implemented")
+}
+func (UnimplementedEventsServer) GetRole(context.Context, *GetRoleIn) (*GetRoleOut, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetRole not implemented")
+}
+func (UnimplementedEventsServer) GetGroups(context.Context, *Id) (*GetGroupsOut, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetGroups not implemented")
+}
+func (UnimplementedEventsServer) GetCollaborators(context.Context, *Id) (*GetCollaboratorsOut, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetCollaborators not implemented")
+}
+func (UnimplementedEventsServer) PostEventBlock(context.Context, *PostEventBlockIn) (*MessageOut, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method PostEventBlock not implemented")
+}
+func (UnimplementedEventsServer) GetEventBlocks(context.Context, *Id) (*GetEventBlocksOut, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetEventBlocks not implemented")
 }
 func (UnimplementedEventsServer) mustEmbedUnimplementedEventsServer() {}
 func (UnimplementedEventsServer) testEmbeddedByValue()                {}
@@ -104,6 +216,132 @@ func _Events_SaveFile_Handler(srv interface{}, ctx context.Context, dec func(int
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Events_PostEvent_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(PostEventIn)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(EventsServer).PostEvent(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Events_PostEvent_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(EventsServer).PostEvent(ctx, req.(*PostEventIn))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Events_GetEvent_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Id)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(EventsServer).GetEvent(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Events_GetEvent_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(EventsServer).GetEvent(ctx, req.(*Id))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Events_GetRole_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetRoleIn)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(EventsServer).GetRole(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Events_GetRole_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(EventsServer).GetRole(ctx, req.(*GetRoleIn))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Events_GetGroups_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Id)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(EventsServer).GetGroups(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Events_GetGroups_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(EventsServer).GetGroups(ctx, req.(*Id))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Events_GetCollaborators_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Id)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(EventsServer).GetCollaborators(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Events_GetCollaborators_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(EventsServer).GetCollaborators(ctx, req.(*Id))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Events_PostEventBlock_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(PostEventBlockIn)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(EventsServer).PostEventBlock(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Events_PostEventBlock_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(EventsServer).PostEventBlock(ctx, req.(*PostEventBlockIn))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Events_GetEventBlocks_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Id)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(EventsServer).GetEventBlocks(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Events_GetEventBlocks_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(EventsServer).GetEventBlocks(ctx, req.(*Id))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Events_ServiceDesc is the grpc.ServiceDesc for Events service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -114,6 +352,34 @@ var Events_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "SaveFile",
 			Handler:    _Events_SaveFile_Handler,
+		},
+		{
+			MethodName: "PostEvent",
+			Handler:    _Events_PostEvent_Handler,
+		},
+		{
+			MethodName: "GetEvent",
+			Handler:    _Events_GetEvent_Handler,
+		},
+		{
+			MethodName: "GetRole",
+			Handler:    _Events_GetRole_Handler,
+		},
+		{
+			MethodName: "GetGroups",
+			Handler:    _Events_GetGroups_Handler,
+		},
+		{
+			MethodName: "GetCollaborators",
+			Handler:    _Events_GetCollaborators_Handler,
+		},
+		{
+			MethodName: "PostEventBlock",
+			Handler:    _Events_PostEventBlock_Handler,
+		},
+		{
+			MethodName: "GetEventBlocks",
+			Handler:    _Events_GetEventBlocks_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
