@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: eduplay-event
+  namespace: eduplay
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: eduplay-event
+  template:
+    metadata:
+      labels:
+        app: eduplay-event
+    spec:
+      containers:
+        - name: event
+          image: cactus91869/eduplay-event:sha-<shortsha>
+          ports:
+            - containerPort: 35002
+          env:
+            - name: CONFIG_PATH
+              value: "/config/config.yaml"

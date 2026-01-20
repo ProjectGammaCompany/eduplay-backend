@@ -8,7 +8,7 @@ import (
 )
 
 func (a *UseCase) SaveFile(ctx context.Context, in *dto.SaveFileIn) (string, error) {
-	const op = "sign_up_user.UseCase.SaveFile"
+	const op = "Events.UseCase.SaveFile"
 
 	log := a.log.With(
 		slog.String("op", op),
