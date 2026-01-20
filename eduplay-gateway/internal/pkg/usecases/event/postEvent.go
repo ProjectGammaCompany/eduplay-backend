@@ -13,13 +13,13 @@ func (s *UseCase) PostEvent(ctx context.Context, req *eventModel.PostEventIn) (s
 
 	eventDto, err := eventModel.PostEventInToDto(req)
 	if err != nil {
-		s.log.With(slog.String("op", op)).Error("failed to convert event to dto", err.Error())
+		s.log.With(slog.String("op", op)).Error("failed to convert event to dto", slog.String("error", err.Error()))
 		return "", err
 	}
 
 	ret, err := s.eventClient.PostEvent(ctx, eventDto)
 	if err != nil {
-		s.log.With(slog.String("op", op)).Error("failed to post event", err.Error())
+		s.log.With(slog.String("op", op)).Error("failed to post event", slog.String("error", err.Error()))
 		return "", err
 	}
 

@@ -16,19 +16,19 @@ func (s *UseCase) GetEventSettings(ctx context.Context, req *eventModel.Id) (*ev
 
 	eventInfo, err := s.eventClient.GetEvent(ctx, eventId)
 	if err != nil {
-		s.log.With(slog.String("op", op)).Error("failed to get event", err.Error())
+		s.log.With(slog.String("op", op)).Error("failed to get event for event settings", slog.String("error", err.Error()))
 		return nil, err
 	}
 
 	groups, err := s.eventClient.GetGroups(ctx, eventId)
 	if err != nil {
-		s.log.With(slog.String("op", op)).Error("failed to get groups", err.Error())
+		s.log.With(slog.String("op", op)).Error("failed to get groups", slog.String("error", err.Error()))
 		return nil, err
 	}
 
 	collaborators, err := s.eventClient.GetCollaborators(ctx, eventId)
 	if err != nil {
-		s.log.With(slog.String("op", op)).Error("failed to get collaborators", err.Error())
+		s.log.With(slog.String("op", op)).Error("failed to get collaborators", slog.String("error", err.Error()))
 		return nil, err
 	}
 

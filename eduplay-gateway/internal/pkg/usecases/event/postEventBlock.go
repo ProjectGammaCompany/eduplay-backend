@@ -15,7 +15,7 @@ func (s *UseCase) PostEventBlock(ctx context.Context, req *eventModel.PostEventB
 
 	ret, err := s.eventClient.PostEventBlock(ctx, blockDto)
 	if err != nil {
-		s.log.With(slog.String("op", op)).Error("failed to post event block", err.Error())
+		s.log.With(slog.String("op", op)).Error("failed to post event block", slog.String("error", err.Error()))
 		return "", err
 	}
 

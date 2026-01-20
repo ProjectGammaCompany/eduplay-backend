@@ -13,7 +13,7 @@ func (s *UseCase) GetPublicEvents(ctx context.Context, filters *eventModel.Event
 
 	events, err := s.eventClient.GetPublicEvents(ctx, eventModel.EventBaseFiltersToDto(filters))
 	if err != nil {
-		s.log.With(slog.String("op", op)).Error("failed to get public events", err.Error())
+		s.log.With(slog.String("op", op)).Error("failed to get public events", slog.String("error", err.Error()))
 		return nil, err
 	}
 

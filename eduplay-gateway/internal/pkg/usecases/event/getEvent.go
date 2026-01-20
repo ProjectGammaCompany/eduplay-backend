@@ -14,7 +14,7 @@ func (s *UseCase) GetEvent(ctx context.Context, req *eventModel.Id) (*eventModel
 
 	ret, err := s.eventClient.GetEvent(ctx, &eventDto.Id{Id: req.Id})
 	if err != nil {
-		s.log.With(slog.String("op", op)).Error("failed to get event", err.Error())
+		s.log.With(slog.String("op", op)).Error("failed to get event", slog.String("error", err.Error()))
 		return nil, err
 	}
 

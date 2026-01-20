@@ -14,7 +14,7 @@ func (s *UseCase) GetEventBlocks(ctx context.Context, req *eventModel.Id) (*even
 
 	ret, err := s.eventClient.GetEventBlocks(ctx, &eventDto.Id{Id: req.Id})
 	if err != nil {
-		s.log.With(slog.String("op", op)).Error("failed to get event", err.Error())
+		s.log.With(slog.String("op", op)).Error("failed to get event blocks", slog.String("error", err.Error()))
 		return nil, err
 	}
 

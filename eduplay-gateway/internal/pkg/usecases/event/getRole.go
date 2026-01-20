@@ -13,7 +13,7 @@ func (s *UseCase) GetRole(ctx context.Context, userId string, eventId string) (i
 
 	ret, err := s.eventClient.GetRole(ctx, &eventDto.GetRoleIn{UserId: userId, EventId: eventId})
 	if err != nil {
-		s.log.With(slog.String("op", op)).Error("failed to get role", err.Error())
+		s.log.With(slog.String("op", op)).Error("failed to get role", slog.String("error", err.Error()))
 		return 0, err
 	}
 

@@ -13,7 +13,7 @@ func (s *UseCase) GetUserFavorites(ctx context.Context, filters *eventModel.Even
 
 	events, err := s.eventClient.GetUserFavorites(ctx, eventModel.EventBaseFiltersToDto(filters))
 	if err != nil {
-		s.log.With(slog.String("op", op)).Error("failed to get user favorites", err.Error())
+		s.log.With(slog.String("op", op)).Error("failed to get user favorites", slog.String("error", err.Error()))
 		return nil, err
 	}
 
