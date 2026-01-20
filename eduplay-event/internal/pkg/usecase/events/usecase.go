@@ -17,6 +17,8 @@ type storage interface {
 	GetCollaborators(ctx context.Context, eventId string) (*dto.GetCollaboratorsOut, error)
 	PostEventBlock(ctx context.Context, in *dto.PostEventBlockIn) (string, error)
 	GetEventBlocks(ctx context.Context, eventId string) (*dto.GetEventBlocksOut, error)
+	GetPublicEvents(ctx context.Context, in *dto.EventBaseFilters) (*dto.GetPublicEventsOut, error)
+	GetUserFavorites(ctx context.Context, in *dto.EventBaseFilters) (*dto.GetPublicEventsOut, error)
 }
 
 type UseCase struct {

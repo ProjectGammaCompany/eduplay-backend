@@ -131,6 +131,26 @@ func (cl *Client) GetEventBlocks(ctx context.Context, in *events.Id) (*events.Ge
 	return out, nil
 }
 
+func (cl *Client) GetPublicEvents(ctx context.Context, in *events.EventBaseFilters) (*events.GetPublicEventsOut, error) {
+	op := "GetPublicEvents.Client"
+	out, err := cl.api.GetPublicEvents(ctx, in)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return out, nil
+}
+
+func (cl *Client) GetUserFavorites(ctx context.Context, in *events.EventBaseFilters) (*events.GetPublicEventsOut, error) {
+	op := "GetUserFavorites.Client"
+	out, err := cl.api.GetUserFavorites(ctx, in)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return out, nil
+}
+
 func InterceptorLogger(l *slog.Logger) interlog.Logger {
 	return interlog.LoggerFunc(func(ctx context.Context, lvl interlog.Level, msg string, fields ...any) {
 		l.Log(ctx, slog.Level(lvl), msg, fields...)

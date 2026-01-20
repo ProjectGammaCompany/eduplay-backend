@@ -23,12 +23,13 @@ jobs:
       run: |
         sed -i "s#image: cactus91869/eduplay-gateway:.*#image: cactus91869/eduplay-gateway:sha-${{ steps.vars.outputs.sha }}#g" k8s/app/eduplay-gateway/deployment.yaml
         sed -i "s#image: cactus91869/eduplay-user:.*#image: cactus91869/eduplay-user:sha-${{ steps.vars.outputs.sha }}#g" k8s/app/eduplay-user/deployment.yaml
+        sed -i "s#image: cactus91869/eduplay-event:.*#image: cactus91869/eduplay-event:sha-${{ steps.vars.outputs.sha }}#g" k8s/app/eduplay-event/deployment.yaml
 
     - name: Commit & push
       run: |
         git config user.name "github-actions"
         git config user.email "github-actions@users.noreply.github.com"
-        git add k8s/app/eduplay-gateway/deployment.yaml k8s/app/eduplay-user/deployment.yaml
+        git add k8s/app/eduplay-gateway/deployment.yaml k8s/app/eduplay-user/deployment.yaml k8s/app/eduplay-event/deployment.yaml
         git commit -m "deploy: sha-${{ steps.vars.outputs.sha }}" || exit 0
         git push
 
@@ -37,7 +38,7 @@ jobs:
 
     strategy:
       matrix:
-        service: [ "eduplay-gateway", "eduplay-user" ]
+        service: [ "eduplay-gateway", "eduplay-user", "eduplay-event" ]
 
     steps:
       - uses: actions/checkout@v4

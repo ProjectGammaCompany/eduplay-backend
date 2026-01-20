@@ -288,7 +288,7 @@ func (s *Storage) GetEventBlocks(ctx context.Context, eventId string) (*dto.GetE
 func (s *Storage) GetBlockConditions(ctx context.Context, blockId string) ([]*dto.Condition, error) {
 	const op = "storage.postgres.GetBlockConditions"
 
-	state := `SELECT prevBlockId, nextBlockId, group, min, max FROM conditions WHERE prevBlockId = $1 OR nextBlockId = $1;`
+	state := `SELECT prevBlockId, nextBlockId, groupName, min, max FROM conditions WHERE prevBlockId = $1 OR nextBlockId = $1;`
 
 	res, err := s.db.Query(ctx, state, blockId)
 	if err != nil {
@@ -313,4 +313,161 @@ func (s *Storage) GetBlockConditions(ctx context.Context, blockId string) ([]*dt
 	}
 
 	return conditions, nil
+}
+
+func (s *Storage) GetPublicEvents(ctx context.Context, in *dto.EventBaseFilters) (*dto.GetPublicEventsOut, error) {
+	const op = "storage.postgres.GetPublicEvents"
+
+	state := `SELECT 
+    e.eventId,
+    e.title, 
+    e.description,
+    e.cover,
+    e.lastEditionDate,
+    e.tags,
+    COALESCE(AVG(r.rating), 0) as rate,
+    EXISTS (
+        SELECT 1 
+        FROM userFavorites 
+        WHERE userId = $3 AND eventId = e.eventId
+    ) as favorite
+FROM events AS e
+LEFT JOIN ratings r ON e.eventId = r.eventId  
+WHERE e.private = false
+GROUP BY e.eventId  
+ORDER BY e.lastEditionDate DESC  
+LIMIT $1 
+OFFSET $2;`
+
+	res, err := s.db.Query(ctx, state, in.MaxOnPage, (in.Page-1)*in.MaxOnPage, in.UserId)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	events := &dto.GetPublicEventsOut{}
+
+	for res.Next() {
+		var event dto.GetPublicEvent
+		var lastEditionDate time.Time
+		err = res.Scan(&event.EventId, &event.Title, &event.Description, &event.Cover, &lastEditionDate, &event.Tags, &event.Rate, &event.Favorite)
+		if err != nil {
+			return nil, fmt.Errorf("%s: %w", op, err)
+		}
+		event.LastEditionDate = timestamppb.New(lastEditionDate)
+		events.Events = append(events.Events, &event)
+	}
+
+	return events, nil
+
+	// 	state := `SELECT
+	//     e.eventId as id,
+	//     e.title,
+	//     e.description,
+	//     e.cover,
+	//     e.lastEditionDate,
+	//     COALESCE(AVG(r.rating), 0) as rate,
+	//     -- Проверяем, есть ли событие в избранном у пользователя
+	//    	CASE
+	//             WHEN $6::uuid IS NULL THEN false
+	//             ELSE EXISTS(
+	//                 SELECT 1 FROM userFavorites uf
+	//                 WHERE uf.eventId = e.eventId AND uf.userId = $6::uuid
+	//             )
+	//         END as favorite,
+	//     e.tags
+	// FROM events e
+	// LEFT JOIN ratings r ON e.eventId = r.eventId
+	// WHERE
+	//     e.private = false
+	//     AND (
+	//         $4 = false
+	//         OR (
+	//             e.startDate < NOW()
+	//             AND (e.endDate IS NULL OR e.endDate > NOW())
+	//         )
+	//     )
+	//     AND (
+	//         $5::text[] IS NULL
+	//         OR cardinality($5::text[]) = 0
+	//         OR e.tags && $5::text[]
+	//     )
+	// GROUP BY e.eventId
+	// ORDER BY
+	//     CASE
+	//         WHEN $3 = true THEN -COALESCE(AVG(r.rating), 0)
+	//         ELSE 1
+	//     END,
+	//     e.lastEditionDate DESC
+	// LIMIT $2
+	// OFFSET (($1 - 1) * $2);`
+
+	// 	emptyTags := []string{}
+
+	// 	res, err := s.db.Query(ctx, state, in.Page, in.MaxOnPage, in.DecliningRating, in.Active, emptyTags, in.UserId)
+	// 	if err != nil {
+	// 		return nil, fmt.Errorf("%s: %w", op, err)
+	// 	}
+	// 	fmt.Println(state, in.Page, in.MaxOnPage, in.DecliningRating, in.Active, emptyTags, in.UserId)
+	// 	events := &dto.GetPublicEventsOut{}
+
+	// 	for res.Next() {
+	// 		fmt.Println("trying to get row")
+	// 		var event *dto.GetPublicEvent
+	// 		var lastEd time.Time
+	// 		err = res.Scan(&event.EventId, &event.Title, &event.Description, &event.Cover, &lastEd, &event.Rate, &event.Favorite, &event.Tags)
+	// 		if err != nil {
+	// 			return nil, fmt.Errorf("%s: %w", op, err)
+	// 		}
+	// 		fmt.Println("got one row")
+	// 		event.LastEditionDate = timestamppb.New(lastEd)
+	// 		events.Events = append(events.Events, event)
+	// 	}
+
+	// 	return events, nil
+}
+
+func (s *Storage) GetUserFavorites(ctx context.Context, in *dto.EventBaseFilters) (*dto.GetPublicEventsOut, error) {
+	const op = "storage.postgres.GetUserFavorites"
+
+	state := `SELECT 
+    e.eventId,
+    e.title, 
+    e.description,
+    e.cover,
+    e.lastEditionDate,
+    e.tags,
+    COALESCE(AVG(r.rating), 0) as rate,
+    true as favorite
+FROM events AS e
+LEFT JOIN ratings r ON e.eventId = r.eventId
+WHERE e.private = false
+AND EXISTS (
+    SELECT 1 
+    FROM userFavorites 
+    WHERE userId = $3 AND eventId = e.eventId
+)
+GROUP BY e.eventId
+ORDER BY e.lastEditionDate DESC
+LIMIT $1 
+OFFSET $2;`
+
+	res, err := s.db.Query(ctx, state, in.MaxOnPage, (in.Page-1)*in.MaxOnPage, in.UserId)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	events := &dto.GetPublicEventsOut{}
+
+	for res.Next() {
+		var event dto.GetPublicEvent
+		var lastEd time.Time
+		err = res.Scan(&event.EventId, &event.Title, &event.Description, &event.Cover, &lastEd, &event.Tags, &event.Rate, &event.Favorite)
+		if err != nil {
+			return nil, fmt.Errorf("%s: %w", op, err)
+		}
+		event.LastEditionDate = timestamppb.New(lastEd)
+		events.Events = append(events.Events, &event)
+	}
+
+	return events, nil
 }

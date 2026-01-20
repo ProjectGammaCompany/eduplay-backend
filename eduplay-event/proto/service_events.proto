@@ -15,6 +15,8 @@ service Events {
     rpc GetCollaborators (Id) returns (GetCollaboratorsOut);
     rpc PostEventBlock (PostEventBlockIn) returns (MessageOut);
     rpc GetEventBlocks (Id) returns (GetEventBlocksOut);
+    rpc GetPublicEvents (EventBaseFilters) returns (GetPublicEventsOut);
+    rpc GetUserFavorites (EventBaseFilters) returns (GetPublicEventsOut);
 }
 
 message Id {
@@ -98,4 +100,30 @@ message BlockInfo {
 
 message GetEventBlocksOut {
     repeated BlockInfo blocks = 1;
+}
+
+message EventBaseFilters {
+    int64 page = 1;
+    int64 maxOnPage = 2;
+    string userId = 3;
+    // repeated string tags = 3;
+    // bool decliningRating = 4;
+    // bool territorialized = 5;
+    // bool active = 6;
+    // string userId = 7;
+}
+
+message GetPublicEvent {
+    string eventId = 1;
+    string title = 2;
+    string description = 3;
+    repeated string tags = 4;
+    string cover = 5;
+    optional google.protobuf.Timestamp lastEditionDate = 6;
+    int64 rate = 7;
+    bool favorite = 8;
+}
+
+message GetPublicEventsOut {
+    repeated GetPublicEvent events = 1;
 }

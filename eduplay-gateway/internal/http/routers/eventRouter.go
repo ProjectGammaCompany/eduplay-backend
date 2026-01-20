@@ -7,6 +7,8 @@ import (
 	"eduplay-gateway/internal/http/handlers/event/getEventBlocks"
 	"eduplay-gateway/internal/http/handlers/event/getEventRole"
 	"eduplay-gateway/internal/http/handlers/event/getEventSettings"
+	"eduplay-gateway/internal/http/handlers/event/getPublicEvents"
+	"eduplay-gateway/internal/http/handlers/event/getUserFavorites"
 	"eduplay-gateway/internal/http/handlers/event/postEvent"
 	"eduplay-gateway/internal/http/handlers/event/postEventBlock"
 	"eduplay-gateway/internal/http/handlers/file/postFile"
@@ -31,6 +33,8 @@ func EventRouter(router chi.Router, log *slog.Logger, cfg *config.Config) chi.Ro
 
 	router.Route("/", func(r chi.Router) {
 		r.Post("/file", postFile.New(log, events.New(log, eventClient)))
+		r.Get("/events", getPublicEvents.New(log, events.New(log, eventClient)))
+		r.Get("/events/personal/favorites", getUserFavorites.New(log, events.New(log, eventClient)))
 	})
 
 	router.Route("/event", func(r chi.Router) {
@@ -40,7 +44,6 @@ func EventRouter(router chi.Router, log *slog.Logger, cfg *config.Config) chi.Ro
 		r.Get("/{eventId}/settings", getEventSettings.New(log, events.New(log, eventClient)))
 		r.Post("/{eventId}/block", postEventBlock.New(log, events.New(log, eventClient)))
 		r.Get("/{eventId}", getEventBlocks.New(log, events.New(log, eventClient))) // TODO check
-
 	})
 	return router
 }

@@ -19,6 +19,8 @@ type UseCase interface {
 	GetCollaborators(ctx context.Context, in *dto.Id) (*dto.GetCollaboratorsOut, error)
 	PostEventBlock(ctx context.Context, in *dto.PostEventBlockIn) (string, error)
 	GetEventBlocks(ctx context.Context, in *dto.Id) (*dto.GetEventBlocksOut, error)
+	GetPublicEvents(ctx context.Context, in *dto.EventBaseFilters) (*dto.GetPublicEventsOut, error)
+	GetUserFavorites(ctx context.Context, in *dto.EventBaseFilters) (*dto.GetPublicEventsOut, error)
 }
 
 type Handler struct {
@@ -116,4 +118,26 @@ func (h *Handler) GetEventBlocks(ctx context.Context, in *dto.Id) (*dto.GetEvent
 	}
 
 	return blocks, nil
+}
+
+func (h *Handler) GetPublicEvents(ctx context.Context, in *dto.EventBaseFilters) (*dto.GetPublicEventsOut, error) {
+	op := "GetPublicEvents.Handler"
+
+	events, err := h.uc.GetPublicEvents(ctx, in)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return events, nil
+}
+
+func (h *Handler) GetUserFavorites(ctx context.Context, in *dto.EventBaseFilters) (*dto.GetPublicEventsOut, error) {
+	op := "GetUserFavorites.Handler"
+
+	events, err := h.uc.GetUserFavorites(ctx, in)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return events, nil
 }

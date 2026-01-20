@@ -72,4 +72,19 @@ CREATE TABLE groups (
     FOREIGN KEY (eventId) REFERENCES events(eventId) ON DELETE CASCADE
 )
 
-ALTER TABLE events ADD COLUMN lastEditionDate TIMESTAMP
+CREATE TABLE ratings (
+    ratingId uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    userId uuid NOT NULL,
+    eventId uuid NOT NULL,
+    rating INTEGER NOT NULL DEFAULT 0,
+    FOREIGN KEY (userId) REFERENCES users(userid) ON DELETE CASCADE,
+    FOREIGN KEY (eventId) REFERENCES events(eventId) ON DELETE CASCADE
+)
+
+CREATE TABLE userFavorites (
+    favoriteId uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    userId uuid NOT NULL,
+    eventId uuid NOT NULL,
+    FOREIGN KEY (userId) REFERENCES users(userid) ON DELETE CASCADE,
+    FOREIGN KEY (eventId) REFERENCES events(eventId) ON DELETE CASCADE
+)
