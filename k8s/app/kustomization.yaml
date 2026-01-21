@@ -4,3 +4,5 @@ resources:
   - eduplay-gateway/service.yaml
   - eduplay-user/deployment.yaml
   - eduplay-user/service.yaml
+  - eduplay-event/deployment.yaml
+  - eduplay-event/service.yaml
