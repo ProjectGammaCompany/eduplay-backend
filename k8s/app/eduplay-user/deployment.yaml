@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: user
-          image: cactus91869/eduplay-user:sha-<shortsha>
+          image: cactus91869/eduplay-user
           ports:
             - containerPort: 35001
           env:

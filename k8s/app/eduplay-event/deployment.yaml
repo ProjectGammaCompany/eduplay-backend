@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: event
-          image: cactus91869/eduplay-event:sha-<shortsha>
+          image: cactus91869/eduplay-event
           ports:
             - containerPort: 35002
           env:

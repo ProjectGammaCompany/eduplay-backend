@@ -6,3 +6,11 @@ resources:
   - eduplay-user/service.yaml
   - eduplay-event/deployment.yaml
   - eduplay-event/service.yaml
+
+images:
+  - name: cactus91869/eduplay-gateway
+    newTag: sha-ABCDEF1
+  - name: cactus91869/eduplay-user
+    newTag: sha-ABCDEF1
+  - name: cactus91869/eduplay-event
+    newTag: sha-ABCDEF1
