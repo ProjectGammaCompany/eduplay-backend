@@ -29,8 +29,8 @@ func UserRouter(router chi.Router, log *slog.Logger, cfg *config.Config) chi.Rou
 	}
 
 	router.Route("/auth", func(r chi.Router) {
-		r.Post("/signUp", signUp.New(log, users.New(log, userClient)))
-		r.Post("/signIn", signIn.New(log, users.New(log, userClient)))
+		r.Post("/register", signUp.New(log, users.New(log, userClient)))
+		r.Post("/login", signIn.New(log, users.New(log, userClient)))
 		r.Post("/refresh", refresh.New(log, users.New(log, userClient)))
 		// r.Get("/userData", getUserData.New(log, users.New(log, userClient)))
 		// r.Put("/userData", updateUserData.New(log, users.New(log, userClient)))

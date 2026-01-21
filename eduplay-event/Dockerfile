@@ -9,7 +9,7 @@
 # CMD ["./server"]
 
 # Stage 1 — Build
-FROM golang:1.23 AS build
+FROM golang:1.24 AS build
 WORKDIR /app
 
 # Скопировать go.mod и go.sum для кешируемой установки зависимостей
