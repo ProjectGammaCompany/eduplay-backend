@@ -18,7 +18,7 @@ import (
 )
 
 type UseCase interface {
-	GetEvent(ctx context.Context, pd *eventModel.Id) (*eventModel.PostEventIn, error)
+	GetRole(ctx context.Context, userId string, eventId string) (int64, error)
 	PostEventBlock(ctx context.Context, pd *eventModel.PostEventBlockIn) (string, error)
 }
 
@@ -102,7 +102,7 @@ func New(log *slog.Logger, uc UseCase) http.HandlerFunc {
 			return
 		}
 
-		event, err := uc.GetEvent(request.Context(), &eventModel.Id{Id: eventId})
+		role, err := uc.GetRole(request.Context(), accessClaims.ID, eventId)
 		if err != nil {
 			log.Error(err.Error(), slog.String("error", err.Error()))
 			writer.WriteHeader(http.StatusInternalServerError)
@@ -110,10 +110,10 @@ func New(log *slog.Logger, uc UseCase) http.HandlerFunc {
 			return
 		}
 
-		if event.OwnerId != accessClaims.ID {
-			log.Error("user not authorized")
-			writer.WriteHeader(http.StatusUnauthorized)
-			render.JSON(writer, request, lib.Error("user not authorized"))
+		if role != 1 {
+			log.Error("forbidden action")
+			writer.WriteHeader(http.StatusForbidden)
+			render.JSON(writer, request, lib.Error("user is forbidden to perform this action"))
 			return
 		}
 
@@ -129,6 +129,6 @@ func New(log *slog.Logger, uc UseCase) http.HandlerFunc {
 		}
 
 		writer.WriteHeader(http.StatusOK)
-		render.JSON(writer, request, map[string]string{"eventId": id})
+		render.JSON(writer, request, map[string]string{"blockId": id})
 	}
 }

@@ -24,6 +24,7 @@ type UseCase interface {
 	ChangeUserPassword(ctx context.Context, in *dto.ChangePasswordIn) error
 	DeleteUserAccount(ctx context.Context, accessToken string) error
 	SignOutUser(ctx context.Context, accessToken string) error
+	GetProfile(ctx context.Context, userId string) (*dto.Profile, error)
 }
 
 type Handler struct {
@@ -187,4 +188,15 @@ func (h *Handler) SignOut(ctx context.Context, in *dto.DeleteAccountIn) (*dto.Em
 	}
 
 	return &dto.Empty{}, nil
+}
+
+func (h *Handler) GetProfile(ctx context.Context, in *dto.Id) (*dto.Profile, error) {
+	op := "GetProfile.Handler"
+
+	profile, err := h.uc.GetProfile(ctx, in.Id)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return profile, nil
 }

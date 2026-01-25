@@ -25,7 +25,9 @@ CREATE TABLE userLinks (
     isParticipant BOOLEAN DEFAULT true,
     currTaskId uuid DEFAULT NULL, 
     currBlockId uuid DEFAULT NULL,
+    currTaskStartTime TIMESTAMP NOT NULL,
+    finished BOOLEAN DEFAULT false,
     FOREIGN KEY (eventId) REFERENCES events(eventId) ON DELETE CASCADE,
-    FOREIGN KEY (userId) REFERENCES users(userid) ON DELETE CASCADE, 
+    FOREIGN KEY (userId) REFERENCES users(userid) ON DELETE CASCADE,
     FOREIGN KEY (currTaskId) REFERENCES tasks(taskId) ON DELETE CASCADE
 );

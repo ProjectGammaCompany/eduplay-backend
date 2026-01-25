@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package content; 
+package user_data; 
 
 option go_package = "eduplay-user.v1";
 
@@ -14,6 +14,13 @@ service Users {
     rpc ChangePassword(ChangePasswordIn) returns (Empty);
     rpc DeleteAccount(DeleteAccountIn) returns (Empty);
     rpc SignOut (DeleteAccountIn) returns (Empty);
+    rpc GetProfile (Id) returns (Profile);
+}
+
+message Empty{}
+
+message Id {
+    string id = 1;
 }
 
 message SignUpIn {
@@ -42,7 +49,7 @@ message SignInIn {
 message SignUpOut {
     string accessToken = 1;
     string refreshToken = 2;
-    // string errorMessage = 3;
+    string errorMessage = 3;
     // Role role = 3; 
     // int64 accessLevel = 4;
     // string errorMessage = 5;
@@ -107,4 +114,7 @@ message DeleteAccountIn {
     string accessToken = 1;
 }
 
-message Empty{}
+message Profile {
+    string email = 1;
+    string avatar = 2;
+}

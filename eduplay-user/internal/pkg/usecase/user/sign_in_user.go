@@ -29,11 +29,11 @@ func (a *UseCase) SignInUser(ctx context.Context, in *dto.SignInIn) (*model.Sess
 		return nil, errors.ErrIncorrectPassword
 	}
 
-	session, err := a.storage.GetSessionByUserId(ctx, currUser.Id)
+	// session, err := a.storage.GetSessionByUserId(ctx, currUser.Id)
 
-	if session.IsActive {
-		return nil, errors.ErrIsActive
-	}
+	// if session.IsActive {
+	// 	return nil, errors.ErrIsActive
+	// }
 	if err != nil {
 		return nil, err
 	}
@@ -53,7 +53,7 @@ func (a *UseCase) SignInUser(ctx context.Context, in *dto.SignInIn) (*model.Sess
 		return nil, err
 	}
 
-	session, err = a.storage.GetSessionByUserId(ctx, currUser.Id)
+	session, err := a.storage.GetSessionByUserId(ctx, currUser.Id)
 	if err != nil {
 		return nil, err
 	}

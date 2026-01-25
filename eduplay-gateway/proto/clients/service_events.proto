@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package content; 
+package event_data; 
 
 import "google/protobuf/timestamp.proto";
 
@@ -17,14 +17,57 @@ service Events {
     rpc GetEventBlocks (Id) returns (GetEventBlocksOut);
     rpc GetPublicEvents (EventBaseFilters) returns (GetPublicEventsOut);
     rpc GetUserFavorites (EventBaseFilters) returns (GetPublicEventsOut);
+    rpc GetOwnedEvents (EventBaseFilters) returns (GetPublicEventsOut);
+    rpc GetHistory (EventBaseFilters) returns (GetPublicEventsOut);
+    rpc PutFavorite (PutFavoriteIn) returns (MessageOut);
+    rpc GetAllTags (Empty) returns (Tags);
+    rpc PostTask (Task) returns (MessageOut);
+    rpc PostBlockCondition (Condition) returns (PostConditionOut);
+    rpc DeleteBlockCondition (Id) returns (MessageOut);
+    rpc GetBlockInfo (Id) returns (PostEventBlockIn);
+    rpc GetBlockConditions (Id) returns (BlockInfo);
+    rpc GetBlockTasks(Id) returns (Tasks);
+    rpc GetTaskById(Id) returns (Task);
+    rpc DeleteTask(Id) returns (MessageOut);
+    rpc DeleteBlockById(Id) returns (MessageOut);
+    rpc DeleteEventById(Id) returns (MessageOut);
+    rpc PostAnswer(Answer) returns (Answer); 
+    rpc GetEventForUser(UserEventIds) returns (GetPublicEvent);
+    rpc PutNextStage(EventBlockTaskUserIds) returns (MessageOut);
+    rpc GetNextStage(UserEventIds) returns (NextStageInfo);
+    rpc PutTimestamp(PutTimestampIn) returns (MessageOut);
 }
+
+message Empty {}
 
 message Id {
     string id = 1;
 }
 
+message UserEventIds {
+    string userId = 1; 
+    string eventId = 2; 
+}
+
+message EventBlockTaskUserIds {
+    string userId = 1;
+    string taskId = 2;
+    string blockId = 3;
+    string eventId = 4;
+    bool finished = 5; 
+}
+
 message MessageOut {
     string message = 1;
+}
+
+message Tag {
+    string id = 1; 
+    string name = 2; 
+}
+
+message Tags {
+    repeated Tag tags = 1;
 }
 
 message SaveFileIn {
@@ -62,6 +105,7 @@ message GetGroupsOut {
 message Group {
     string login = 1;
     string password = 2; 
+    string id = 3; 
 }
 
 message GetCollaboratorsOut {
@@ -80,6 +124,8 @@ message PostEventBlockIn {
     string name = 3; 
     int64 order = 4; 
     bool isParallel = 5; 
+    bool showPoints = 6; 
+    bool showAnswers = 7;
 }
 
 message Condition {
@@ -88,6 +134,8 @@ message Condition {
     repeated string groupIds = 3; 
     int64 min = 4; 
     int64 max = 5; 
+    string conditionId = 6;
+    int64 nextBlockOrder = 7;
 }
 
 message BlockInfo {
@@ -117,13 +165,102 @@ message GetPublicEvent {
     string eventId = 1;
     string title = 2;
     string description = 3;
-    repeated string tags = 4;
+    repeated Tag tags = 4;
     string cover = 5;
     optional google.protobuf.Timestamp lastEditionDate = 6;
     int64 rate = 7;
     bool favorite = 8;
+    string status = 9;
 }
 
 message GetPublicEventsOut {
     repeated GetPublicEvent events = 1;
+}
+
+message PutFavoriteIn {
+    string userId = 1;
+    string eventId = 2;
+    bool favorite = 3;
+}
+
+message TaskOption {
+    string optionId = 1;
+    string value = 2;
+    bool isCorrect = 3;
+}
+
+message TaskOptions {
+    repeated TaskOption options = 1;
+}
+
+message Task {
+    string taskId = 1;
+    string name = 2;
+    string description = 3;
+    int64 type = 4;
+    repeated TaskOption options = 5;
+    repeated string files = 6;
+    int64 points = 7;
+    int64 time = 8;
+    bool partialPoints = 9;
+    string blockId = 10;
+    int64 order = 11;
+}
+
+message Tasks {
+    repeated Task tasks = 1;
+}
+
+message PostConditionOut {
+    int64 blockOrder = 1;
+    string conditionId = 2;
+}
+
+message Answer {
+    string taskId = 1;
+    string userId = 2;
+    repeated string answer = 3;
+    int64 points = 4;
+    string status = 5; 
+    repeated string rightAnswer = 6;
+}
+
+message NextStageInfo {
+    string type = 1; 
+    NextStageTask task = 2;
+    NextStageBlock block = 3;
+}
+
+message NextStageTask {
+    string taskId = 1;
+    string blockId = 2; 
+    string name = 3;
+    string description = 4; 
+    int64 type = 5; 
+    repeated TaskOption options = 6;
+    repeated string files = 7;
+    int64 time = 9;
+    google.protobuf.Timestamp timestamp = 10;
+}
+
+message NextStageBlock {
+    string blockId = 1;
+    string name = 2; 
+    int64 order = 3; 
+    bool isParallel = 4;
+    repeated Condition conditions = 5;
+    repeated NextStageTaskShort tasks = 6;
+}
+
+message NextStageTaskShort {
+    string taskId = 1;
+    string name = 2;
+    int64 time = 3;
+    bool isCompleted = 4; 
+}
+
+message PutTimestampIn {
+    string userId = 1;
+    string eventId = 2; 
+    google.protobuf.Timestamp timestamp = 3;
 }

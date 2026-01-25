@@ -6,6 +6,8 @@ import (
 
 	// "eduplay-event/internal/model"
 	dto "eduplay-event/internal/generated"
+
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 type storage interface {
@@ -19,6 +21,27 @@ type storage interface {
 	GetEventBlocks(ctx context.Context, eventId string) (*dto.GetEventBlocksOut, error)
 	GetPublicEvents(ctx context.Context, in *dto.EventBaseFilters) (*dto.GetPublicEventsOut, error)
 	GetUserFavorites(ctx context.Context, in *dto.EventBaseFilters) (*dto.GetPublicEventsOut, error)
+	GetOwnedEvents(ctx context.Context, in *dto.EventBaseFilters) (*dto.GetPublicEventsOut, error)
+	GetHistory(ctx context.Context, in *dto.EventBaseFilters) (*dto.GetPublicEventsOut, error)
+	PutFavorite(ctx context.Context, in *dto.PutFavoriteIn) (string, error)
+	GetAllTags(ctx context.Context) (*dto.Tags, error)
+	PostTask(ctx context.Context, in *dto.Task) (string, error)
+	PostBlockCondition(ctx context.Context, in *dto.Condition) (*dto.PostConditionOut, error)
+	DeleteBlockCondition(ctx context.Context, conditionId string) (string, error)
+	GetBlockInfo(ctx context.Context, id string) (*dto.PostEventBlockIn, error)
+	GetBlockConditionsFull(ctx context.Context, id string) (*dto.BlockInfo, error)
+	GetBlockTasks(ctx context.Context, blockId string) (*dto.Tasks, error)
+	GetTaskById(ctx context.Context, taskId string) (*dto.Task, error)
+	DeleteTaskById(ctx context.Context, taskId string) (string, error)
+	DeleteEventBlock(ctx context.Context, blockId string) (string, error)
+	DeleteEvent(ctx context.Context, eventId string) (string, error)
+	PostAnswer(ctx context.Context, answer *dto.Answer) (string, error)
+	GetPublicEvent(ctx context.Context, ids *dto.UserEventIds) (*dto.GetPublicEvent, error)
+	GetNextStage(ctx context.Context, stage *dto.UserEventIds) (linkId string, currTaskId string, currBlockId string, finished bool, startTime *timestamppb.Timestamp, err error)
+	PutNextStage(ctx context.Context, stage *dto.EventBlockTaskUserIds) (string, error)
+	PutTimestamp(ctx context.Context, userId string, eventId string, timestamp *timestamppb.Timestamp) (string, error)
+	EndMe(ctx context.Context, userId string, eventId string) (string, error)
+	GetUserBlockPointsSum(ctx context.Context, userId string, blockId string) (int64, error)
 }
 
 type UseCase struct {

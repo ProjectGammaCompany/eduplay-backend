@@ -17,7 +17,7 @@ func (s *UseCase) GetUserFavorites(ctx context.Context, filters *eventModel.Even
 		return nil, err
 	}
 
-	s.log.With(slog.String("op", op)).Info("got use favorites", slog.Any("event", len(events.Events)))
+	s.log.With(slog.String("op", op)).Info("got user favorites", slog.Any("event", len(events.Events)))
 
 	return eventModel.GetPublicEventsOutFromDto(events), nil
 }

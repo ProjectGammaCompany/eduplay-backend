@@ -19,16 +19,35 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	Events_SaveFile_FullMethodName         = "/content.Events/SaveFile"
-	Events_PostEvent_FullMethodName        = "/content.Events/PostEvent"
-	Events_GetEvent_FullMethodName         = "/content.Events/GetEvent"
-	Events_GetRole_FullMethodName          = "/content.Events/GetRole"
-	Events_GetGroups_FullMethodName        = "/content.Events/GetGroups"
-	Events_GetCollaborators_FullMethodName = "/content.Events/GetCollaborators"
-	Events_PostEventBlock_FullMethodName   = "/content.Events/PostEventBlock"
-	Events_GetEventBlocks_FullMethodName   = "/content.Events/GetEventBlocks"
-	Events_GetPublicEvents_FullMethodName  = "/content.Events/GetPublicEvents"
-	Events_GetUserFavorites_FullMethodName = "/content.Events/GetUserFavorites"
+	Events_SaveFile_FullMethodName             = "/event_data.Events/SaveFile"
+	Events_PostEvent_FullMethodName            = "/event_data.Events/PostEvent"
+	Events_GetEvent_FullMethodName             = "/event_data.Events/GetEvent"
+	Events_GetRole_FullMethodName              = "/event_data.Events/GetRole"
+	Events_GetGroups_FullMethodName            = "/event_data.Events/GetGroups"
+	Events_GetCollaborators_FullMethodName     = "/event_data.Events/GetCollaborators"
+	Events_PostEventBlock_FullMethodName       = "/event_data.Events/PostEventBlock"
+	Events_GetEventBlocks_FullMethodName       = "/event_data.Events/GetEventBlocks"
+	Events_GetPublicEvents_FullMethodName      = "/event_data.Events/GetPublicEvents"
+	Events_GetUserFavorites_FullMethodName     = "/event_data.Events/GetUserFavorites"
+	Events_GetOwnedEvents_FullMethodName       = "/event_data.Events/GetOwnedEvents"
+	Events_GetHistory_FullMethodName           = "/event_data.Events/GetHistory"
+	Events_PutFavorite_FullMethodName          = "/event_data.Events/PutFavorite"
+	Events_GetAllTags_FullMethodName           = "/event_data.Events/GetAllTags"
+	Events_PostTask_FullMethodName             = "/event_data.Events/PostTask"
+	Events_PostBlockCondition_FullMethodName   = "/event_data.Events/PostBlockCondition"
+	Events_DeleteBlockCondition_FullMethodName = "/event_data.Events/DeleteBlockCondition"
+	Events_GetBlockInfo_FullMethodName         = "/event_data.Events/GetBlockInfo"
+	Events_GetBlockConditions_FullMethodName   = "/event_data.Events/GetBlockConditions"
+	Events_GetBlockTasks_FullMethodName        = "/event_data.Events/GetBlockTasks"
+	Events_GetTaskById_FullMethodName          = "/event_data.Events/GetTaskById"
+	Events_DeleteTask_FullMethodName           = "/event_data.Events/DeleteTask"
+	Events_DeleteBlockById_FullMethodName      = "/event_data.Events/DeleteBlockById"
+	Events_DeleteEventById_FullMethodName      = "/event_data.Events/DeleteEventById"
+	Events_PostAnswer_FullMethodName           = "/event_data.Events/PostAnswer"
+	Events_GetEventForUser_FullMethodName      = "/event_data.Events/GetEventForUser"
+	Events_PutNextStage_FullMethodName         = "/event_data.Events/PutNextStage"
+	Events_GetNextStage_FullMethodName         = "/event_data.Events/GetNextStage"
+	Events_PutTimestamp_FullMethodName         = "/event_data.Events/PutTimestamp"
 )
 
 // EventsClient is the client API for Events service.
@@ -45,6 +64,25 @@ type EventsClient interface {
 	GetEventBlocks(ctx context.Context, in *Id, opts ...grpc.CallOption) (*GetEventBlocksOut, error)
 	GetPublicEvents(ctx context.Context, in *EventBaseFilters, opts ...grpc.CallOption) (*GetPublicEventsOut, error)
 	GetUserFavorites(ctx context.Context, in *EventBaseFilters, opts ...grpc.CallOption) (*GetPublicEventsOut, error)
+	GetOwnedEvents(ctx context.Context, in *EventBaseFilters, opts ...grpc.CallOption) (*GetPublicEventsOut, error)
+	GetHistory(ctx context.Context, in *EventBaseFilters, opts ...grpc.CallOption) (*GetPublicEventsOut, error)
+	PutFavorite(ctx context.Context, in *PutFavoriteIn, opts ...grpc.CallOption) (*MessageOut, error)
+	GetAllTags(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*Tags, error)
+	PostTask(ctx context.Context, in *Task, opts ...grpc.CallOption) (*MessageOut, error)
+	PostBlockCondition(ctx context.Context, in *Condition, opts ...grpc.CallOption) (*PostConditionOut, error)
+	DeleteBlockCondition(ctx context.Context, in *Id, opts ...grpc.CallOption) (*MessageOut, error)
+	GetBlockInfo(ctx context.Context, in *Id, opts ...grpc.CallOption) (*PostEventBlockIn, error)
+	GetBlockConditions(ctx context.Context, in *Id, opts ...grpc.CallOption) (*BlockInfo, error)
+	GetBlockTasks(ctx context.Context, in *Id, opts ...grpc.CallOption) (*Tasks, error)
+	GetTaskById(ctx context.Context, in *Id, opts ...grpc.CallOption) (*Task, error)
+	DeleteTask(ctx context.Context, in *Id, opts ...grpc.CallOption) (*MessageOut, error)
+	DeleteBlockById(ctx context.Context, in *Id, opts ...grpc.CallOption) (*MessageOut, error)
+	DeleteEventById(ctx context.Context, in *Id, opts ...grpc.CallOption) (*MessageOut, error)
+	PostAnswer(ctx context.Context, in *Answer, opts ...grpc.CallOption) (*Answer, error)
+	GetEventForUser(ctx context.Context, in *UserEventIds, opts ...grpc.CallOption) (*GetPublicEvent, error)
+	PutNextStage(ctx context.Context, in *EventBlockTaskUserIds, opts ...grpc.CallOption) (*MessageOut, error)
+	GetNextStage(ctx context.Context, in *UserEventIds, opts ...grpc.CallOption) (*NextStageInfo, error)
+	PutTimestamp(ctx context.Context, in *PutTimestampIn, opts ...grpc.CallOption) (*MessageOut, error)
 }
 
 type eventsClient struct {
@@ -155,6 +193,196 @@ func (c *eventsClient) GetUserFavorites(ctx context.Context, in *EventBaseFilter
 	return out, nil
 }
 
+func (c *eventsClient) GetOwnedEvents(ctx context.Context, in *EventBaseFilters, opts ...grpc.CallOption) (*GetPublicEventsOut, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetPublicEventsOut)
+	err := c.cc.Invoke(ctx, Events_GetOwnedEvents_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *eventsClient) GetHistory(ctx context.Context, in *EventBaseFilters, opts ...grpc.CallOption) (*GetPublicEventsOut, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetPublicEventsOut)
+	err := c.cc.Invoke(ctx, Events_GetHistory_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *eventsClient) PutFavorite(ctx context.Context, in *PutFavoriteIn, opts ...grpc.CallOption) (*MessageOut, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(MessageOut)
+	err := c.cc.Invoke(ctx, Events_PutFavorite_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *eventsClient) GetAllTags(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*Tags, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(Tags)
+	err := c.cc.Invoke(ctx, Events_GetAllTags_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *eventsClient) PostTask(ctx context.Context, in *Task, opts ...grpc.CallOption) (*MessageOut, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(MessageOut)
+	err := c.cc.Invoke(ctx, Events_PostTask_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *eventsClient) PostBlockCondition(ctx context.Context, in *Condition, opts ...grpc.CallOption) (*PostConditionOut, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(PostConditionOut)
+	err := c.cc.Invoke(ctx, Events_PostBlockCondition_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *eventsClient) DeleteBlockCondition(ctx context.Context, in *Id, opts ...grpc.CallOption) (*MessageOut, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(MessageOut)
+	err := c.cc.Invoke(ctx, Events_DeleteBlockCondition_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *eventsClient) GetBlockInfo(ctx context.Context, in *Id, opts ...grpc.CallOption) (*PostEventBlockIn, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(PostEventBlockIn)
+	err := c.cc.Invoke(ctx, Events_GetBlockInfo_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *eventsClient) GetBlockConditions(ctx context.Context, in *Id, opts ...grpc.CallOption) (*BlockInfo, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(BlockInfo)
+	err := c.cc.Invoke(ctx, Events_GetBlockConditions_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *eventsClient) GetBlockTasks(ctx context.Context, in *Id, opts ...grpc.CallOption) (*Tasks, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(Tasks)
+	err := c.cc.Invoke(ctx, Events_GetBlockTasks_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *eventsClient) GetTaskById(ctx context.Context, in *Id, opts ...grpc.CallOption) (*Task, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(Task)
+	err := c.cc.Invoke(ctx, Events_GetTaskById_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *eventsClient) DeleteTask(ctx context.Context, in *Id, opts ...grpc.CallOption) (*MessageOut, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(MessageOut)
+	err := c.cc.Invoke(ctx, Events_DeleteTask_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *eventsClient) DeleteBlockById(ctx context.Context, in *Id, opts ...grpc.CallOption) (*MessageOut, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(MessageOut)
+	err := c.cc.Invoke(ctx, Events_DeleteBlockById_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *eventsClient) DeleteEventById(ctx context.Context, in *Id, opts ...grpc.CallOption) (*MessageOut, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(MessageOut)
+	err := c.cc.Invoke(ctx, Events_DeleteEventById_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *eventsClient) PostAnswer(ctx context.Context, in *Answer, opts ...grpc.CallOption) (*Answer, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(Answer)
+	err := c.cc.Invoke(ctx, Events_PostAnswer_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *eventsClient) GetEventForUser(ctx context.Context, in *UserEventIds, opts ...grpc.CallOption) (*GetPublicEvent, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetPublicEvent)
+	err := c.cc.Invoke(ctx, Events_GetEventForUser_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *eventsClient) PutNextStage(ctx context.Context, in *EventBlockTaskUserIds, opts ...grpc.CallOption) (*MessageOut, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(MessageOut)
+	err := c.cc.Invoke(ctx, Events_PutNextStage_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *eventsClient) GetNextStage(ctx context.Context, in *UserEventIds, opts ...grpc.CallOption) (*NextStageInfo, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(NextStageInfo)
+	err := c.cc.Invoke(ctx, Events_GetNextStage_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *eventsClient) PutTimestamp(ctx context.Context, in *PutTimestampIn, opts ...grpc.CallOption) (*MessageOut, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(MessageOut)
+	err := c.cc.Invoke(ctx, Events_PutTimestamp_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // EventsServer is the server API for Events service.
 // All implementations must embed UnimplementedEventsServer
 // for forward compatibility.
@@ -169,6 +397,25 @@ type EventsServer interface {
 	GetEventBlocks(context.Context, *Id) (*GetEventBlocksOut, error)
 	GetPublicEvents(context.Context, *EventBaseFilters) (*GetPublicEventsOut, error)
 	GetUserFavorites(context.Context, *EventBaseFilters) (*GetPublicEventsOut, error)
+	GetOwnedEvents(context.Context, *EventBaseFilters) (*GetPublicEventsOut, error)
+	GetHistory(context.Context, *EventBaseFilters) (*GetPublicEventsOut, error)
+	PutFavorite(context.Context, *PutFavoriteIn) (*MessageOut, error)
+	GetAllTags(context.Context, *Empty) (*Tags, error)
+	PostTask(context.Context, *Task) (*MessageOut, error)
+	PostBlockCondition(context.Context, *Condition) (*PostConditionOut, error)
+	DeleteBlockCondition(context.Context, *Id) (*MessageOut, error)
+	GetBlockInfo(context.Context, *Id) (*PostEventBlockIn, error)
+	GetBlockConditions(context.Context, *Id) (*BlockInfo, error)
+	GetBlockTasks(context.Context, *Id) (*Tasks, error)
+	GetTaskById(context.Context, *Id) (*Task, error)
+	DeleteTask(context.Context, *Id) (*MessageOut, error)
+	DeleteBlockById(context.Context, *Id) (*MessageOut, error)
+	DeleteEventById(context.Context, *Id) (*MessageOut, error)
+	PostAnswer(context.Context, *Answer) (*Answer, error)
+	GetEventForUser(context.Context, *UserEventIds) (*GetPublicEvent, error)
+	PutNextStage(context.Context, *EventBlockTaskUserIds) (*MessageOut, error)
+	GetNextStage(context.Context, *UserEventIds) (*NextStageInfo, error)
+	PutTimestamp(context.Context, *PutTimestampIn) (*MessageOut, error)
 	mustEmbedUnimplementedEventsServer()
 }
 
@@ -208,6 +455,63 @@ func (UnimplementedEventsServer) GetPublicEvents(context.Context, *EventBaseFilt
 }
 func (UnimplementedEventsServer) GetUserFavorites(context.Context, *EventBaseFilters) (*GetPublicEventsOut, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetUserFavorites not implemented")
+}
+func (UnimplementedEventsServer) GetOwnedEvents(context.Context, *EventBaseFilters) (*GetPublicEventsOut, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetOwnedEvents not implemented")
+}
+func (UnimplementedEventsServer) GetHistory(context.Context, *EventBaseFilters) (*GetPublicEventsOut, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetHistory not implemented")
+}
+func (UnimplementedEventsServer) PutFavorite(context.Context, *PutFavoriteIn) (*MessageOut, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method PutFavorite not implemented")
+}
+func (UnimplementedEventsServer) GetAllTags(context.Context, *Empty) (*Tags, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetAllTags not implemented")
+}
+func (UnimplementedEventsServer) PostTask(context.Context, *Task) (*MessageOut, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method PostTask not implemented")
+}
+func (UnimplementedEventsServer) PostBlockCondition(context.Context, *Condition) (*PostConditionOut, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method PostBlockCondition not implemented")
+}
+func (UnimplementedEventsServer) DeleteBlockCondition(context.Context, *Id) (*MessageOut, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteBlockCondition not implemented")
+}
+func (UnimplementedEventsServer) GetBlockInfo(context.Context, *Id) (*PostEventBlockIn, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetBlockInfo not implemented")
+}
+func (UnimplementedEventsServer) GetBlockConditions(context.Context, *Id) (*BlockInfo, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetBlockConditions not implemented")
+}
+func (UnimplementedEventsServer) GetBlockTasks(context.Context, *Id) (*Tasks, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetBlockTasks not implemented")
+}
+func (UnimplementedEventsServer) GetTaskById(context.Context, *Id) (*Task, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetTaskById not implemented")
+}
+func (UnimplementedEventsServer) DeleteTask(context.Context, *Id) (*MessageOut, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteTask not implemented")
+}
+func (UnimplementedEventsServer) DeleteBlockById(context.Context, *Id) (*MessageOut, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteBlockById not implemented")
+}
+func (UnimplementedEventsServer) DeleteEventById(context.Context, *Id) (*MessageOut, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteEventById not implemented")
+}
+func (UnimplementedEventsServer) PostAnswer(context.Context, *Answer) (*Answer, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method PostAnswer not implemented")
+}
+func (UnimplementedEventsServer) GetEventForUser(context.Context, *UserEventIds) (*GetPublicEvent, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetEventForUser not implemented")
+}
+func (UnimplementedEventsServer) PutNextStage(context.Context, *EventBlockTaskUserIds) (*MessageOut, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method PutNextStage not implemented")
+}
+func (UnimplementedEventsServer) GetNextStage(context.Context, *UserEventIds) (*NextStageInfo, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetNextStage not implemented")
+}
+func (UnimplementedEventsServer) PutTimestamp(context.Context, *PutTimestampIn) (*MessageOut, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method PutTimestamp not implemented")
 }
 func (UnimplementedEventsServer) mustEmbedUnimplementedEventsServer() {}
 func (UnimplementedEventsServer) testEmbeddedByValue()                {}
@@ -410,11 +714,353 @@ func _Events_GetUserFavorites_Handler(srv interface{}, ctx context.Context, dec 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Events_GetOwnedEvents_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(EventBaseFilters)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(EventsServer).GetOwnedEvents(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Events_GetOwnedEvents_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(EventsServer).GetOwnedEvents(ctx, req.(*EventBaseFilters))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Events_GetHistory_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(EventBaseFilters)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(EventsServer).GetHistory(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Events_GetHistory_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(EventsServer).GetHistory(ctx, req.(*EventBaseFilters))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Events_PutFavorite_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(PutFavoriteIn)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(EventsServer).PutFavorite(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Events_PutFavorite_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(EventsServer).PutFavorite(ctx, req.(*PutFavoriteIn))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Events_GetAllTags_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Empty)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(EventsServer).GetAllTags(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Events_GetAllTags_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(EventsServer).GetAllTags(ctx, req.(*Empty))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Events_PostTask_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Task)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(EventsServer).PostTask(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Events_PostTask_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(EventsServer).PostTask(ctx, req.(*Task))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Events_PostBlockCondition_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Condition)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(EventsServer).PostBlockCondition(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Events_PostBlockCondition_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(EventsServer).PostBlockCondition(ctx, req.(*Condition))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Events_DeleteBlockCondition_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Id)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(EventsServer).DeleteBlockCondition(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Events_DeleteBlockCondition_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(EventsServer).DeleteBlockCondition(ctx, req.(*Id))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Events_GetBlockInfo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Id)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(EventsServer).GetBlockInfo(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Events_GetBlockInfo_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(EventsServer).GetBlockInfo(ctx, req.(*Id))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Events_GetBlockConditions_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Id)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(EventsServer).GetBlockConditions(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Events_GetBlockConditions_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(EventsServer).GetBlockConditions(ctx, req.(*Id))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Events_GetBlockTasks_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Id)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(EventsServer).GetBlockTasks(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Events_GetBlockTasks_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(EventsServer).GetBlockTasks(ctx, req.(*Id))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Events_GetTaskById_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Id)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(EventsServer).GetTaskById(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Events_GetTaskById_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(EventsServer).GetTaskById(ctx, req.(*Id))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Events_DeleteTask_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Id)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(EventsServer).DeleteTask(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Events_DeleteTask_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(EventsServer).DeleteTask(ctx, req.(*Id))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Events_DeleteBlockById_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Id)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(EventsServer).DeleteBlockById(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Events_DeleteBlockById_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(EventsServer).DeleteBlockById(ctx, req.(*Id))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Events_DeleteEventById_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Id)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(EventsServer).DeleteEventById(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Events_DeleteEventById_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(EventsServer).DeleteEventById(ctx, req.(*Id))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Events_PostAnswer_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Answer)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(EventsServer).PostAnswer(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Events_PostAnswer_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(EventsServer).PostAnswer(ctx, req.(*Answer))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Events_GetEventForUser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UserEventIds)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(EventsServer).GetEventForUser(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Events_GetEventForUser_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(EventsServer).GetEventForUser(ctx, req.(*UserEventIds))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Events_PutNextStage_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(EventBlockTaskUserIds)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(EventsServer).PutNextStage(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Events_PutNextStage_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(EventsServer).PutNextStage(ctx, req.(*EventBlockTaskUserIds))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Events_GetNextStage_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UserEventIds)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(EventsServer).GetNextStage(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Events_GetNextStage_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(EventsServer).GetNextStage(ctx, req.(*UserEventIds))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Events_PutTimestamp_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(PutTimestampIn)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(EventsServer).PutTimestamp(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Events_PutTimestamp_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(EventsServer).PutTimestamp(ctx, req.(*PutTimestampIn))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Events_ServiceDesc is the grpc.ServiceDesc for Events service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var Events_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "content.Events",
+	ServiceName: "event_data.Events",
 	HandlerType: (*EventsServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
@@ -456,6 +1102,82 @@ var Events_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetUserFavorites",
 			Handler:    _Events_GetUserFavorites_Handler,
+		},
+		{
+			MethodName: "GetOwnedEvents",
+			Handler:    _Events_GetOwnedEvents_Handler,
+		},
+		{
+			MethodName: "GetHistory",
+			Handler:    _Events_GetHistory_Handler,
+		},
+		{
+			MethodName: "PutFavorite",
+			Handler:    _Events_PutFavorite_Handler,
+		},
+		{
+			MethodName: "GetAllTags",
+			Handler:    _Events_GetAllTags_Handler,
+		},
+		{
+			MethodName: "PostTask",
+			Handler:    _Events_PostTask_Handler,
+		},
+		{
+			MethodName: "PostBlockCondition",
+			Handler:    _Events_PostBlockCondition_Handler,
+		},
+		{
+			MethodName: "DeleteBlockCondition",
+			Handler:    _Events_DeleteBlockCondition_Handler,
+		},
+		{
+			MethodName: "GetBlockInfo",
+			Handler:    _Events_GetBlockInfo_Handler,
+		},
+		{
+			MethodName: "GetBlockConditions",
+			Handler:    _Events_GetBlockConditions_Handler,
+		},
+		{
+			MethodName: "GetBlockTasks",
+			Handler:    _Events_GetBlockTasks_Handler,
+		},
+		{
+			MethodName: "GetTaskById",
+			Handler:    _Events_GetTaskById_Handler,
+		},
+		{
+			MethodName: "DeleteTask",
+			Handler:    _Events_DeleteTask_Handler,
+		},
+		{
+			MethodName: "DeleteBlockById",
+			Handler:    _Events_DeleteBlockById_Handler,
+		},
+		{
+			MethodName: "DeleteEventById",
+			Handler:    _Events_DeleteEventById_Handler,
+		},
+		{
+			MethodName: "PostAnswer",
+			Handler:    _Events_PostAnswer_Handler,
+		},
+		{
+			MethodName: "GetEventForUser",
+			Handler:    _Events_GetEventForUser_Handler,
+		},
+		{
+			MethodName: "PutNextStage",
+			Handler:    _Events_PutNextStage_Handler,
+		},
+		{
+			MethodName: "GetNextStage",
+			Handler:    _Events_GetNextStage_Handler,
+		},
+		{
+			MethodName: "PutTimestamp",
+			Handler:    _Events_PutTimestamp_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

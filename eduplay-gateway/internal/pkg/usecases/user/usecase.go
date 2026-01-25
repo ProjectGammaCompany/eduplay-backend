@@ -16,6 +16,7 @@ type UserClient interface {
 	DeleteAccount(ctx context.Context, token string) error
 	ChangePassword(ctx context.Context, in *users.ChangePasswordIn) error
 	SignOutUser(ctx context.Context, token string) error
+	GetProfile(ctx context.Context, userId string) (*users.Profile, error)
 }
 
 type UseCase struct {

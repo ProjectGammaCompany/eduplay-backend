@@ -89,10 +89,10 @@ func New(log *slog.Logger, uc UseCase) http.HandlerFunc {
 			return
 		}
 
-		if role == 0 {
-			log.Error("user not authorized")
+		if role != 1 {
+			log.Error("forbidden action")
 			writer.WriteHeader(http.StatusForbidden)
-			render.JSON(writer, request, lib.Error("user not authorized"))
+			render.JSON(writer, request, lib.Error("user is forbidden to perform this action"))
 			return
 		}
 

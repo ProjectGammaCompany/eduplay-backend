@@ -3,6 +3,7 @@ package event
 import (
 	"context"
 	dto "eduplay-gateway/internal/generated/clients/event"
+	userDto "eduplay-gateway/internal/generated/clients/user"
 	"log/slog"
 )
 
@@ -17,13 +18,37 @@ type EventClient interface {
 	GetEventBlocks(ctx context.Context, in *dto.Id) (*dto.GetEventBlocksOut, error)
 	GetPublicEvents(ctx context.Context, in *dto.EventBaseFilters) (*dto.GetPublicEventsOut, error)
 	GetUserFavorites(ctx context.Context, in *dto.EventBaseFilters) (*dto.GetPublicEventsOut, error)
+	GetOwnedEvents(ctx context.Context, in *dto.EventBaseFilters) (*dto.GetPublicEventsOut, error)
+	GetHistory(ctx context.Context, in *dto.EventBaseFilters) (*dto.GetPublicEventsOut, error)
+	PutFavorite(ctx context.Context, in *dto.PutFavoriteIn) (*dto.MessageOut, error)
+	GetAllTags(ctx context.Context) (*dto.Tags, error)
+	PostTask(ctx context.Context, in *dto.Task) (*dto.MessageOut, error)
+	PostBlockCondition(ctx context.Context, in *dto.Condition) (*dto.PostConditionOut, error)
+	DeleteBlockCondition(ctx context.Context, in *dto.Id) (*dto.MessageOut, error)
+	GetBlockInfo(ctx context.Context, in *dto.Id) (*dto.PostEventBlockIn, error)
+	GetBlockConditions(ctx context.Context, in *dto.Id) (*dto.BlockInfo, error)
+	GetBlockTasks(ctx context.Context, in *dto.Id) (*dto.Tasks, error)
+	GetTaskById(ctx context.Context, in *dto.Id) (*dto.Task, error)
+	DeleteTaskById(ctx context.Context, in *dto.Id) (*dto.MessageOut, error)
+	DeleteBlockById(ctx context.Context, in *dto.Id) (*dto.MessageOut, error)
+	DeleteEventById(ctx context.Context, in *dto.Id) (*dto.MessageOut, error)
+	PostAnswer(ctx context.Context, in *dto.Answer) (*dto.Answer, error)
+	GetEventForUser(ctx context.Context, in *dto.UserEventIds) (*dto.GetPublicEvent, error)
+	PutNextStage(ctx context.Context, in *dto.EventBlockTaskUserIds) (*dto.MessageOut, error)
+	GetNextStage(ctx context.Context, in *dto.UserEventIds) (*dto.NextStageInfo, error)
+	PutTimestamp(ctx context.Context, in *dto.PutTimestampIn) (*dto.MessageOut, error)
+}
+
+type UserClient interface {
+	GetProfile(ctx context.Context, userId string) (*userDto.Profile, error)
 }
 
 type UseCase struct {
 	eventClient EventClient
+	userClient  UserClient
 	log         *slog.Logger
 }
 
-func New(log *slog.Logger, eventClient EventClient) *UseCase {
-	return &UseCase{log: log, eventClient: eventClient}
+func New(log *slog.Logger, eventClient EventClient, userClient UserClient) *UseCase {
+	return &UseCase{log: log, eventClient: eventClient, userClient: userClient}
 }

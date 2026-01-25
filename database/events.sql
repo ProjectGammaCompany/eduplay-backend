@@ -18,8 +18,10 @@ CREATE TABLE blocks (
     blockId uuid PRIMARY KEY DEFAULT gen_random_uuid(),
     eventId uuid NOT NULL,
     name text NOT NULL DEFAULT '',
-    order INTEGER NOT NULL DEFAULT 0,
+    blockOrder INTEGER NOT NULL DEFAULT 0,
     isParallel BOOLEAN DEFAULT false,
+    showPoints BOOLEAN DEFAULT false,
+    showAnswers BOOLEAN DEFAULT false,
     FOREIGN KEY (eventId) REFERENCES events(eventId) ON DELETE CASCADE
 )
 
@@ -36,7 +38,9 @@ CREATE TABLE tasks (
     -- optionIds uuid[] NOT NULL DEFAULT '{}',
     files text[] NOT NULL DEFAULT '{}',
     time INTEGER NOT NULL DEFAULT 0,
+    points INTEGER NOT NULL DEFAULT 0,
     partialPoint BOOLEAN DEFAULT false,
+    taskOrder INTEGER NOT NULL DEFAULT 0,
     FOREIGN KEY (blockId) REFERENCES blocks(blockId) ON DELETE CASCADE
 )
 
@@ -87,4 +91,14 @@ CREATE TABLE userFavorites (
     eventId uuid NOT NULL,
     FOREIGN KEY (userId) REFERENCES users(userid) ON DELETE CASCADE,
     FOREIGN KEY (eventId) REFERENCES events(eventId) ON DELETE CASCADE
+)
+
+CREATE TABLE answers (
+    answerId uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    userId uuid NOT NULL,
+    taskId uuid NOT NULL,
+    values text[] NOT NULL DEFAULT '{}',
+    points INTEGER NOT NULL DEFAULT 0,
+    FOREIGN KEY (userId) REFERENCES users(userid) ON DELETE CASCADE,
+    FOREIGN KEY (taskId) REFERENCES tasks(taskId) ON DELETE CASCADE
 )

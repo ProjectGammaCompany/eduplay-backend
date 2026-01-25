@@ -2,6 +2,7 @@ package postgres
 
 import (
 	"context"
+	dto "eduplay-user/internal/generated"
 	"eduplay-user/internal/model"
 	"eduplay-user/internal/storage"
 	"errors"
@@ -333,4 +334,19 @@ func (s *Storage) SignOutUser(ctx context.Context, userId string) error {
 	}
 
 	return nil
+}
+
+func (s *Storage) GetProfile(ctx context.Context, userId string) (*dto.Profile, error) {
+	const op = "storage.postgres.GetUserById"
+
+	state := `SELECT avatar, email FROM users WHERE userId = $1`
+	res := s.db.QueryRow(ctx, state, userId)
+	user := &dto.Profile{}
+	err := res.Scan(&user.Avatar, &user.Email)
+
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return user, nil
 }

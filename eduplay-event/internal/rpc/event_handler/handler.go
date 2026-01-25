@@ -21,6 +21,25 @@ type UseCase interface {
 	GetEventBlocks(ctx context.Context, in *dto.Id) (*dto.GetEventBlocksOut, error)
 	GetPublicEvents(ctx context.Context, in *dto.EventBaseFilters) (*dto.GetPublicEventsOut, error)
 	GetUserFavorites(ctx context.Context, in *dto.EventBaseFilters) (*dto.GetPublicEventsOut, error)
+	GetOwnedEvents(ctx context.Context, in *dto.EventBaseFilters) (*dto.GetPublicEventsOut, error)
+	GetHistory(ctx context.Context, in *dto.EventBaseFilters) (*dto.GetPublicEventsOut, error)
+	PutFavorite(ctx context.Context, in *dto.PutFavoriteIn) (string, error)
+	GetAllTags(ctx context.Context) (*dto.Tags, error)
+	PostTask(ctx context.Context, in *dto.Task) (string, error)
+	PostBlockCondition(ctx context.Context, in *dto.Condition) (*dto.PostConditionOut, error)
+	DeleteBlockCondition(ctx context.Context, in *dto.Id) (string, error)
+	GetBlockInfo(ctx context.Context, in *dto.Id) (*dto.PostEventBlockIn, error)
+	GetBlockConditions(ctx context.Context, in *dto.Id) (*dto.BlockInfo, error)
+	GetBlockTasks(ctx context.Context, in *dto.Id) (*dto.Tasks, error)
+	GetTaskById(ctx context.Context, in *dto.Id) (*dto.Task, error)
+	DeleteTaskById(ctx context.Context, in *dto.Id) (string, error)
+	PostAnswer(ctx context.Context, in *dto.Answer) (*dto.Answer, error)
+	DeleteBlockById(ctx context.Context, in *dto.Id) (string, error)
+	DeleteEventById(ctx context.Context, in *dto.Id) (string, error)
+	GetPublicEvent(ctx context.Context, in *dto.UserEventIds) (*dto.GetPublicEvent, error)
+	PutNextStage(ctx context.Context, stage *dto.EventBlockTaskUserIds) (string, error)
+	GetNextStage(ctx context.Context, in *dto.UserEventIds) (*dto.NextStageInfo, error)
+	PutTimestamp(ctx context.Context, in *dto.PutTimestampIn) (string, error)
 }
 
 type Handler struct {
@@ -140,4 +159,213 @@ func (h *Handler) GetUserFavorites(ctx context.Context, in *dto.EventBaseFilters
 	}
 
 	return events, nil
+}
+
+func (h *Handler) GetOwnedEvents(ctx context.Context, in *dto.EventBaseFilters) (*dto.GetPublicEventsOut, error) {
+	op := "GetOwnedEvents.Handler"
+
+	events, err := h.uc.GetOwnedEvents(ctx, in)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return events, nil
+}
+
+func (h *Handler) GetHistory(ctx context.Context, in *dto.EventBaseFilters) (*dto.GetPublicEventsOut, error) {
+	op := "GetHistory.Handler"
+
+	events, err := h.uc.GetHistory(ctx, in)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return events, nil
+}
+
+func (h *Handler) PutFavorite(ctx context.Context, in *dto.PutFavoriteIn) (*dto.MessageOut, error) {
+	op := "PutFavorite.Handler"
+
+	message, err := h.uc.PutFavorite(ctx, in)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return &dto.MessageOut{Message: message}, nil
+}
+
+func (h *Handler) GetAllTags(ctx context.Context, in *dto.Empty) (*dto.Tags, error) {
+	op := "GetAllTags.Handler"
+
+	tags, err := h.uc.GetAllTags(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return tags, nil
+}
+
+func (h *Handler) PostTask(ctx context.Context, in *dto.Task) (*dto.MessageOut, error) {
+	op := "PostTask.Handler"
+
+	id, err := h.uc.PostTask(ctx, in)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return &dto.MessageOut{Message: id}, nil
+}
+
+func (h *Handler) PostBlockCondition(ctx context.Context, in *dto.Condition) (*dto.PostConditionOut, error) {
+	op := "PostBlockCondition.Handler"
+
+	ret, err := h.uc.PostBlockCondition(ctx, in)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return ret, nil
+}
+
+func (h *Handler) GetBlockInfo(ctx context.Context, in *dto.Id) (*dto.PostEventBlockIn, error) {
+	op := "GetBlockInfo.Handler"
+
+	ret, err := h.uc.GetBlockInfo(ctx, in)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return ret, nil
+}
+
+func (h *Handler) GetBlockConditions(ctx context.Context, in *dto.Id) (*dto.BlockInfo, error) {
+	op := "GetBlockConditions.Handler"
+
+	ret, err := h.uc.GetBlockConditions(ctx, in)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return ret, nil
+}
+
+func (h *Handler) GetBlockTasks(ctx context.Context, in *dto.Id) (*dto.Tasks, error) {
+	op := "GetBlockTasks.Handler"
+
+	ret, err := h.uc.GetBlockTasks(ctx, in)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return ret, nil
+}
+
+func (h *Handler) GetTaskById(ctx context.Context, in *dto.Id) (*dto.Task, error) {
+	op := "GetTaskById.Handler"
+
+	ret, err := h.uc.GetTaskById(ctx, in)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return ret, nil
+}
+
+func (h *Handler) DeleteTask(ctx context.Context, in *dto.Id) (*dto.MessageOut, error) {
+	op := "DeleteTaskById.Handler"
+
+	message, err := h.uc.DeleteTaskById(ctx, in)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return &dto.MessageOut{Message: message}, nil
+}
+
+func (h *Handler) PostAnswer(ctx context.Context, in *dto.Answer) (*dto.Answer, error) {
+	op := "PostAnswer.Handler"
+
+	ret, err := h.uc.PostAnswer(ctx, in)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return ret, nil
+}
+
+func (h *Handler) DeleteBlockById(ctx context.Context, in *dto.Id) (*dto.MessageOut, error) {
+	op := "DeleteBlockById.Handler"
+
+	message, err := h.uc.DeleteBlockById(ctx, in)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return &dto.MessageOut{Message: message}, nil
+}
+
+func (h *Handler) DeleteEventById(ctx context.Context, in *dto.Id) (*dto.MessageOut, error) {
+	op := "DeleteEventById.Handler"
+
+	message, err := h.uc.DeleteEventById(ctx, in)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return &dto.MessageOut{Message: message}, nil
+}
+
+func (h *Handler) DeleteBlockCondition(ctx context.Context, in *dto.Id) (*dto.MessageOut, error) {
+	op := "DeleteBlockCondition.Handler"
+
+	message, err := h.uc.DeleteBlockCondition(ctx, in)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return &dto.MessageOut{Message: message}, nil
+}
+
+func (h *Handler) GetEventForUser(ctx context.Context, in *dto.UserEventIds) (*dto.GetPublicEvent, error) {
+	op := "GetPublicEvent.Handler"
+
+	ret, err := h.uc.GetPublicEvent(ctx, in)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return ret, nil
+}
+
+func (h *Handler) PutNextStage(ctx context.Context, in *dto.EventBlockTaskUserIds) (*dto.MessageOut, error) {
+	op := "PutNextStage.Handler"
+
+	message, err := h.uc.PutNextStage(ctx, in)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return &dto.MessageOut{Message: message}, nil
+}
+
+func (h *Handler) GetNextStage(ctx context.Context, in *dto.UserEventIds) (*dto.NextStageInfo, error) {
+	op := "GetNextStage.Handler"
+
+	ret, err := h.uc.GetNextStage(ctx, in)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return ret, nil
+}
+
+func (h *Handler) PutTimestamp(ctx context.Context, in *dto.PutTimestampIn) (*dto.MessageOut, error) {
+	op := "PutTimestamp.Handler"
+
+	message, err := h.uc.PutTimestamp(ctx, in)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return &dto.MessageOut{Message: message}, nil
 }

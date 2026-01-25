@@ -18,6 +18,7 @@ import (
 )
 
 type UseCase interface {
+	GetRole(ctx context.Context, userId string, eventId string) (int64, error)
 	GetEventSettings(ctx context.Context, pd *eventModel.Id) (*eventModel.GetEventSettings, error)
 }
 
@@ -80,7 +81,7 @@ func New(log *slog.Logger, uc UseCase) http.HandlerFunc {
 			return
 		}
 
-		eventSettings, err := uc.GetEventSettings(request.Context(), &eventModel.Id{Id: id})
+		role, err := uc.GetRole(request.Context(), accessClaims.ID, id)
 		if err != nil {
 			log.Error(err.Error(), slog.String("error", err.Error()))
 			writer.WriteHeader(http.StatusInternalServerError)
@@ -88,10 +89,18 @@ func New(log *slog.Logger, uc UseCase) http.HandlerFunc {
 			return
 		}
 
-		if eventSettings.OwnerId != accessClaims.ID {
-			log.Error("user not authorized")
-			writer.WriteHeader(http.StatusUnauthorized)
-			render.JSON(writer, request, lib.Error("user not authorized"))
+		if role != 1 {
+			log.Error("forbidden action")
+			writer.WriteHeader(http.StatusForbidden)
+			render.JSON(writer, request, lib.Error("user is forbidden to perform this action"))
+			return
+		}
+
+		eventSettings, err := uc.GetEventSettings(request.Context(), &eventModel.Id{Id: id})
+		if err != nil {
+			log.Error(err.Error(), slog.String("error", err.Error()))
+			writer.WriteHeader(http.StatusInternalServerError)
+			render.JSON(writer, request, err)
 			return
 		}
 

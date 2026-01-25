@@ -2,7 +2,7 @@ package user
 
 import (
 	"context"
-	// dto "eduplay-user/internal/generated"
+	dto "eduplay-user/internal/generated"
 	"log/slog"
 	"time"
 
@@ -23,6 +23,7 @@ type storage interface {
 	CheckRefreshTokenExists(ctx context.Context, refreshToken string) (bool, time.Time, error)
 	GetUserPasswordById(ctx context.Context, userId string) (string, error)
 	SignOutUser(ctx context.Context, userId string) error
+	GetProfile(ctx context.Context, userId string) (*dto.Profile, error)
 }
 
 type UseCase struct {
