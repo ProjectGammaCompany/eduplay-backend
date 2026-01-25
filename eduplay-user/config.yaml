@@ -1,6 +1,7 @@
 env: "local"
 #storage_path: "postgresql://postgres:1234@localhost:5433/Docs"
-storage_path: "postgresql://postgres:postgres@localhost:5432/eduplay"
+storage_path: "postgresql://eduplay:sanAnas_918694@eduplay-postgres-postgresql:5432/eduplay"
+# storage_path: "postgresql://postgres:postgres@localhost:5432/eduplay"
 # storage_path: "postgres://reshebnik_admin:hseReshebnikLaw896!@localhost:5432/reshebnik?sslmode=disable"
 secret_key: "EduplaySecretkey"
 grpc:

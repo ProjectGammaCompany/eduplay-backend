@@ -12,7 +12,7 @@ CREATE TABLE events (
     lastEditionDate TIMESTAMP DEFAULT now(), 
     showRating BOOLEAN NOT NULL DEFAULT false,
     FOREIGN KEY (ownerId) REFERENCES users(userid) ON DELETE CASCADE
-)
+);
 
 CREATE TABLE blocks (
     blockId uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -23,7 +23,7 @@ CREATE TABLE blocks (
     showPoints BOOLEAN DEFAULT false,
     showAnswers BOOLEAN DEFAULT false,
     FOREIGN KEY (eventId) REFERENCES events(eventId) ON DELETE CASCADE
-)
+);
 
 CREATE TABLE tasks (
     taskId uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -42,18 +42,18 @@ CREATE TABLE tasks (
     partialPoint BOOLEAN DEFAULT false,
     taskOrder INTEGER NOT NULL DEFAULT 0,
     FOREIGN KEY (blockId) REFERENCES blocks(blockId) ON DELETE CASCADE
-)
+);
 
 CREATE TABLE conditions (
     conditionId uuid PRIMARY KEY DEFAULT gen_random_uuid(),
     prevBlockId uuid,
     nextBlockId uuid,
-    group text[] NOT NULL DEFAULT '{}',
+    groupName text[] NOT NULL DEFAULT '{}',
     min INTEGER NOT NULL DEFAULT 0,
     max INTEGER NOT NULL DEFAULT 0,
     FOREIGN KEY (prevBlockId) REFERENCES blocks(blockId) ON DELETE CASCADE,
     FOREIGN KEY (nextBlockId) REFERENCES blocks(blockId) ON DELETE CASCADE
-)
+);
 
 CREATE TABLE options (
     optionId uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -61,12 +61,12 @@ CREATE TABLE options (
     value text NOT NULL DEFAULT '',
     isCorrect BOOLEAN DEFAULT false,
     FOREIGN KEY (taskId) REFERENCES tasks(taskId) ON DELETE CASCADE
-)
+);
 
 CREATE TABLE tags (
     tagId uuid PRIMARY KEY DEFAULT gen_random_uuid(),
     name text NOT NULL DEFAULT ''
-)
+);
 
 CREATE TABLE groups (
     groupId uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -74,7 +74,7 @@ CREATE TABLE groups (
     login text NOT NULL DEFAULT '',
     password text NOT NULL DEFAULT '',
     FOREIGN KEY (eventId) REFERENCES events(eventId) ON DELETE CASCADE
-)
+);
 
 CREATE TABLE ratings (
     ratingId uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -83,7 +83,7 @@ CREATE TABLE ratings (
     rating INTEGER NOT NULL DEFAULT 0,
     FOREIGN KEY (userId) REFERENCES users(userid) ON DELETE CASCADE,
     FOREIGN KEY (eventId) REFERENCES events(eventId) ON DELETE CASCADE
-)
+);
 
 CREATE TABLE userFavorites (
     favoriteId uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -91,7 +91,7 @@ CREATE TABLE userFavorites (
     eventId uuid NOT NULL,
     FOREIGN KEY (userId) REFERENCES users(userid) ON DELETE CASCADE,
     FOREIGN KEY (eventId) REFERENCES events(eventId) ON DELETE CASCADE
-)
+);
 
 CREATE TABLE answers (
     answerId uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -101,4 +101,4 @@ CREATE TABLE answers (
     points INTEGER NOT NULL DEFAULT 0,
     FOREIGN KEY (userId) REFERENCES users(userid) ON DELETE CASCADE,
     FOREIGN KEY (taskId) REFERENCES tasks(taskId) ON DELETE CASCADE
-)
+);
