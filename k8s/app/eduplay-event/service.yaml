@@ -7,6 +7,8 @@ spec:
   selector:
     app: eduplay-event
   ports:
-    - port: 80
+    - name: grpc
+      port: 35002
       targetPort: 35002
+      protocol: TCP
   type: ClusterIP
