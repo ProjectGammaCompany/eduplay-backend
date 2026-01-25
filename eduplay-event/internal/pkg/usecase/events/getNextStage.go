@@ -71,7 +71,8 @@ func (a *UseCase) GetNextStage(ctx context.Context, in *dto.UserEventIds) (*dto.
 		return nextStageInfo, nil
 	}
 
-	if startTime.AsTime().Format("02.01.2006 15:04:05.000") != "1970-01-01 00:00:00" {
+	if startTime.AsTime().Format("02.01.2006 15:04:05.000") != "01.01.1970 00:00:00.000" {
+		fmt.Println("startTime ", startTime.AsTime().Format("02.01.2006 15:04:05.000"))
 		nextStageInfo.Type = "task"
 		currTask, err := a.storage.GetTaskById(ctx, currTaskId)
 		if err != nil {
@@ -160,10 +161,12 @@ func (a *UseCase) GetNextStage(ctx context.Context, in *dto.UserEventIds) (*dto.
 		return nil, err
 	}
 
+	fmt.Println("currTask.Order ", currTask.Order, " len(currBlockTasks.Tasks) ", len(currBlockTasks.Tasks))
 	if currTask.Order != int64(len(currBlockTasks.Tasks)) {
 		nextStageInfo.Type = "task"
-		nextTaskId = currBlockTasks.Tasks[currTask.Order].TaskId
 
+		nextTaskId = currBlockTasks.Tasks[currTask.Order+1].TaskId
+		fmt.Println("currTaskId ", currTaskId, " nextTaskId ", nextTaskId)
 		nextTask, err := a.storage.GetTaskById(ctx, nextTaskId)
 		if err != nil {
 			log.Error("failed to get task", err.Error(), slog.String("task", nextTaskId))

@@ -177,7 +177,7 @@ func (s *Storage) GetRole(ctx context.Context, userId string, eventId string) (i
 
 	res := s.db.QueryRow(ctx, state, userId, eventId)
 
-	var role int64
+	var role bool
 	err := res.Scan(&role)
 
 	if err != nil {
@@ -200,7 +200,10 @@ func (s *Storage) GetRole(ctx context.Context, userId string, eventId string) (i
 		return 0, fmt.Errorf("%s: %w", op, err)
 	}
 
-	return role, nil
+	if role {
+		return 0, nil
+	}
+	return 1, nil
 }
 
 func (s *Storage) GetGroups(ctx context.Context, eventId string) (*dto.GetGroupsOut, error) {
@@ -841,19 +844,22 @@ func (s *Storage) PostTask(ctx context.Context, in *dto.Task) (string, error) {
 	const op = "storage.postgres.PostTask"
 
 	var id string
+	var order int64
 
-	state := `SELECT COALESCE(MAX(taskOrder), 1) FROM tasks WHERE blockId = $1;`
+	state := `SELECT COALESCE(MAX(taskOrder), 0) FROM tasks WHERE blockId = $1;`
 
 	res := s.db.QueryRow(ctx, state, in.BlockId)
 
-	err := res.Scan(&id)
+	err := res.Scan(&order)
 	if err != nil {
 		return "", fmt.Errorf("%s: %w", op, err)
 	}
+	fmt.Println(order)
+	order++
 
-	state = `INSERT INTO tasks (blockId, name, description, type, files, time, points, partialPoint) VALUES ($1, $2, $3, $4, COALESCE($5, '{}'::text[]), $6, $7, $8) RETURNING taskId;`
+	state = `INSERT INTO tasks (blockId, name, description, type, files, time, points, partialPoint, taskOrder) VALUES ($1, $2, $3, $4, COALESCE($5, '{}'::text[]), $6, $7, $8, $9) RETURNING taskId;`
 
-	res = s.db.QueryRow(ctx, state, in.BlockId, in.Name, in.Description, in.Type, in.Files, in.Time, in.Points, in.PartialPoints)
+	res = s.db.QueryRow(ctx, state, in.BlockId, in.Name, in.Description, in.Type, in.Files, in.Time, in.Points, in.PartialPoints, order)
 
 	err = res.Scan(&id)
 	if err != nil {
