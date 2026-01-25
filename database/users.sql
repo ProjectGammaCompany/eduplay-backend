@@ -15,6 +15,7 @@ CREATE TABLE sessions (
     userid uuid NOT NULL,
     refresh_token VARCHAR(255) NOT NULL,
     refresh_expires TIMESTAMP NOT NULL,
+    active BOOLEAN NOT NULL DEFAULT false,
     FOREIGN KEY (userid) REFERENCES users(userid) ON DELETE CASCADE
 );
 
