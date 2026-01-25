@@ -6,6 +6,7 @@ resources:
   - eduplay-user/service.yaml
   - eduplay-event/deployment.yaml
   - eduplay-event/service.yaml
+  - eduplay-gateway/ingress.yaml
 
 images:
   - name: notocactus/eduplay-gateway
