@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: gateway
-          image: cactus91869/eduplay-gateway
+          image: notocactus/eduplay-gateway
           ports:
             - containerPort: 35000
           env:

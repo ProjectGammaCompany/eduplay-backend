@@ -8,9 +8,9 @@ resources:
   - eduplay-event/service.yaml
 
 images:
-  - name: cactus91869/eduplay-gateway
-    newTag: sha-ABCDEF1
-  - name: cactus91869/eduplay-user
-    newTag: sha-ABCDEF1
-  - name: cactus91869/eduplay-event
-    newTag: sha-ABCDEF1
+  - name: notocactus/eduplay-gateway
+    newTag: sha-PLACEHOLDER
+  - name: notocactus/eduplay-user
+    newTag: sha-PLACEHOLDER
+  - name: notocactus/eduplay-event
+    newTag: sha-PLACEHOLDER
