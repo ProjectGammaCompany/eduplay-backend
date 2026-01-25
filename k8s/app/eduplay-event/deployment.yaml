@@ -4,7 +4,7 @@ metadata:
   name: eduplay-event
   namespace: eduplay
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: eduplay-event
