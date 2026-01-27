@@ -29,6 +29,7 @@ CREATE TABLE tasks (
     taskId uuid PRIMARY KEY DEFAULT gen_random_uuid(),
     blockId uuid NOT NULL,
     name text NOT NULL DEFAULT '',
+    description text NOT NULL DEFAULT '',
     type INTEGER NOT NULL DEFAULT 0, 
     -- 0 - info, 
     -- 1 - single choice, 

@@ -246,7 +246,8 @@ func (s *Storage) GetCollaborators(ctx context.Context, eventId string) (*dto.Ge
 
 	defer res.Close()
 
-	var collaborators []*dto.User
+	// var collaborators []*dto.User
+	collaborators := make([]*dto.User, 0)
 
 	for res.Next() {
 		var collaborator dto.User
@@ -393,7 +394,8 @@ GROUP BY e.eventId;`
 
 	tags := make([]string, 0)
 	lastEditionDate := time.Time{}
-	var event dto.GetPublicEvent
+	// var event dto.GetPublicEvent
+	event := dto.GetPublicEvent{}
 	err := res.Scan(&event.EventId, &event.Title, &event.Description, &event.Cover, &lastEditionDate, &tags, &event.Rate, &event.Favorite)
 	if err != nil {
 		return nil, fmt.Errorf("%s: %w", op, err)

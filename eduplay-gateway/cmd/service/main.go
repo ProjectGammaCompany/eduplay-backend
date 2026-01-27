@@ -3,6 +3,7 @@ package main
 import (
 	"eduplay-gateway/internal/application"
 	"eduplay-gateway/internal/config"
+
 	mwCors "eduplay-gateway/internal/http/middleware/cors"
 	mwLogger "eduplay-gateway/internal/http/middleware/logger"
 	"eduplay-gateway/internal/http/routers"
