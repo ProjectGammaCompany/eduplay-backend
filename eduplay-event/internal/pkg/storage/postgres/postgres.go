@@ -453,12 +453,22 @@ func (s *Storage) GetTagsByIds(ctx context.Context, ids []string) (*dto.Tags, er
 
 func (s *Storage) GetEventProgress(ctx context.Context, userId string, eventId string) (currTaskId string, currBlockId string, finished bool, currTaskStartTime time.Time, err error) {
 	const op = "storage.postgres.GetEventProgress"
+	currTaskIdNull := sql.NullString{}
+	currBlockIdNull := sql.NullString{}
 
 	state := `SELECT currTaskId, currBlockId, finished, currTaskStartTime FROM userLinks WHERE userId = $1 AND eventId = $2 AND isParticipant = true;`
 
-	err = s.db.QueryRow(ctx, state, userId, eventId).Scan(&currTaskId, &currBlockId, &finished, &currTaskStartTime)
+	err = s.db.QueryRow(ctx, state, userId, eventId).Scan(&currTaskIdNull, &currBlockIdNull, &finished, &currTaskStartTime)
 	if err != nil {
 		return "", "", false, time.Time{}, fmt.Errorf("%s: %w", op, err)
+	}
+
+	if currTaskIdNull.Valid {
+		currTaskId = currTaskIdNull.String
+	}
+
+	if currBlockIdNull.Valid {
+		currBlockId = currBlockIdNull.String
 	}
 
 	return

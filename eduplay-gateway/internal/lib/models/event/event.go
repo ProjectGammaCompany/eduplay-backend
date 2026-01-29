@@ -97,7 +97,7 @@ type Id struct {
 type PutFavorite struct {
 	UserId   string `json:"userId"`
 	EventId  string `json:"eventId" validate:"required"`
-	Favorite bool   `json:"isFavorite" validate:"required"`
+	Favorite bool   `json:"isFavorite"`
 }
 
 type Group struct {
