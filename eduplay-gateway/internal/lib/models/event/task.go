@@ -24,6 +24,12 @@ type Task struct {
 }
 
 func TaskToDto(task *Task) *dto.Task {
+	files := make([]string, 0)
+
+	if task.Files != nil {
+		files = task.Files
+	}
+
 	return &dto.Task{
 		TaskId:        task.TaskId,
 		BlockId:       task.BlockId,
@@ -31,7 +37,7 @@ func TaskToDto(task *Task) *dto.Task {
 		Description:   task.Description,
 		Type:          task.TaskType,
 		Options:       TaskOptionsToDto(task.Options),
-		Files:         task.Files,
+		Files:         files,
 		Points:        task.Points,
 		Time:          task.Time,
 		PartialPoints: task.PartialPoints,
