@@ -11,7 +11,7 @@ type TaskOption struct {
 }
 
 type Task struct {
-	TaskId        string        `json:"taskId"`
+	TaskId        string        `json:"id"`
 	BlockId       string        `json:"blockId"`
 	Name          string        `json:"name"`
 	Description   string        `json:"description"`

@@ -5,7 +5,7 @@ import (
 )
 
 type PostEventBlockIn struct {
-	BlockId    string `json:"blockId"`
+	BlockId    string `json:"id"`
 	EventId    string `json:"eventId"`
 	Name       string `json:"name" validate:"required"`
 	Order      int    `json:"order" validate:"required"`
@@ -39,7 +39,7 @@ func PostEventBlockFromDto(in *dto.PostEventBlockIn) *PostEventBlockIn {
 }
 
 type BlockCorrectionCheck struct {
-	BlockId                string `json:"blockId"`
+	BlockId                string `json:"id"`
 	Name                   string `json:"name" validate:"required"`
 	Order                  int    `json:"order" validate:"required"`
 	IsParallel             bool   `json:"isParallel"`
@@ -75,7 +75,7 @@ func GetEventBlocksFromDto(in *dto.GetEventBlocksOut) *GetEventBlocksOut {
 }
 
 type Condition struct {
-	СonditionId     string   `json:"conditionId"`
+	СonditionId     string   `json:"id"`
 	PreviousBlockId string   `json:"previousBlockId"`
 	NextBlockId     string   `json:"blockId"`
 	NextBlockOrder  int64    `json:"blockOrder"`
@@ -136,7 +136,7 @@ type PostConditionOut struct {
 }
 
 type GetBlock struct {
-	BlockId    string `json:"blockId"`
+	BlockId    string `json:"id"`
 	Name       string `json:"name"`
 	Order      int    `json:"order"`
 	IsParallel bool   `json:"isParallel"`
