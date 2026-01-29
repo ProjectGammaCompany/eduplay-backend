@@ -88,7 +88,7 @@ type BlockTasksList struct {
 }
 
 func BlockTasksListFromDto(blockTasksList *dto.Tasks) *BlockTasksList {
-	var tasks []ShortTask
+	tasks := make([]ShortTask, 0)
 	for _, task := range blockTasksList.Tasks {
 		tasks = append(tasks, ShortTask{
 			TaskId: task.TaskId,
