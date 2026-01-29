@@ -34,7 +34,7 @@ func PostEventInToDto(in *PostEventIn) (*dto.PostEventIn, error) {
 	}
 
 	if in.StartDate != "" {
-		startDate, err := time.Parse("02.01.2006 15:04:05.000", in.StartDate)
+		startDate, err := time.Parse("02.01.2006 15:04", in.StartDate)
 		if err != nil {
 			return nil, err
 		}
@@ -42,7 +42,7 @@ func PostEventInToDto(in *PostEventIn) (*dto.PostEventIn, error) {
 	}
 
 	if in.EndDate != "" {
-		endDate, err := time.Parse("02.01.2006 15:04:05.000", in.EndDate)
+		endDate, err := time.Parse("02.01.2006 15:04", in.EndDate)
 		if err != nil {
 			return nil, err
 		}
