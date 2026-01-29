@@ -26,7 +26,7 @@ type Task struct {
 func TaskToDto(task *Task) *dto.Task {
 	files := make([]string, 0)
 
-	if task.Files != nil {
+	if task.Files != nil || len(task.Files) > 0 {
 		files = task.Files
 	}
 
