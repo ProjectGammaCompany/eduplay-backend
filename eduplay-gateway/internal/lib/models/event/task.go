@@ -45,6 +45,12 @@ func TaskToDto(task *Task) *dto.Task {
 }
 
 func TaskFromDto(task *dto.Task) *Task {
+	files := make([]string, 0)
+
+	if task.Files != nil || len(task.Files) > 0 {
+		files = task.Files
+	}
+
 	return &Task{
 		TaskId:        task.TaskId,
 		BlockId:       task.BlockId,
@@ -52,7 +58,7 @@ func TaskFromDto(task *dto.Task) *Task {
 		Description:   task.Description,
 		TaskType:      task.Type,
 		Options:       TaskOptionsFromDto(task.Options),
-		Files:         task.Files,
+		Files:         files,
 		Points:        task.Points,
 		Time:          task.Time,
 		PartialPoints: task.PartialPoints,
