@@ -1144,6 +1144,7 @@ func (s *Storage) GetNextStage(ctx context.Context, stage *dto.UserEventIds) (li
 
 	state := `SELECT linkId, COALESCE(currTaskId::text, ''), COALESCE(currBlockId::text, ''), finished, currTaskStartTime FROM userLinks WHERE userId = $1 AND eventId = $2 AND isParticipant = true;`
 
+	fmt.Println("state", stage.EventId)
 	err = s.db.QueryRow(ctx, state, stage.UserId, stage.EventId).Scan(&linkId, &currTaskId, &currBlockId, &finished, &currTaskStartTime)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
@@ -1195,4 +1196,45 @@ WHERE a.userId = $1
 	}
 
 	return total, nil
+}
+
+func (s *Storage) GetUserBlockTasksShort(ctx context.Context, blockId string, userId string) ([]*dto.NextStageTaskShort, error) {
+	const op = "storage.postgres.GetUserBlockTasksShort"
+
+	state := `SELECT 
+    t.taskId,
+    t.name,
+    t.time,
+    t.taskOrder,
+
+    EXISTS (
+        SELECT 1
+        FROM answers a
+        WHERE a.taskId = t.taskId
+          AND a.userId = $2
+    ) AS isCompleted
+
+FROM tasks t
+WHERE t.blockId = $1
+ORDER BY t.taskOrder;
+`
+
+	res, err := s.db.Query(ctx, state, blockId, userId)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	defer res.Close()
+
+	tasks := make([]*dto.NextStageTaskShort, 0)
+	for res.Next() {
+		task := &dto.NextStageTaskShort{}
+		err = res.Scan(&task.TaskId, &task.Name, &task.Time, &task.Order, &task.IsCompleted)
+		if err != nil {
+			return nil, fmt.Errorf("%s: %w", op, err)
+		}
+		tasks = append(tasks, task)
+	}
+
+	return tasks, nil
 }

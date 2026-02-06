@@ -141,7 +141,7 @@ func GetEventSettingsFromDto(event *dto.PostEventIn, groups *dto.GetGroupsOut, c
 
 	collabs := CollaboratorsFromDto(collaborators)
 
-	return &GetEventSettings{
+	eventOut := &GetEventSettings{
 		EventId:         event.EventId,
 		Title:           event.Title,
 		Description:     event.Description,
@@ -157,6 +157,20 @@ func GetEventSettingsFromDto(event *dto.PostEventIn, groups *dto.GetGroupsOut, c
 		Collaborators:   collabs,
 		OwnerId:         event.OwnerId,
 	}
+
+	if eventOut.StartDate == "01.01.1970 00:00:00.000" {
+		eventOut.StartDate = ""
+	}
+
+	if eventOut.EndDate == "01.01.1970 00:00:00.000" {
+		eventOut.EndDate = ""
+	}
+
+	if eventOut.LastEditionDate == "01.01.1970 00:00:00.000" {
+		eventOut.LastEditionDate = ""
+	}
+
+	return eventOut
 }
 
 func CollaboratorsFromDto(collaborators *dto.GetCollaboratorsOut) []Collaborator {
@@ -209,7 +223,7 @@ type GetPublicEventsOut struct {
 }
 
 func GetPublicEventFromDto(in *dto.GetPublicEvent) *GetPublicEvent {
-	return &GetPublicEvent{
+	event := &GetPublicEvent{
 		EventId:         in.EventId,
 		Title:           in.Title,
 		Description:     in.Description,
@@ -219,6 +233,11 @@ func GetPublicEventFromDto(in *dto.GetPublicEvent) *GetPublicEvent {
 		Rate:            in.Rate,
 		Favorite:        in.Favorite,
 	}
+	if event.LastEditionDate == "01.01.1970 00:00:00.000" {
+		event.LastEditionDate = ""
+	}
+
+	return event
 }
 
 func GetPublicEventsOutFromDto(in *dto.GetPublicEventsOut) *GetPublicEventsOut {
@@ -356,17 +375,29 @@ func NextStageTaskFromDto(in *dto.NextStageTask) *NextStageTask {
 	if in == nil {
 		return nil
 	}
-	return &NextStageTask{
+	files := make([]string, 0)
+
+	if in.Files != nil || len(in.Files) > 0 {
+		files = in.Files
+	}
+
+	nextStageTask := &NextStageTask{
 		TaskId:      in.TaskId,
 		BlockId:     in.BlockId,
 		Name:        in.Name,
 		Description: in.Description,
 		TaskType:    in.Type,
 		Options:     TaskOptionsFromDto(in.Options),
-		Files:       in.Files,
+		Files:       files,
 		Time:        in.Time,
 		Timestamp:   in.Timestamp.AsTime().Format("02.01.2006 15:04:05.000"),
 	}
+
+	if nextStageTask.Timestamp == "01.01.1970 00:00:00.000" {
+		nextStageTask.Timestamp = ""
+	}
+
+	return nextStageTask
 }
 
 type NextStageBlock struct {

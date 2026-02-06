@@ -241,6 +241,7 @@ message NextStageTask {
     repeated string files = 7;
     int64 time = 9;
     google.protobuf.Timestamp timestamp = 10;
+    int64 order = 11;
 }
 
 message NextStageBlock {
@@ -257,6 +258,7 @@ message NextStageTaskShort {
     string name = 2;
     int64 time = 3;
     bool isCompleted = 4; 
+    int64 order = 5;
 }
 
 message PutTimestampIn {

@@ -42,6 +42,7 @@ type storage interface {
 	PutTimestamp(ctx context.Context, userId string, eventId string, timestamp *timestamppb.Timestamp) (string, error)
 	EndMe(ctx context.Context, userId string, eventId string) (string, error)
 	GetUserBlockPointsSum(ctx context.Context, userId string, blockId string) (int64, error)
+	GetUserBlockTasksShort(ctx context.Context, blockId string, userId string) ([]*dto.NextStageTaskShort, error)
 }
 
 type UseCase struct {
