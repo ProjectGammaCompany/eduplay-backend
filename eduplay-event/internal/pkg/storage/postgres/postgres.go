@@ -52,7 +52,7 @@ func (s *Storage) SaveFile(ctx context.Context, fileName string, fileKey string)
 
 	// var id = strings.Split(fileUUID, ".")[0]
 
-	state := `SELECT count FROM files WHERE fileId = $1`
+	state := `SELECT count FROM files WHERE fileKey = $1`
 
 	res := s.db.QueryRow(ctx, state, fileKey)
 	var count int
