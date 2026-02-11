@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	dto "eduplay-event/internal/generated"
-	"strings"
 	"time"
 
 	"errors"
@@ -48,20 +47,20 @@ func (s *Storage) Stop(ctx context.Context) error {
 	return nil
 }
 
-func (s *Storage) SaveFile(ctx context.Context, fileName string, fileUUID string) (string, error) {
+func (s *Storage) SaveFile(ctx context.Context, fileName string, fileKey string) (string, error) {
 	const op = "storage.postgres.SaveFile"
 
-	var id = strings.Split(fileUUID, ".")[0]
+	// var id = strings.Split(fileUUID, ".")[0]
 
 	state := `SELECT count FROM files WHERE fileId = $1`
 
-	res := s.db.QueryRow(ctx, state, id)
+	res := s.db.QueryRow(ctx, state, fileKey)
 	var count int
 	err := res.Scan(&count)
 
 	if errors.Is(err, pgx.ErrNoRows) {
-		state := `INSERT INTO files (fileId, filename, count) VALUES ($1, $2, $3) RETURNING fileId;`
-		res := s.db.QueryRow(ctx, state, id, fileName, 1)
+		state := `INSERT INTO files (fileKey, filename, count) VALUES ($1, $2, $3) RETURNING fileId;`
+		res := s.db.QueryRow(ctx, state, fileKey, fileName, 1)
 
 		var id string
 		err = res.Scan(&id)
@@ -72,8 +71,8 @@ func (s *Storage) SaveFile(ctx context.Context, fileName string, fileUUID string
 		return id, nil
 	}
 
-	state = `UPDATE files SET count = $1 WHERE fileId = $2;`
-	_, err = s.db.Exec(ctx, state, count+1, id)
+	state = `UPDATE files SET count = $1 WHERE fileKey = $2;`
+	_, err = s.db.Exec(ctx, state, count+1, fileKey)
 
 	if err != nil {
 		return "", fmt.Errorf("%s: %w", op, err)

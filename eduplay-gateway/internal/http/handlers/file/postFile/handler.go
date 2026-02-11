@@ -70,6 +70,9 @@ func New(log *slog.Logger, uc UseCase) http.HandlerFunc {
 
 		// TODO in actuality works with only one file
 
+		log.Info("Headers:", slog.Any("headers", request.Header))
+		log.Info("Body:", slog.Any("body", request.Body))
+
 		// // Limiting request size to 10GB
 		// request.Body = http.MaxBytesReader(writer, request.Body, 10<<30)
 
