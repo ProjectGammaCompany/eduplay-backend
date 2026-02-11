@@ -70,11 +70,11 @@ func New(log *slog.Logger, uc UseCase) http.HandlerFunc {
 
 		// TODO in actuality works with only one file
 
-		// Limiting request size to 10GB
-		request.Body = http.MaxBytesReader(writer, request.Body, 10<<30)
+		// // Limiting request size to 10GB
+		// request.Body = http.MaxBytesReader(writer, request.Body, 10<<30)
 
 		// Parsing the multipart form data
-		err = request.ParseMultipartForm(10 << 20)
+		err = request.ParseMultipartForm(64 << 20)
 		if err != nil {
 			log.Error("failed to parse multipart form", slog.String("error", err.Error()))
 			writer.WriteHeader(http.StatusInternalServerError)
