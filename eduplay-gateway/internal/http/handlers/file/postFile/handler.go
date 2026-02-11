@@ -4,9 +4,7 @@ import (
 	"context"
 	"eduplay-gateway/internal/http/tokens"
 	"eduplay-gateway/internal/lib"
-	"io"
 	"log/slog"
-	"os"
 	"strings"
 
 	"net/http"
@@ -16,6 +14,12 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/render"
 	"github.com/google/uuid"
+
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/credentials"
+	"github.com/aws/aws-sdk-go-v2/feature/s3/manager"
+	"github.com/aws/aws-sdk-go-v2/service/s3"
 )
 
 type UseCase interface {
@@ -64,7 +68,13 @@ func New(log *slog.Logger, uc UseCase) http.HandlerFunc {
 			return
 		}
 
-		err = request.ParseMultipartForm(64 << 20)
+		// TODO in actuality works with only one file
+
+		// Limiting request size to 10GB
+		request.Body = http.MaxBytesReader(writer, request.Body, 10<<30)
+
+		// Parsing the multipart form data
+		err = request.ParseMultipartForm(10 << 20)
 		if err != nil {
 			log.Error("failed to parse multipart form", slog.String("error", err.Error()))
 			writer.WriteHeader(http.StatusInternalServerError)
@@ -72,64 +82,99 @@ func New(log *slog.Logger, uc UseCase) http.HandlerFunc {
 			return
 		}
 
-		fileNames := []string{}
-
-		// TODO in actuality works with only one file
-
-		mForm := request.MultipartForm
-		for k := range mForm.File {
-			file, fileHeader, err := request.FormFile(k)
-			if err != nil {
-				log.Error("failed to get form file", slog.String("error", err.Error()))
-				writer.WriteHeader(http.StatusInternalServerError)
-				render.JSON(writer, request, lib.Error("error getting form file"))
-				return
-			}
-
-			defer func() {
-				if err := file.Close(); err != nil {
-					log.Error("failed to close file", slog.String("error", err.Error()))
-				}
-			}()
-
-			splitFileName := strings.Split(fileHeader.Filename, ".")
-
-			newFileName := uuid.New().String() + "." + splitFileName[len(splitFileName)-1]
-
-			// TODO Change path for server
-			dst, err := os.Create("C:/Users/Cactus/goprojs/EduPlay-back/eduplay-backend/resources/" + newFileName)
-			if err != nil {
-				log.Error("failed to creating new file on server", slog.String("error", err.Error()))
-				writer.WriteHeader(http.StatusInternalServerError)
-				render.JSON(writer, request, lib.Error("error creating new file on server"))
-				return
-			}
-
-			defer func() {
-				if err := dst.Close(); err != nil {
-					log.Error("failed to close destination file", slog.String("error", err.Error()))
-				}
-			}()
-
-			if _, err := io.Copy(dst, file); err != nil {
-				log.Error("failed to copy file to server", slog.String("error", err.Error()))
-				writer.WriteHeader(http.StatusInternalServerError)
-				render.JSON(writer, request, lib.Error("error copying file to server"))
-				return
-			}
-
-			_, err = uc.SaveFile(context.Background(), fileHeader.Filename, newFileName)
-			if err != nil {
-				log.Error("failed to save file", slog.String("error", err.Error()))
-				writer.WriteHeader(http.StatusInternalServerError)
-				render.JSON(writer, request, lib.Error("error saving file"))
-				return
-			}
-
-			fileNames = append(fileNames, newFileName)
+		file, handler, err := request.FormFile("file")
+		if err != nil {
+			log.Error("failed to get form file", slog.String("error", err.Error()))
+			writer.WriteHeader(http.StatusInternalServerError)
+			render.JSON(writer, request, lib.Error("error getting form file"))
+			return
 		}
 
-		log.Info("success to save file", slog.Any("response", fileNames[0]))
-		render.JSON(writer, request, fileNames[0])
+		defer func() {
+			if err := file.Close(); err != nil {
+				log.Error("failed to close file", slog.String("error", err.Error()))
+			}
+		}()
+
+		fileName := handler.Filename
+
+		splitFileName := strings.Split(fileName, ".")
+
+		newFileName := uuid.New().String() + "." + splitFileName[len(splitFileName)-1]
+
+		var awsS3Client *s3.Client
+
+		creds := credentials.NewStaticCredentialsProvider("minioadmin", "Determination1", "")
+
+		cfg, err := config.LoadDefaultConfig(context.TODO(),
+			config.WithCredentialsProvider(creds),
+			config.WithRegion("us-east-1"))
+		if err != nil {
+			log.Error("failed to load aws config", slog.String("error", err.Error()))
+			writer.WriteHeader(http.StatusInternalServerError)
+			render.JSON(writer, request, lib.Error("error loading aws config"))
+			return
+		}
+
+		endpoint := "http://minio.storage.svc.cluster.local:9000"
+
+		awsS3Client = s3.NewFromConfig(cfg, func(o *s3.Options) {
+			o.UsePathStyle = true
+			o.BaseEndpoint = aws.String(endpoint)
+			// o.EndpointResolver = s3.EndpointResolverFromURL(endpoint)
+		})
+
+		bucket := "eduplay-bucket"
+		key := "uploads/" + newFileName
+
+		_, err = awsS3Client.HeadBucket(context.TODO(), &s3.HeadBucketInput{Bucket: aws.String(bucket)})
+		if err != nil {
+			_, err = awsS3Client.CreateBucket(context.TODO(), &s3.CreateBucketInput{Bucket: aws.String(bucket)})
+			if err != nil {
+				log.Error("failed to create bucket", slog.String("error", err.Error()))
+				writer.WriteHeader(http.StatusInternalServerError)
+				render.JSON(writer, request, lib.Error("error creating bucket"))
+				return
+			}
+		}
+
+		out, err := awsS3Client.ListBuckets(context.TODO(), &s3.ListBucketsInput{})
+		if err != nil {
+			log.Error("minio list buckets failed", slog.String("err", err.Error()))
+			writer.WriteHeader(http.StatusInternalServerError)
+			render.JSON(writer, request, lib.Error("error listing buckets"))
+			return
+		}
+		log.Info("minio ok", slog.Int("buckets", len(out.Buckets)))
+
+		//nolint:staticcheck // SA1019 this is intentional
+		uploader := manager.NewUploader(awsS3Client)
+
+		//nolint:staticcheck // SA1019 this is intentional
+		result, err := uploader.Upload(context.TODO(), &s3.PutObjectInput{
+			Bucket: aws.String(bucket),
+			Key:    aws.String(key),
+			Body:   file,
+		})
+
+		if err != nil {
+			log.Error("failed to upload file", slog.String("error", err.Error()))
+			writer.WriteHeader(http.StatusInternalServerError)
+			render.JSON(writer, request, lib.Error("error uploading file"))
+			return
+		}
+
+		log.Info("file uploaded", slog.String("file_name", fileName), slog.String("file_path", result.Location))
+
+		_, err = uc.SaveFile(context.Background(), fileName, key)
+		if err != nil {
+			log.Error("failed to save file", slog.String("error", err.Error()))
+			writer.WriteHeader(http.StatusInternalServerError)
+			render.JSON(writer, request, lib.Error("error saving file"))
+			return
+		}
+
+		log.Info("success to save file", slog.Any("response", fileName))
+		render.JSON(writer, request, fileName)
 	}
 }
