@@ -50,35 +50,47 @@ func (s *Storage) Stop(ctx context.Context) error {
 func (s *Storage) SaveFile(ctx context.Context, fileName string, fileKey string) (string, error) {
 	const op = "storage.postgres.SaveFile"
 
-	// var id = strings.Split(fileUUID, ".")[0]
+	state := `INSERT INTO files (fileKey, filename) VALUES ($1, $2) RETURNING fileId;`
+	res := s.db.QueryRow(ctx, state, fileKey, fileName)
 
-	state := `SELECT count FROM files WHERE fileKey = $1`
-
-	res := s.db.QueryRow(ctx, state, fileKey)
-	var count int
-	err := res.Scan(&count)
-
-	if errors.Is(err, pgx.ErrNoRows) {
-		state := `INSERT INTO files (fileKey, filename, count) VALUES ($1, $2, $3) RETURNING fileId;`
-		res := s.db.QueryRow(ctx, state, fileKey, fileName, 1)
-
-		var id string
-		err = res.Scan(&id)
-
-		if err != nil {
-			return "", fmt.Errorf("%s: %w", op, err)
-		}
-		return id, nil
-	}
-
-	state = `UPDATE files SET count = $1 WHERE fileKey = $2;`
-	_, err = s.db.Exec(ctx, state, count+1, fileKey)
+	var id string
+	err := res.Scan(&id)
 
 	if err != nil {
 		return "", fmt.Errorf("%s: %w", op, err)
 	}
 
-	return "file saved", nil
+	return id, nil
+
+	// var id = strings.Split(fileUUID, ".")[0]
+
+	// state := `SELECT count FROM files WHERE fileKey = $1`
+
+	// res := s.db.QueryRow(ctx, state, fileKey)
+	// var count int
+	// err := res.Scan(&count)
+
+	// if errors.Is(err, pgx.ErrNoRows) {
+	// 	state := `INSERT INTO files (fileKey, filename, count) VALUES ($1, $2, $3) RETURNING fileId;`
+	// 	res := s.db.QueryRow(ctx, state, fileKey, fileName, 1)
+
+	// 	var id string
+	// 	err = res.Scan(&id)
+
+	// 	if err != nil {
+	// 		return "", fmt.Errorf("%s: %w", op, err)
+	// 	}
+	// 	return id, nil
+	// }
+
+	// state = `UPDATE files SET count = $1 WHERE fileKey = $2;`
+	// _, err = s.db.Exec(ctx, state, count+1, fileKey)
+
+	// if err != nil {
+	// 	return "", fmt.Errorf("%s: %w", op, err)
+	// }
+
+	// return "file saved", nil
 }
 
 func (s *Storage) PostEvent(ctx context.Context, in *dto.PostEventIn) (string, error) {
