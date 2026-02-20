@@ -8,29 +8,31 @@ import (
 )
 
 type PostEventIn struct {
-	EventId         string   `json:"id"`
-	Title           string   `json:"title" validate:"required"`
-	Description     string   `json:"description"`
-	Tags            []string `json:"tags"`
-	Cover           string   `json:"cover"`
-	StartDate       string   `json:"startDate"`
-	EndDate         string   `json:"endDate"`
-	Private         bool     `json:"private"`
-	Password        string   `json:"password"`
-	OwnerId         string   `json:"ownerId"`
-	LastEditionDate string   `json:"lastEditionDate"`
+	EventId          string   `json:"id"`
+	Title            string   `json:"title" validate:"required"`
+	Description      string   `json:"description"`
+	Tags             []string `json:"tags"`
+	Cover            string   `json:"cover"`
+	StartDate        string   `json:"startDate"`
+	EndDate          string   `json:"endDate"`
+	Private          bool     `json:"private"`
+	Password         string   `json:"password"`
+	OwnerId          string   `json:"ownerId"`
+	LastEditionDate  string   `json:"lastEditionDate"`
+	AllowDownloading bool     `json:"allowDownloading"`
 }
 
 func PostEventInToDto(in *PostEventIn) (*dto.PostEventIn, error) {
 	eventDto := &dto.PostEventIn{
-		EventId:     in.EventId,
-		Title:       in.Title,
-		Description: in.Description,
-		Tags:        in.Tags,
-		Cover:       in.Cover,
-		Private:     in.Private,
-		Password:    in.Password,
-		OwnerId:     in.OwnerId,
+		EventId:          in.EventId,
+		Title:            in.Title,
+		Description:      in.Description,
+		Tags:             in.Tags,
+		Cover:            in.Cover,
+		Private:          in.Private,
+		Password:         in.Password,
+		OwnerId:          in.OwnerId,
+		AllowDownloading: in.AllowDownloading,
 	}
 
 	if in.StartDate != "" {
@@ -62,17 +64,18 @@ func PostEventInToDto(in *PostEventIn) (*dto.PostEventIn, error) {
 
 func PostEventInFromDto(in *dto.PostEventIn) *PostEventIn {
 	event := &PostEventIn{
-		EventId:         in.EventId,
-		Title:           in.Title,
-		Description:     in.Description,
-		Tags:            in.Tags,
-		Cover:           in.Cover,
-		Private:         in.Private,
-		Password:        in.Password,
-		OwnerId:         in.OwnerId,
-		StartDate:       in.StartDate.AsTime().Format("02.01.2006 15:04:05.000"),
-		EndDate:         in.EndDate.AsTime().Format("02.01.2006 15:04:05.000"),
-		LastEditionDate: in.LastEditionDate.AsTime().Format("02.01.2006 15:04:05.000"),
+		EventId:          in.EventId,
+		Title:            in.Title,
+		Description:      in.Description,
+		Tags:             in.Tags,
+		Cover:            in.Cover,
+		Private:          in.Private,
+		Password:         in.Password,
+		OwnerId:          in.OwnerId,
+		StartDate:        in.StartDate.AsTime().Format("02.01.2006 15:04:05.000"),
+		EndDate:          in.EndDate.AsTime().Format("02.01.2006 15:04:05.000"),
+		LastEditionDate:  in.LastEditionDate.AsTime().Format("02.01.2006 15:04:05.000"),
+		AllowDownloading: in.AllowDownloading,
 	}
 
 	if event.StartDate == "01.01.1970 00:00:00.000" {
@@ -113,20 +116,21 @@ type Collaborator struct {
 }
 
 type GetEventSettings struct {
-	EventId         string         `json:"id"`
-	Title           string         `json:"title" validate:"required"`
-	Description     string         `json:"description"`
-	Tags            []string       `json:"tags"`
-	Cover           string         `json:"cover"`
-	StartDate       string         `json:"startDate"`
-	EndDate         string         `json:"endDate"`
-	Private         bool           `json:"private"`
-	Password        string         `json:"password"`
-	LastEditionDate string         `json:"lastEditionDate"`
-	Groups          []Group        `json:"groups"`
-	Rating          bool           `json:"rating"`
-	Collaborators   []Collaborator `json:"collaborators"`
-	OwnerId         string         `json:"ownerId"`
+	EventId          string         `json:"id"`
+	Title            string         `json:"title" validate:"required"`
+	Description      string         `json:"description"`
+	Tags             []string       `json:"tags"`
+	Cover            string         `json:"cover"`
+	StartDate        string         `json:"startDate"`
+	EndDate          string         `json:"endDate"`
+	Private          bool           `json:"private"`
+	Password         string         `json:"password"`
+	LastEditionDate  string         `json:"lastEditionDate"`
+	Groups           []Group        `json:"groups"`
+	Rating           bool           `json:"rating"`
+	Collaborators    []Collaborator `json:"collaborators"`
+	AllowDownloading bool           `json:"allowDownloading"`
+	OwnerId          string         `json:"ownerId"`
 }
 
 func GetEventSettingsFromDto(event *dto.PostEventIn, groups *dto.GetGroupsOut, collaborators *dto.GetCollaboratorsOut) *GetEventSettings {
@@ -142,20 +146,21 @@ func GetEventSettingsFromDto(event *dto.PostEventIn, groups *dto.GetGroupsOut, c
 	collabs := CollaboratorsFromDto(collaborators)
 
 	eventOut := &GetEventSettings{
-		EventId:         event.EventId,
-		Title:           event.Title,
-		Description:     event.Description,
-		Tags:            event.Tags,
-		Cover:           event.Cover,
-		StartDate:       event.StartDate.AsTime().Format("02.01.2006 15:04:05.000"),
-		EndDate:         event.EndDate.AsTime().Format("02.01.2006 15:04:05.000"),
-		Private:         event.Private,
-		Password:        event.Password,
-		LastEditionDate: event.LastEditionDate.AsTime().Format("02.01.2006 15:04:05.000"),
-		Groups:          gps,
-		Rating:          true,
-		Collaborators:   collabs,
-		OwnerId:         event.OwnerId,
+		EventId:          event.EventId,
+		Title:            event.Title,
+		Description:      event.Description,
+		Tags:             event.Tags,
+		Cover:            event.Cover,
+		StartDate:        event.StartDate.AsTime().Format("02.01.2006 15:04:05.000"),
+		EndDate:          event.EndDate.AsTime().Format("02.01.2006 15:04:05.000"),
+		Private:          event.Private,
+		Password:         event.Password,
+		LastEditionDate:  event.LastEditionDate.AsTime().Format("02.01.2006 15:04:05.000"),
+		Groups:           gps,
+		Rating:           true,
+		Collaborators:    collabs,
+		AllowDownloading: event.AllowDownloading,
+		OwnerId:          event.OwnerId,
 	}
 
 	if eventOut.StartDate == "01.01.1970 00:00:00.000" {
@@ -426,8 +431,10 @@ func NextStageBlockFromDto(in *dto.NextStageBlock) *NextStageBlock {
 type NextStageTaskShort struct {
 	TaskId      string `json:"taskId"`
 	Name        string `json:"name"`
+	Type        int64  `json:"type"`
 	Time        int64  `json:"time"`
 	IsCompleted bool   `json:"isCompleted"`
+	Description string `json:"description"`
 }
 
 func NextStageTaskShortsFromDto(in []*dto.NextStageTaskShort) []*NextStageTaskShort {
@@ -438,6 +445,8 @@ func NextStageTaskShortsFromDto(in []*dto.NextStageTaskShort) []*NextStageTaskSh
 			Name:        task.Name,
 			Time:        task.Time,
 			IsCompleted: task.IsCompleted,
+			Type:        task.Type,
+			Description: task.Description,
 		}
 	}
 	return ret

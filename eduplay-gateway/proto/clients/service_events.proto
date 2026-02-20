@@ -87,6 +87,7 @@ message PostEventIn {
     string password = 9;
     string ownerId = 10; 
     optional google.protobuf.Timestamp lastEditionDate = 11;
+    bool allowDownloading = 12;
 }
 
 message GetRoleIn {
@@ -257,6 +258,9 @@ message NextStageTaskShort {
     string name = 2;
     int64 time = 3;
     bool isCompleted = 4; 
+    int64 order = 5;
+    string description = 6;
+    int64 type = 7;
 }
 
 message PutTimestampIn {

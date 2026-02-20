@@ -101,8 +101,8 @@ func (s *Storage) PostEvent(ctx context.Context, in *dto.PostEventIn) (string, e
 		endDate   *timestamppb.Timestamp
 	)
 
-	state := `INSERT INTO events (title, description, tags, cover, startDate, endDate, private, password, ownerId, lastEditionDate) 
-	VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING eventId;`
+	state := `INSERT INTO events (title, description, tags, cover, startDate, endDate, private, password, ownerId, lastEditionDate, allowDownloading) 
+	VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING eventId;`
 
 	if in.StartDate != nil {
 		startDate = in.StartDate
@@ -114,7 +114,7 @@ func (s *Storage) PostEvent(ctx context.Context, in *dto.PostEventIn) (string, e
 
 	fmt.Println(endDate)
 
-	res := s.db.QueryRow(ctx, state, in.Title, in.Description, in.Tags, in.Cover, startDate.AsTime(), endDate.AsTime(), in.Private, in.Password, in.OwnerId, time.Now())
+	res := s.db.QueryRow(ctx, state, in.Title, in.Description, in.Tags, in.Cover, startDate.AsTime(), endDate.AsTime(), in.Private, in.Password, in.OwnerId, time.Now(), in.AllowDownloading)
 
 	var id string
 	err := res.Scan(&id)
@@ -129,41 +129,43 @@ func (s *Storage) PostEvent(ctx context.Context, in *dto.PostEventIn) (string, e
 func (s *Storage) GetEvent(ctx context.Context, id string) (*dto.PostEventIn, error) {
 	const op = "storage.postgres.GetEvent"
 
-	state := `SELECT title, description, tags, cover, startDate, endDate, private, password, ownerId, lastEditionDate FROM events WHERE eventId = $1;`
+	state := `SELECT title, description, tags, cover, startDate, endDate, private, password, ownerId, lastEditionDate, allowDownloading FROM events WHERE eventId = $1;`
 
 	res := s.db.QueryRow(ctx, state, id)
 
 	var (
-		title           string
-		description     string
-		tags            []string
-		cover           string
-		startDate       time.Time
-		endDate         time.Time
-		private         bool
-		password        string
-		ownerId         string
-		lastEditionDate time.Time
+		title            string
+		description      string
+		tags             []string
+		cover            string
+		startDate        time.Time
+		endDate          time.Time
+		private          bool
+		password         string
+		ownerId          string
+		lastEditionDate  time.Time
+		allowDownloading bool
 	)
 
-	err := res.Scan(&title, &description, &tags, &cover, &startDate, &endDate, &private, &password, &ownerId, &lastEditionDate)
+	err := res.Scan(&title, &description, &tags, &cover, &startDate, &endDate, &private, &password, &ownerId, &lastEditionDate, &allowDownloading)
 
 	if err != nil {
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
 
 	return &dto.PostEventIn{
-		EventId:         id,
-		Title:           title,
-		Description:     description,
-		Tags:            tags,
-		Cover:           cover,
-		StartDate:       timestamppb.New(startDate),
-		EndDate:         timestamppb.New(endDate),
-		Private:         private,
-		Password:        password,
-		OwnerId:         ownerId,
-		LastEditionDate: timestamppb.New(lastEditionDate),
+		EventId:          id,
+		Title:            title,
+		Description:      description,
+		Tags:             tags,
+		Cover:            cover,
+		StartDate:        timestamppb.New(startDate),
+		EndDate:          timestamppb.New(endDate),
+		Private:          private,
+		Password:         password,
+		OwnerId:          ownerId,
+		LastEditionDate:  timestamppb.New(lastEditionDate),
+		AllowDownloading: allowDownloading,
 	}, nil
 }
 
@@ -349,7 +351,7 @@ func (s *Storage) GetEventBlocks(ctx context.Context, eventId string) (*dto.GetE
 func (s *Storage) GetBlockConditions(ctx context.Context, blockId string) ([]*dto.Condition, error) {
 	const op = "storage.postgres.GetBlockConditions"
 
-	state := `SELECT prevBlockId, nextBlockId, groupName, min, max FROM conditions WHERE prevBlockId = $1 OR nextBlockId = $1;`
+	state := `SELECT conditionId, prevBlockId, nextBlockId, groupName, min, max FROM conditions WHERE prevBlockId = $1 OR nextBlockId = $1;`
 
 	res, err := s.db.Query(ctx, state, blockId)
 	if err != nil {
@@ -363,7 +365,7 @@ func (s *Storage) GetBlockConditions(ctx context.Context, blockId string) ([]*dt
 	for res.Next() {
 		var condition dto.Condition
 		var nextBlockId sql.NullString
-		err = res.Scan(&condition.PreviousBlockId, &nextBlockId, &condition.GroupIds, &condition.Min, &condition.Max)
+		err = res.Scan(&condition.ConditionId, &condition.PreviousBlockId, &nextBlockId, &condition.GroupIds, &condition.Min, &condition.Max)
 		if err != nil {
 			return nil, fmt.Errorf("%s: %w", op, err)
 		}
@@ -957,7 +959,7 @@ func (s *Storage) GetBlockInfo(ctx context.Context, blockId string) (*dto.PostEv
 func (s *Storage) GetBlockConditionsFull(ctx context.Context, blockId string) (*dto.BlockInfo, error) {
 	const op = "storage.postgres.GetBlockConditions"
 
-	state := `SELECT bl.blockOrder, c.prevBlockId, c.nextBlockId, c.groupName, c.min, c.max FROM blocks bl INNER JOIN conditions c ON bl.blockId = c.prevBlockId WHERE bl.blockId = $1;`
+	state := `SELECT bl.blockOrder, c.prevBlockId, c.nextBlockId, c.groupName, c.min, c.max, c.conditionId FROM blocks bl INNER JOIN conditions c ON bl.blockId = c.prevBlockId WHERE bl.blockId = $1;`
 
 	res, err := s.db.Query(ctx, state, blockId)
 	if err != nil {
@@ -970,7 +972,7 @@ func (s *Storage) GetBlockConditionsFull(ctx context.Context, blockId string) (*
 	for res.Next() {
 		condition := &dto.Condition{}
 		// var emptyGroup pgtype.Array[string]
-		err = res.Scan(&condition.NextBlockOrder, &condition.PreviousBlockId, &condition.NextBlockId, &condition.GroupIds, &condition.Min, &condition.Max)
+		err = res.Scan(&condition.NextBlockOrder, &condition.PreviousBlockId, &condition.NextBlockId, &condition.GroupIds, &condition.Min, &condition.Max, &condition.ConditionId)
 		if err != nil {
 			return nil, fmt.Errorf("%s: %w", op, err)
 		}
@@ -1217,13 +1219,14 @@ func (s *Storage) GetUserBlockTasksShort(ctx context.Context, blockId string, us
     t.name,
     t.time,
     t.taskOrder,
-
     EXISTS (
         SELECT 1
         FROM answers a
         WHERE a.taskId = t.taskId
           AND a.userId = $2
-    ) AS isCompleted
+    ) AS isCompleted,
+	t.type, 
+	t.description
 
 FROM tasks t
 WHERE t.blockId = $1
@@ -1240,7 +1243,7 @@ ORDER BY t.taskOrder;
 	tasks := make([]*dto.NextStageTaskShort, 0)
 	for res.Next() {
 		task := &dto.NextStageTaskShort{}
-		err = res.Scan(&task.TaskId, &task.Name, &task.Time, &task.Order, &task.IsCompleted)
+		err = res.Scan(&task.TaskId, &task.Name, &task.Time, &task.Order, &task.IsCompleted, &task.Type, &task.Description)
 		if err != nil {
 			return nil, fmt.Errorf("%s: %w", op, err)
 		}

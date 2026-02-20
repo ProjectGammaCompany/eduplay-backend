@@ -19,6 +19,7 @@ import (
 
 type UseCase interface {
 	PutNextStage(ctx context.Context, in *eventModel.EventBlockTaskUserIds) (string, error)
+	GetRole(ctx context.Context, userId string, eventId string) (int64, error)
 }
 
 func New(log *slog.Logger, uc UseCase) http.HandlerFunc {
@@ -77,6 +78,21 @@ func New(log *slog.Logger, uc UseCase) http.HandlerFunc {
 			log.Error("invalid id provided")
 			writer.WriteHeader(http.StatusBadRequest)
 			render.JSON(writer, request, lib.Error("invalid id provided"))
+			return
+		}
+
+		role, err := uc.GetRole(request.Context(), accessClaims.ID, eventId)
+		if err != nil {
+			log.Error(err.Error(), slog.String("error", err.Error()))
+			writer.WriteHeader(http.StatusInternalServerError)
+			render.JSON(writer, request, err)
+			return
+		}
+
+		if role == 1 {
+			log.Error("forbidden action")
+			writer.WriteHeader(http.StatusForbidden)
+			render.JSON(writer, request, lib.Error("user is forbidden to perform this action"))
 			return
 		}
 

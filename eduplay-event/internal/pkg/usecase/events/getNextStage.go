@@ -308,7 +308,7 @@ func (a *UseCase) GetNextBlockById(ctx context.Context, nextBlockId string, in *
 	if err != nil {
 		return nil, err
 	}
-	nextBlockTasks, err := a.storage.GetBlockTasks(ctx, nextBlockId)
+	nextBlockTasks, err := a.storage.GetUserBlockTasksShort(ctx, nextBlockId, in.UserId)
 	if err != nil {
 		return nil, err
 	}
@@ -319,14 +319,7 @@ func (a *UseCase) GetNextBlockById(ctx context.Context, nextBlockId string, in *
 		nextStageBlock := &dto.NextStageBlock{
 			BlockId: nextBlockId,
 			Name:    nextBlock.Name,
-		}
-		for _, task := range nextBlockTasks.Tasks {
-			nextStageBlock.Tasks = append(nextStageBlock.Tasks, &dto.NextStageTaskShort{
-				TaskId:      task.TaskId,
-				Name:        task.Name,
-				Time:        task.Time,
-				IsCompleted: false,
-			})
+			Tasks:   nextBlockTasks,
 		}
 		nextStageInfo.Block = nextStageBlock
 
@@ -346,10 +339,10 @@ func (a *UseCase) GetNextBlockById(ctx context.Context, nextBlockId string, in *
 	fmt.Println("===== get block task")
 
 	nextStageInfo.Type = "task"
-	if len(nextBlockTasks.Tasks) == 0 {
+	if len(nextBlockTasks) == 0 {
 		return a.GetNextBlock(ctx, nextBlock.Order, in)
 	}
-	nextTaskId = nextBlockTasks.Tasks[0].TaskId
+	nextTaskId = nextBlockTasks[0].TaskId
 	nextTask, err := a.storage.GetTaskById(ctx, nextTaskId)
 	if err != nil {
 		return nil, err
