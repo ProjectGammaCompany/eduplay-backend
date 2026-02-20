@@ -1,17 +1,44 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: eduplay-gateway
+  name: eduplay
   namespace: eduplay
 spec:
+  ingressClassName: nginx
   rules:
-  - host: api.hse-eduplay.ru
+  - host: hse-eduplay.ru
     http:
       paths:
-      - path: /
+      - path: /api
         pathType: Prefix
         backend:
           service:
             name: eduplay-gateway
             port:
               number: 80
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: eduplay-frontend
+            port:
+              number: 80
+
+
+# apiVersion: networking.k8s.io/v1
+# kind: Ingress
+# metadata:
+#   name: eduplay-gateway
+#   namespace: eduplay
+# spec:
+#   rules:
+#   - host: api.hse-eduplay.ru
+#     http:
+#       paths:
+#       - path: /
+#         pathType: Prefix
+#         backend:
+#           service:
+#             name: eduplay-gateway
+#             port:
+#               number: 80
