@@ -4,7 +4,7 @@ metadata:
   name: eduplay
   namespace: eduplay
 spec:
-  ingressClassName: nginx
+  # ingressClassName: nginx
   rules:
   - host: hse-eduplay.ru
     http:
