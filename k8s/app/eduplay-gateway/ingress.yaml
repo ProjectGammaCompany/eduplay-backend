@@ -15,7 +15,7 @@ spec:
           service:
             name: eduplay-frontend
             port:
-              number: 80
+              number: 8080
   - host: api.hse-eduplay.ru
     http:
       paths:
