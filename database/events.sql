@@ -12,6 +12,7 @@ CREATE TABLE events (
     lastEditionDate TIMESTAMP DEFAULT now(), 
     showRating BOOLEAN NOT NULL DEFAULT false,
     allowDownloading BOOLEAN NOT NULL DEFAULT false,
+    groupEvent BOOLEAN NOT NULL DEFAULT false,
     FOREIGN KEY (ownerId) REFERENCES users(userid) ON DELETE CASCADE
 );
 

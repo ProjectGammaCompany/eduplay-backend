@@ -20,6 +20,7 @@ type PostEventIn struct {
 	OwnerId          string   `json:"ownerId"`
 	LastEditionDate  string   `json:"lastEditionDate"`
 	AllowDownloading bool     `json:"allowDownloading"`
+	GroupEvent       bool     `json:"groupEvent"`
 }
 
 func PostEventInToDto(in *PostEventIn) (*dto.PostEventIn, error) {
@@ -33,6 +34,7 @@ func PostEventInToDto(in *PostEventIn) (*dto.PostEventIn, error) {
 		Password:         in.Password,
 		OwnerId:          in.OwnerId,
 		AllowDownloading: in.AllowDownloading,
+		GroupEvent:       in.GroupEvent,
 	}
 
 	if in.StartDate != "" {
@@ -131,6 +133,7 @@ type GetEventSettings struct {
 	Collaborators    []Collaborator `json:"collaborators"`
 	AllowDownloading bool           `json:"allowDownloading"`
 	OwnerId          string         `json:"ownerId"`
+	GroupEvent       bool           `json:"groupEvent"`
 }
 
 func GetEventSettingsFromDto(event *dto.PostEventIn, groups *dto.GetGroupsOut, collaborators *dto.GetCollaboratorsOut) *GetEventSettings {
@@ -161,6 +164,7 @@ func GetEventSettingsFromDto(event *dto.PostEventIn, groups *dto.GetGroupsOut, c
 		Collaborators:    collabs,
 		AllowDownloading: event.AllowDownloading,
 		OwnerId:          event.OwnerId,
+		GroupEvent:       event.GroupEvent,
 	}
 
 	if eventOut.StartDate == "01.01.1970 00:00:00.000" {

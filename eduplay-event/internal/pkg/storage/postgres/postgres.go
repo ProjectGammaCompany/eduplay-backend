@@ -102,7 +102,7 @@ func (s *Storage) PostEvent(ctx context.Context, in *dto.PostEventIn) (string, e
 		endDate   *timestamppb.Timestamp
 	)
 
-	state := `INSERT INTO events (title, description, tags, cover, startDate, endDate, private, password, ownerId, lastEditionDate, allowDownloading) 
+	state := `INSERT INTO events (title, description, tags, cover, startDate, endDate, private, password, ownerId, lastEditionDate, allowDownloading, groupEvent) 
 	VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING eventId;`
 
 	if in.StartDate != nil {
@@ -115,7 +115,7 @@ func (s *Storage) PostEvent(ctx context.Context, in *dto.PostEventIn) (string, e
 
 	fmt.Println(endDate)
 
-	res := s.db.QueryRow(ctx, state, in.Title, in.Description, in.Tags, in.Cover, startDate.AsTime(), endDate.AsTime(), in.Private, in.Password, in.OwnerId, time.Now(), in.AllowDownloading)
+	res := s.db.QueryRow(ctx, state, in.Title, in.Description, in.Tags, in.Cover, startDate.AsTime(), endDate.AsTime(), in.Private, in.Password, in.OwnerId, time.Now(), in.AllowDownloading, in.GroupEvent)
 
 	var id string
 	err := res.Scan(&id)
@@ -130,7 +130,7 @@ func (s *Storage) PostEvent(ctx context.Context, in *dto.PostEventIn) (string, e
 func (s *Storage) GetEvent(ctx context.Context, id string) (*dto.PostEventIn, error) {
 	const op = "storage.postgres.GetEvent"
 
-	state := `SELECT title, description, tags, cover, startDate, endDate, private, password, ownerId, lastEditionDate, allowDownloading FROM events WHERE eventId = $1;`
+	state := `SELECT title, description, tags, cover, startDate, endDate, private, password, ownerId, lastEditionDate, allowDownloading, groupEvent FROM events WHERE eventId = $1;`
 
 	res := s.db.QueryRow(ctx, state, id)
 
@@ -146,9 +146,10 @@ func (s *Storage) GetEvent(ctx context.Context, id string) (*dto.PostEventIn, er
 		ownerId          string
 		lastEditionDate  time.Time
 		allowDownloading bool
+		groupEvent       bool
 	)
 
-	err := res.Scan(&title, &description, &tags, &cover, &startDate, &endDate, &private, &password, &ownerId, &lastEditionDate, &allowDownloading)
+	err := res.Scan(&title, &description, &tags, &cover, &startDate, &endDate, &private, &password, &ownerId, &lastEditionDate, &allowDownloading, &groupEvent)
 
 	if err != nil {
 		return nil, fmt.Errorf("%s: %w", op, err)
@@ -167,6 +168,7 @@ func (s *Storage) GetEvent(ctx context.Context, id string) (*dto.PostEventIn, er
 		OwnerId:          ownerId,
 		LastEditionDate:  timestamppb.New(lastEditionDate),
 		AllowDownloading: allowDownloading,
+		GroupEvent:       groupEvent,
 	}, nil
 }
 

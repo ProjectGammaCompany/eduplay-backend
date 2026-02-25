@@ -88,6 +88,7 @@ message PostEventIn {
     string ownerId = 10; 
     optional google.protobuf.Timestamp lastEditionDate = 11;
     bool allowDownloading = 12;
+    bool groupEvent = 13; 
 }
 
 message GetRoleIn {
