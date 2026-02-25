@@ -37,6 +37,7 @@ type EventClient interface {
 	PutNextStage(ctx context.Context, in *dto.EventBlockTaskUserIds) (*dto.MessageOut, error)
 	GetNextStage(ctx context.Context, in *dto.UserEventIds) (*dto.NextStageInfo, error)
 	PutTimestamp(ctx context.Context, in *dto.PutTimestampIn) (*dto.MessageOut, error)
+	GetUserStatus(ctx context.Context, in *dto.UserEventIds) (*dto.MessageOut, error)
 }
 
 type UserClient interface {

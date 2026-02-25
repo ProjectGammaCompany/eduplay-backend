@@ -36,6 +36,7 @@ service Events {
     rpc PutNextStage(EventBlockTaskUserIds) returns (MessageOut);
     rpc GetNextStage(UserEventIds) returns (NextStageInfo);
     rpc PutTimestamp(PutTimestampIn) returns (MessageOut);
+    rpc GetUserStatus(UserEventIds) returns (MessageOut);
 }
 
 message Empty {}

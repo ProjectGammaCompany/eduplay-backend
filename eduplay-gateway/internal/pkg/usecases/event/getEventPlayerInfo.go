@@ -38,6 +38,12 @@ func (s *UseCase) GetEventPlayerInfo(ctx context.Context, userId string, eventId
 		return nil, err
 	}
 
+	userStatus, err := s.eventClient.GetUserStatus(ctx, &eventDto.UserEventIds{UserId: userId, EventId: eventId})
+	if err != nil {
+		s.log.With(slog.String("op", op)).Error("failed to get user status", slog.String("error", err.Error()))
+		return nil, err
+	}
+
 	playerInfo.EventId = event.EventId
 	playerInfo.Title = event.Title
 	playerInfo.Description = event.Description
@@ -49,8 +55,11 @@ func (s *UseCase) GetEventPlayerInfo(ctx context.Context, userId string, eventId
 	playerInfo.EndDate = event.EndDate.AsTime().Format("02.01.2006 15:04:05.000")
 	playerInfo.Rate = eventForUser.Rate
 	playerInfo.Favorite = eventForUser.Favorite
-	playerInfo.Status = eventForUser.Status
+	playerInfo.Status = userStatus.Message
 	playerInfo.Authors = append(playerInfo.Authors, eventModel.Collaborator{Id: event.OwnerId, Email: ownerProfile.Email, Avatar: ownerProfile.Avatar})
+	playerInfo.CanBeDownloaded = event.AllowDownloading
+	playerInfo.Status = userStatus.Message
+	playerInfo.IsPrivate = event.Private
 
 	s.log.With(slog.String("op", op)).Info("got event player info", slog.Any("event", event.EventId))
 

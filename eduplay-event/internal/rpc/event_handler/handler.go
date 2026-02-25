@@ -40,6 +40,7 @@ type UseCase interface {
 	PutNextStage(ctx context.Context, stage *dto.EventBlockTaskUserIds) (string, error)
 	GetNextStage(ctx context.Context, in *dto.UserEventIds) (*dto.NextStageInfo, error)
 	PutTimestamp(ctx context.Context, in *dto.PutTimestampIn) (string, error)
+	GetUserStatus(ctx context.Context, in *dto.UserEventIds) (*dto.MessageOut, error)
 }
 
 type Handler struct {
@@ -368,4 +369,15 @@ func (h *Handler) PutTimestamp(ctx context.Context, in *dto.PutTimestampIn) (*dt
 	}
 
 	return &dto.MessageOut{Message: message}, nil
+}
+
+func (h *Handler) GetUserStatus(ctx context.Context, in *dto.UserEventIds) (*dto.MessageOut, error) {
+	op := "GetUserStatus.Handler"
+
+	ret, err := h.uc.GetUserStatus(ctx, in)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return ret, nil
 }

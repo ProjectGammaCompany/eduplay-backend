@@ -103,6 +103,13 @@ func New(log *slog.Logger, uc UseCase) http.HandlerFunc {
 			return
 		}
 
+		if ret.IsPrivate && ret.Status == "not started" {
+			log.Error("event is private")
+			writer.WriteHeader(http.StatusForbidden)
+			render.JSON(writer, request, lib.Error("event is private"))
+			return
+		}
+
 		writer.WriteHeader(http.StatusOK)
 		render.JSON(writer, request, ret)
 	}

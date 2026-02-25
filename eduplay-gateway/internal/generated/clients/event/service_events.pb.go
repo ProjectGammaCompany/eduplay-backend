@@ -2592,8 +2592,8 @@ var file_clients_service_events_proto_rawDesc = []byte{
 	0x6e, 0x74, 0x49, 0x64, 0x12, 0x38, 0x0a, 0x09, 0x74, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d,
 	0x70, 0x18, 0x03, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1a, 0x2e, 0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65,
 	0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x54, 0x69, 0x6d, 0x65, 0x73, 0x74,
-	0x61, 0x6d, 0x70, 0x52, 0x09, 0x74, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d, 0x70, 0x32, 0xca,
-	0x0e, 0x0a, 0x06, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x73, 0x12, 0x3a, 0x0a, 0x08, 0x53, 0x61, 0x76,
+	0x61, 0x6d, 0x70, 0x52, 0x09, 0x74, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d, 0x70, 0x32, 0x8d,
+	0x0f, 0x0a, 0x06, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x73, 0x12, 0x3a, 0x0a, 0x08, 0x53, 0x61, 0x76,
 	0x65, 0x46, 0x69, 0x6c, 0x65, 0x12, 0x16, 0x2e, 0x65, 0x76, 0x65, 0x6e, 0x74, 0x5f, 0x64, 0x61,
 	0x74, 0x61, 0x2e, 0x53, 0x61, 0x76, 0x65, 0x46, 0x69, 0x6c, 0x65, 0x49, 0x6e, 0x1a, 0x16, 0x2e,
 	0x65, 0x76, 0x65, 0x6e, 0x74, 0x5f, 0x64, 0x61, 0x74, 0x61, 0x2e, 0x4d, 0x65, 0x73, 0x73, 0x61,
@@ -2709,9 +2709,13 @@ var file_clients_service_events_proto_rawDesc = []byte{
 	0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d, 0x70, 0x12, 0x1a, 0x2e, 0x65, 0x76, 0x65, 0x6e, 0x74, 0x5f,
 	0x64, 0x61, 0x74, 0x61, 0x2e, 0x50, 0x75, 0x74, 0x54, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d,
 	0x70, 0x49, 0x6e, 0x1a, 0x16, 0x2e, 0x65, 0x76, 0x65, 0x6e, 0x74, 0x5f, 0x64, 0x61, 0x74, 0x61,
-	0x2e, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x4f, 0x75, 0x74, 0x42, 0x12, 0x5a, 0x10, 0x65,
-	0x64, 0x75, 0x70, 0x6c, 0x61, 0x79, 0x2d, 0x65, 0x76, 0x65, 0x6e, 0x74, 0x2e, 0x76, 0x31, 0x62,
-	0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x2e, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x4f, 0x75, 0x74, 0x12, 0x41, 0x0a, 0x0d, 0x47,
+	0x65, 0x74, 0x55, 0x73, 0x65, 0x72, 0x53, 0x74, 0x61, 0x74, 0x75, 0x73, 0x12, 0x18, 0x2e, 0x65,
+	0x76, 0x65, 0x6e, 0x74, 0x5f, 0x64, 0x61, 0x74, 0x61, 0x2e, 0x55, 0x73, 0x65, 0x72, 0x45, 0x76,
+	0x65, 0x6e, 0x74, 0x49, 0x64, 0x73, 0x1a, 0x16, 0x2e, 0x65, 0x76, 0x65, 0x6e, 0x74, 0x5f, 0x64,
+	0x61, 0x74, 0x61, 0x2e, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x4f, 0x75, 0x74, 0x42, 0x12,
+	0x5a, 0x10, 0x65, 0x64, 0x75, 0x70, 0x6c, 0x61, 0x79, 0x2d, 0x65, 0x76, 0x65, 0x6e, 0x74, 0x2e,
+	0x76, 0x31, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -2815,37 +2819,39 @@ var file_clients_service_events_proto_depIdxs = []int32{
 	3,  // 47: event_data.Events.PutNextStage:input_type -> event_data.EventBlockTaskUserIds
 	2,  // 48: event_data.Events.GetNextStage:input_type -> event_data.UserEventIds
 	33, // 49: event_data.Events.PutTimestamp:input_type -> event_data.PutTimestampIn
-	4,  // 50: event_data.Events.SaveFile:output_type -> event_data.MessageOut
-	4,  // 51: event_data.Events.PostEvent:output_type -> event_data.MessageOut
-	8,  // 52: event_data.Events.GetEvent:output_type -> event_data.PostEventIn
-	10, // 53: event_data.Events.GetRole:output_type -> event_data.GetRoleOut
-	11, // 54: event_data.Events.GetGroups:output_type -> event_data.GetGroupsOut
-	13, // 55: event_data.Events.GetCollaborators:output_type -> event_data.GetCollaboratorsOut
-	4,  // 56: event_data.Events.PostEventBlock:output_type -> event_data.MessageOut
-	18, // 57: event_data.Events.GetEventBlocks:output_type -> event_data.GetEventBlocksOut
-	21, // 58: event_data.Events.GetPublicEvents:output_type -> event_data.GetPublicEventsOut
-	21, // 59: event_data.Events.GetUserFavorites:output_type -> event_data.GetPublicEventsOut
-	21, // 60: event_data.Events.GetOwnedEvents:output_type -> event_data.GetPublicEventsOut
-	21, // 61: event_data.Events.GetHistory:output_type -> event_data.GetPublicEventsOut
-	4,  // 62: event_data.Events.PutFavorite:output_type -> event_data.MessageOut
-	6,  // 63: event_data.Events.GetAllTags:output_type -> event_data.Tags
-	4,  // 64: event_data.Events.PostTask:output_type -> event_data.MessageOut
-	27, // 65: event_data.Events.PostBlockCondition:output_type -> event_data.PostConditionOut
-	4,  // 66: event_data.Events.DeleteBlockCondition:output_type -> event_data.MessageOut
-	15, // 67: event_data.Events.GetBlockInfo:output_type -> event_data.PostEventBlockIn
-	17, // 68: event_data.Events.GetBlockConditions:output_type -> event_data.BlockInfo
-	26, // 69: event_data.Events.GetBlockTasks:output_type -> event_data.Tasks
-	25, // 70: event_data.Events.GetTaskById:output_type -> event_data.Task
-	4,  // 71: event_data.Events.DeleteTask:output_type -> event_data.MessageOut
-	4,  // 72: event_data.Events.DeleteBlockById:output_type -> event_data.MessageOut
-	4,  // 73: event_data.Events.DeleteEventById:output_type -> event_data.MessageOut
-	28, // 74: event_data.Events.PostAnswer:output_type -> event_data.Answer
-	20, // 75: event_data.Events.GetEventForUser:output_type -> event_data.GetPublicEvent
-	4,  // 76: event_data.Events.PutNextStage:output_type -> event_data.MessageOut
-	29, // 77: event_data.Events.GetNextStage:output_type -> event_data.NextStageInfo
-	4,  // 78: event_data.Events.PutTimestamp:output_type -> event_data.MessageOut
-	50, // [50:79] is the sub-list for method output_type
-	21, // [21:50] is the sub-list for method input_type
+	2,  // 50: event_data.Events.GetUserStatus:input_type -> event_data.UserEventIds
+	4,  // 51: event_data.Events.SaveFile:output_type -> event_data.MessageOut
+	4,  // 52: event_data.Events.PostEvent:output_type -> event_data.MessageOut
+	8,  // 53: event_data.Events.GetEvent:output_type -> event_data.PostEventIn
+	10, // 54: event_data.Events.GetRole:output_type -> event_data.GetRoleOut
+	11, // 55: event_data.Events.GetGroups:output_type -> event_data.GetGroupsOut
+	13, // 56: event_data.Events.GetCollaborators:output_type -> event_data.GetCollaboratorsOut
+	4,  // 57: event_data.Events.PostEventBlock:output_type -> event_data.MessageOut
+	18, // 58: event_data.Events.GetEventBlocks:output_type -> event_data.GetEventBlocksOut
+	21, // 59: event_data.Events.GetPublicEvents:output_type -> event_data.GetPublicEventsOut
+	21, // 60: event_data.Events.GetUserFavorites:output_type -> event_data.GetPublicEventsOut
+	21, // 61: event_data.Events.GetOwnedEvents:output_type -> event_data.GetPublicEventsOut
+	21, // 62: event_data.Events.GetHistory:output_type -> event_data.GetPublicEventsOut
+	4,  // 63: event_data.Events.PutFavorite:output_type -> event_data.MessageOut
+	6,  // 64: event_data.Events.GetAllTags:output_type -> event_data.Tags
+	4,  // 65: event_data.Events.PostTask:output_type -> event_data.MessageOut
+	27, // 66: event_data.Events.PostBlockCondition:output_type -> event_data.PostConditionOut
+	4,  // 67: event_data.Events.DeleteBlockCondition:output_type -> event_data.MessageOut
+	15, // 68: event_data.Events.GetBlockInfo:output_type -> event_data.PostEventBlockIn
+	17, // 69: event_data.Events.GetBlockConditions:output_type -> event_data.BlockInfo
+	26, // 70: event_data.Events.GetBlockTasks:output_type -> event_data.Tasks
+	25, // 71: event_data.Events.GetTaskById:output_type -> event_data.Task
+	4,  // 72: event_data.Events.DeleteTask:output_type -> event_data.MessageOut
+	4,  // 73: event_data.Events.DeleteBlockById:output_type -> event_data.MessageOut
+	4,  // 74: event_data.Events.DeleteEventById:output_type -> event_data.MessageOut
+	28, // 75: event_data.Events.PostAnswer:output_type -> event_data.Answer
+	20, // 76: event_data.Events.GetEventForUser:output_type -> event_data.GetPublicEvent
+	4,  // 77: event_data.Events.PutNextStage:output_type -> event_data.MessageOut
+	29, // 78: event_data.Events.GetNextStage:output_type -> event_data.NextStageInfo
+	4,  // 79: event_data.Events.PutTimestamp:output_type -> event_data.MessageOut
+	4,  // 80: event_data.Events.GetUserStatus:output_type -> event_data.MessageOut
+	51, // [51:81] is the sub-list for method output_type
+	21, // [21:51] is the sub-list for method input_type
 	21, // [21:21] is the sub-list for extension type_name
 	21, // [21:21] is the sub-list for extension extendee
 	0,  // [0:21] is the sub-list for field type_name

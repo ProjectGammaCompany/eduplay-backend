@@ -402,8 +402,7 @@ func (s *Storage) GetPublicEvent(ctx context.Context, ids *dto.UserEventIds) (*d
     ) AS favorite
 FROM events e
 LEFT JOIN ratings r ON e.eventId = r.eventId  
-WHERE e.private = false
-  AND e.eventId = $1
+WHERE e.eventId = $1
 GROUP BY e.eventId;`
 
 	res := s.db.QueryRow(ctx, state, ids.EventId, ids.UserId)
@@ -1297,4 +1296,25 @@ ORDER BY t.taskOrder;
 	}
 
 	return tasks, nil
+}
+
+func (s *Storage) GetUserStatus(ctx context.Context, userId string, eventId string) (*dto.MessageOut, error) {
+	const op = "storage.postgres.GetUserStatus"
+
+	state := `SELECT finished FROM userLinks WHERE userId = $1 AND eventId = $2;`
+
+	var finished bool
+	err := s.db.QueryRow(ctx, state, userId, eventId).Scan(&finished)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return &dto.MessageOut{Message: "not started"}, nil
+		}
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	if finished {
+		return &dto.MessageOut{Message: "finished"}, nil
+	}
+
+	return &dto.MessageOut{Message: "in progress"}, nil
 }

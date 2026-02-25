@@ -288,21 +288,20 @@ func TagsFromDto(in []*dto.Tag) Tags {
 }
 
 type EventPlayerInfo struct {
-	EventId         string `json:"eventId"`
-	Title           string `json:"title"`
-	Description     string `json:"description"`
-	Tags            []Tag  `json:"tags"`
-	Cover           string `json:"cover"`
-	StartDate       string `json:"startDate"`
-	EndDate         string `json:"endDate"`
-	LastEditionDate string `json:"lastEditionDate"`
-
-	Authors []Collaborator `json:"authors"`
-
-	Rate     int64 `json:"rate"`
-	Favorite bool  `json:"favorite"`
-
-	Status string `json:"status"`
+	EventId         string         `json:"eventId"`
+	Title           string         `json:"title"`
+	Description     string         `json:"description"`
+	Tags            []Tag          `json:"tags"`
+	Cover           string         `json:"cover"`
+	StartDate       string         `json:"startDate"`
+	EndDate         string         `json:"endDate"`
+	LastEditionDate string         `json:"lastEditionDate"`
+	Authors         []Collaborator `json:"authors"`
+	Rate            int64          `json:"rate"`
+	Favorite        bool           `json:"favorite"`
+	Status          string         `json:"status"`
+	CanBeDownloaded bool           `json:"canBeDownloaded"`
+	IsPrivate       bool           `json:"isPrivate"`
 }
 
 type EventBlockTaskUserIds struct {
