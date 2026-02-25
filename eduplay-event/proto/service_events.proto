@@ -155,11 +155,12 @@ message EventBaseFilters {
     int64 page = 1;
     int64 maxOnPage = 2;
     string userId = 3;
-    // repeated string tags = 3;
-    // bool decliningRating = 4;
-    // bool territorialized = 5;
-    // bool active = 6;
-    // string userId = 7;
+    bool decliningRating = 4;
+    bool territorialized = 5;
+    bool active = 6;
+    bool favorites = 7;
+    repeated string tags = 8;
+    string title = 9;
 }
 
 message GetPublicEvent {

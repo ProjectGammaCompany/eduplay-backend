@@ -2,7 +2,7 @@ CREATE TABLE events (
     eventId uuid PRIMARY KEY DEFAULT gen_random_uuid(),
     title text NOT NULL DEFAULT '',
     description text NOT NULL DEFAULT '', 
-    tags uuid[] NOT NULL DEFAULT '{}',
+    tags text[] NOT NULL DEFAULT '{}',
     cover VARCHAR(255) DEFAULT '',
     startDate TIMESTAMP,
     endDate TIMESTAMP, 

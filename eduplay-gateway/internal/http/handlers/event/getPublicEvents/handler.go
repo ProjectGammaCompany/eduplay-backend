@@ -77,11 +77,18 @@ func New(log *slog.Logger, uc UseCase) http.HandlerFunc {
 			maxOnPage = "10"
 		}
 		filters.MaxOnPage, _ = strconv.ParseInt(maxOnPage, 10, 64)
-		// filters.Tags, _ = request.URL.Query()["tags"]
-		// filters.DecliningRating, _ = strconv.ParseBool(request.URL.Query().Get("decliningRating"))
-		// filters.Territorialized, _ = strconv.ParseBool(request.URL.Query().Get("territorialized"))
-		// filters.Active, _ = strconv.ParseBool(request.URL.Query().Get("active"))
-		// filters.UserId = accessClaims.ID
+
+		filters.Tags = request.URL.Query()["tags"]
+
+		filters.DecliningRating, _ = strconv.ParseBool(request.URL.Query().Get("decliningRating"))
+
+		filters.Territorialized, _ = strconv.ParseBool(request.URL.Query().Get("territorialized"))
+
+		filters.Active, _ = strconv.ParseBool(request.URL.Query().Get("active"))
+
+		filters.Favorites, _ = strconv.ParseBool(request.URL.Query().Get("favorites"))
+
+		filters.Title = request.URL.Query().Get("title")
 
 		filters.UserId = accessClaims.ID
 

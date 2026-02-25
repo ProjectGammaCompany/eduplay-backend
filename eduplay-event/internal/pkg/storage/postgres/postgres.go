@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	dto "eduplay-event/internal/generated"
+	"strings"
 	"time"
 
 	"errors"
@@ -490,28 +491,71 @@ func (s *Storage) GetEventProgress(ctx context.Context, userId string, eventId s
 func (s *Storage) GetPublicEvents(ctx context.Context, in *dto.EventBaseFilters) (*dto.GetPublicEventsOut, error) {
 	const op = "storage.postgres.GetPublicEvents"
 
-	state := `SELECT 
-    e.eventId,
-    e.title, 
-    e.description,
-    e.cover,
-    e.lastEditionDate,
-    e.tags,
-    COALESCE(AVG(r.rating), 0) as rate,
-    EXISTS (
-        SELECT 1 
-        FROM userFavorites 
-        WHERE userId = $3 AND eventId = e.eventId
-    ) as favorite
-FROM events AS e
-LEFT JOIN ratings r ON e.eventId = r.eventId  
-WHERE e.private = false
-GROUP BY e.eventId  
-ORDER BY e.lastEditionDate DESC  
-LIMIT $1 
-OFFSET $2;`
+	var args = []interface{}{}
 
-	res, err := s.db.Query(ctx, state, in.MaxOnPage, (in.Page-1)*in.MaxOnPage, in.UserId)
+	limit := in.MaxOnPage
+	offset := (in.Page - 1) * in.MaxOnPage
+
+	args = append(args, limit, offset, in.UserId)
+	userParamIdx := 3
+
+	tagsParamIdx := 4
+	if len(in.Tags) > 0 {
+		args = append(args, in.Tags)
+	}
+
+	titleParamIdx := 5
+	if in.Title != "" {
+		args = append(args, in.Title)
+	}
+
+	var where []string
+	where = append(where, "e.private = false")
+
+	if in.Active {
+		where = append(where, "e.startDate < now() AND e.endDate > now()")
+	}
+
+	if in.Favorites {
+		where = append(where, fmt.Sprintf("EXISTS (SELECT 1 FROM userFavorites WHERE userId = $%d AND eventId = e.eventId)", userParamIdx))
+	}
+
+	if len(in.Tags) > 0 {
+		where = append(where, fmt.Sprintf("e.tags && $%d", tagsParamIdx))
+	}
+
+	if in.Title != "" {
+		where = append(where, fmt.Sprintf("e.title ILIKE $%d", titleParamIdx))
+	}
+
+	whereClause := strings.Join(where, " AND ")
+
+	orderBy := "e.lastEditionDate DESC"
+	if in.DecliningRating {
+		orderBy = "rate DESC"
+	}
+
+	state := fmt.Sprintf(`
+			SELECT
+            e.eventId,
+            e.title,
+            e.description,
+            e.cover,
+            e.lastEditionDate,
+            e.tags,
+            COALESCE(AVG(r.rating), 0) AS rate,
+            EXISTS (SELECT 1 FROM userFavorites WHERE userId = $%d AND eventId = e.eventId) AS favorite
+        FROM events e
+        LEFT JOIN ratings r ON e.eventId = r.eventId
+        WHERE %s
+        GROUP BY e.eventId
+        ORDER BY %s
+        LIMIT $1 OFFSET $2
+	`, userParamIdx, whereClause, orderBy)
+
+	// fmt.Println(state, args)
+
+	res, err := s.db.Query(ctx, state, args...)
 	if err != nil {
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}

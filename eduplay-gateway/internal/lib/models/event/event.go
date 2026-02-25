@@ -191,24 +191,28 @@ func CollaboratorsFromDto(collaborators *dto.GetCollaboratorsOut) []Collaborator
 }
 
 type EventBaseFilters struct {
-	Page      int64 `json:"page"`
-	MaxOnPage int64 `json:"maxOnPage"`
-	// Tags            []string `json:"tags"`
-	// DecliningRating bool     `json:"decliningRating"`
-	// Territorialized bool     `json:"territorialized"`
-	// Active          bool     `json:"active"`
-	UserId string `json:"userId"`
+	Page            int64    `json:"page"`
+	MaxOnPage       int64    `json:"maxOnPage"`
+	Tags            []string `json:"tags"`
+	DecliningRating bool     `json:"decliningRating"`
+	Territorialized bool     `json:"territorialized"`
+	Active          bool     `json:"active"`
+	Favorites       bool     `json:"favorites"`
+	UserId          string   `json:"userId"`
+	Title           string   `json:"title"`
 }
 
 func EventBaseFiltersToDto(in *EventBaseFilters) *dto.EventBaseFilters {
 	return &dto.EventBaseFilters{
-		Page:      in.Page,
-		MaxOnPage: in.MaxOnPage,
-		// Tags:            in.Tags,
-		// DecliningRating: in.DecliningRating,
-		// Territorialized: in.Territorialized,
-		// Active:          in.Active,
-		UserId: in.UserId,
+		Page:            in.Page,
+		MaxOnPage:       in.MaxOnPage,
+		Tags:            in.Tags,
+		DecliningRating: in.DecliningRating,
+		Territorialized: in.Territorialized,
+		Active:          in.Active,
+		Favorites:       in.Favorites,
+		UserId:          in.UserId,
+		Title:           in.Title,
 	}
 }
 
