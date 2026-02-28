@@ -294,6 +294,26 @@ func (s *Storage) PostEventBlock(ctx context.Context, in *dto.PostEventBlockIn) 
 	return id, nil
 }
 
+func (s *Storage) PutEventBlock(ctx context.Context, in *dto.PostEventBlockIn) (string, error) {
+	const op = "storage.postgres.PutEventBlock"
+
+	state := `UPDATE blocks SET isParallel = $2, blockOrder = $3, showPoints = $4, showAnswers = $5, partialPoints = $6 WHERE blockId = $1;`
+
+	_, err := s.db.Exec(ctx, state, in.BlockId, in.IsParallel, in.Order, in.ShowPoints, in.ShowAnswers, in.PartialPoints)
+
+	if err != nil {
+		return "", fmt.Errorf("%s: %w", op, err)
+	}
+
+	state = `UPDATE tasks SET partialPoint = $2 WHERE blockId = $1;`
+	_, err = s.db.Exec(ctx, state, in.BlockId, in.PartialPoints)
+	if err != nil {
+		return "", fmt.Errorf("%s: %w", op, err)
+	}
+
+	return "block " + in.BlockId + " updated", nil
+}
+
 func (s *Storage) DeleteEventBlock(ctx context.Context, blockId string) (string, error) {
 	const op = "storage.postgres.DeleteEventBlock"
 
@@ -584,72 +604,6 @@ func (s *Storage) GetPublicEvents(ctx context.Context, in *dto.EventBaseFilters)
 	}
 
 	return events, nil
-
-	// 	state := `SELECT
-	//     e.eventId as id,
-	//     e.title,
-	//     e.description,
-	//     e.cover,
-	//     e.lastEditionDate,
-	//     COALESCE(AVG(r.rating), 0) as rate,
-	//     -- Проверяем, есть ли событие в избранном у пользователя
-	//    	CASE
-	//             WHEN $6::uuid IS NULL THEN false
-	//             ELSE EXISTS(
-	//                 SELECT 1 FROM userFavorites uf
-	//                 WHERE uf.eventId = e.eventId AND uf.userId = $6::uuid
-	//             )
-	//         END as favorite,
-	//     e.tags
-	// FROM events e
-	// LEFT JOIN ratings r ON e.eventId = r.eventId
-	// WHERE
-	//     e.private = false
-	//     AND (
-	//         $4 = false
-	//         OR (
-	//             e.startDate < NOW()
-	//             AND (e.endDate IS NULL OR e.endDate > NOW())
-	//         )
-	//     )
-	//     AND (
-	//         $5::text[] IS NULL
-	//         OR cardinality($5::text[]) = 0
-	//         OR e.tags && $5::text[]
-	//     )
-	// GROUP BY e.eventId
-	// ORDER BY
-	//     CASE
-	//         WHEN $3 = true THEN -COALESCE(AVG(r.rating), 0)
-	//         ELSE 1
-	//     END,
-	//     e.lastEditionDate DESC
-	// LIMIT $2
-	// OFFSET (($1 - 1) * $2);`
-
-	// 	emptyTags := []string{}
-
-	// 	res, err := s.db.Query(ctx, state, in.Page, in.MaxOnPage, in.DecliningRating, in.Active, emptyTags, in.UserId)
-	// 	if err != nil {
-	// 		return nil, fmt.Errorf("%s: %w", op, err)
-	// 	}
-	// 	fmt.Println(state, in.Page, in.MaxOnPage, in.DecliningRating, in.Active, emptyTags, in.UserId)
-	// 	events := &dto.GetPublicEventsOut{}
-
-	// 	for res.Next() {
-	// 		fmt.Println("trying to get row")
-	// 		var event *dto.GetPublicEvent
-	// 		var lastEd time.Time
-	// 		err = res.Scan(&event.EventId, &event.Title, &event.Description, &event.Cover, &lastEd, &event.Rate, &event.Favorite, &event.Tags)
-	// 		if err != nil {
-	// 			return nil, fmt.Errorf("%s: %w", op, err)
-	// 		}
-	// 		fmt.Println("got one row")
-	// 		event.LastEditionDate = timestamppb.New(lastEd)
-	// 		events.Events = append(events.Events, event)
-	// 	}
-
-	// 	return events, nil
 }
 
 func (s *Storage) GetUserFavorites(ctx context.Context, in *dto.EventBaseFilters) (*dto.GetPublicEventsOut, error) {
@@ -947,6 +901,51 @@ func (s *Storage) PostTask(ctx context.Context, in *dto.Task) (string, error) {
 	return id, nil
 }
 
+func (s *Storage) PutTask(ctx context.Context, in *dto.Task) (*dto.PutTaskOut, error) {
+	const op = "storage.postgres.PutTask"
+
+	state := `UPDATE tasks SET name = $1, description = $2, type = $3, files = COALESCE($4, '{}'::text[]), time = $5, points = $6, partialPoint = $7 WHERE taskId = $8 RETURNING taskOrder;`
+
+	res := s.db.QueryRow(ctx, state, in.Name, in.Description, in.Type, in.Files, in.Time, in.Points, in.PartialPoints, in.TaskId)
+
+	var order int64
+	err := res.Scan(&order)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	state = `DELETE FROM options WHERE taskId = $1;`
+
+	_, err = s.db.Exec(ctx, state, in.TaskId)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	if len(in.Options) > 0 {
+		values := make([]string, len(in.Options))
+		isCorrect := make([]bool, len(in.Options))
+		for i, g := range in.Options {
+			values[i] = g.Value
+			isCorrect[i] = g.IsCorrect
+		}
+		query := `
+        INSERT INTO options (taskId, value, isCorrect)
+        SELECT $1, unnest($2::text[]), unnest($3::bool[])
+    `
+		_, err = s.db.Exec(ctx, query, in.TaskId, values, isCorrect)
+		if err != nil {
+			return nil, fmt.Errorf("%s: insert failed: %w", op, err)
+		}
+	}
+
+	options, err := s.GetTaskOptions(ctx, in.TaskId)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return &dto.PutTaskOut{Order: order, Options: options.Options}, nil
+}
+
 func (s *Storage) PostBlockCondition(ctx context.Context, in *dto.Condition) (*dto.PostConditionOut, error) {
 	const op = "storage.postgres.PostBlockCondition"
 
@@ -970,6 +969,27 @@ func (s *Storage) PostBlockCondition(ctx context.Context, in *dto.Condition) (*d
 	}
 
 	return &dto.PostConditionOut{ConditionId: id, BlockOrder: order}, nil
+}
+
+func (s *Storage) PutBlockCondition(ctx context.Context, in *dto.Condition) (string, error) {
+	const op = "storage.postgres.PutBlockCondition"
+
+	var nextBlockId *string
+
+	if in.NextBlockId == "" {
+		nextBlockId = nil
+	} else {
+		nextBlockId = &in.NextBlockId
+	}
+
+	state := `UPDATE conditions SET prevBlockId = $1, nextBlockId = $2, groupName = COALESCE($3, '{}'::text[]), min = $4, max = $5 WHERE conditionId = $6;`
+
+	_, err := s.db.Exec(ctx, state, in.PreviousBlockId, nextBlockId, in.GroupIds, in.Min, in.Max, in.ConditionId)
+	if err != nil {
+		return "", fmt.Errorf("%s: %w", op, err)
+	}
+
+	return "block condition " + in.ConditionId + " updated", nil
 }
 
 func (s *Storage) DeleteBlockCondition(ctx context.Context, conditionId string) (string, error) {
@@ -1016,11 +1036,17 @@ func (s *Storage) GetBlockConditionsFull(ctx context.Context, blockId string) (*
 	conditions := make([]*dto.Condition, 0)
 	for res.Next() {
 		condition := &dto.Condition{}
+		var nextBlockId sql.NullString
 		// var emptyGroup pgtype.Array[string]
-		err = res.Scan(&condition.NextBlockOrder, &condition.PreviousBlockId, &condition.NextBlockId, &condition.GroupIds, &condition.Min, &condition.Max, &condition.ConditionId)
+		err = res.Scan(&condition.NextBlockOrder, &condition.PreviousBlockId, &nextBlockId, &condition.GroupIds, &condition.Min, &condition.Max, &condition.ConditionId)
 		if err != nil {
 			return nil, fmt.Errorf("%s: %w", op, err)
 		}
+
+		if nextBlockId.Valid {
+			condition.NextBlockId = nextBlockId.String
+		}
+
 		// if emptyGroup.Valid {
 		// 	condition.GroupIds = emptyGroup.Elements
 		// }
@@ -1317,4 +1343,128 @@ func (s *Storage) GetUserStatus(ctx context.Context, userId string, eventId stri
 	}
 
 	return &dto.MessageOut{Message: "in progress"}, nil
+}
+
+func (s *Storage) GetCollaboratorIds(ctx context.Context, emails []string) ([]string, error) {
+	const op = "storage.postgres.GetCollaboratorIds"
+
+	state := `SELECT userId FROM users WHERE email = ANY($1);`
+
+	res, err := s.db.Query(ctx, state, emails)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	defer res.Close()
+
+	ids := make([]string, 0)
+	for res.Next() {
+		var id string
+		err = res.Scan(&id)
+		if err != nil {
+			return nil, fmt.Errorf("%s: %w", op, err)
+		}
+		ids = append(ids, id)
+	}
+
+	return ids, nil
+}
+
+func (s *Storage) UpdateEventCollaborators(ctx context.Context, eventId string, collaboratorIds []string) error {
+	const op = "storage.postgres.UpdateEventCollaborators"
+
+	state := `DELETE FROM userLinks WHERE eventId = $1 AND isParticipant = false;`
+	_, err := s.db.Exec(ctx, state, eventId)
+	if err != nil {
+		return fmt.Errorf("%s: %w", op, err)
+	}
+
+	state = `INSERT INTO userLinks (userId, eventId, isParticipant)
+	SELECT unnest($2::uuid[]), $1, false;`
+
+	_, err = s.db.Exec(ctx, state, eventId, collaboratorIds)
+	if err != nil {
+		return fmt.Errorf("%s: %w", op, err)
+	}
+
+	return nil
+}
+
+func (s *Storage) PutEvent(ctx context.Context, in *dto.PutEventIn) (string, error) {
+	const op = "storage.postgres.PostEvent"
+
+	var (
+		startDate *timestamppb.Timestamp
+		endDate   *timestamppb.Timestamp
+	)
+
+	state := `UPDATE events 
+SET 
+    title = $1, 
+    description = $2, 
+    tags = $3, 
+    cover = $4, 
+    startDate = $5, 
+    endDate = $6, 
+    private = $7, 
+    password = $8, 
+    lastEditionDate = $9, 
+    allowDownloading = $10,
+    groupEvent = $11
+WHERE eventId = $12 
+RETURNING eventId;`
+
+	fmt.Println(state)
+
+	if in.StartDate != nil {
+		startDate = in.StartDate
+	}
+
+	if in.EndDate != nil {
+		endDate = in.EndDate
+	}
+
+	res := s.db.QueryRow(ctx, state, in.Title, in.Description, in.Tags, in.Cover, startDate.AsTime(), endDate.AsTime(),
+		in.Private, in.Password, time.Now(), in.AllowDownloading, in.GroupEvent, in.EventId)
+
+	fmt.Println(in.Title, in.Description, in.Tags, in.Cover, startDate.AsTime(), endDate.AsTime(),
+		in.Private, in.Password, time.Now(), in.AllowDownloading, in.GroupEvent, in.EventId)
+
+	var id string
+	err := res.Scan(&id)
+
+	if err != nil {
+		return "", fmt.Errorf("%s: %w", op, err)
+	}
+
+	return id, nil
+}
+
+func (s *Storage) UpdateEventGroups(ctx context.Context, eventId string, groups []*dto.Group) error {
+	const op = "storage.postgres.UpdateEventGroups"
+
+	state := `DELETE FROM groups WHERE eventId = $1;`
+	_, err := s.db.Exec(ctx, state, eventId)
+	if err != nil {
+		return fmt.Errorf("%s: %w", op, err)
+	}
+
+	if len(groups) > 0 {
+		logins := make([]string, len(groups))
+		passwords := make([]string, len(groups))
+		for i, g := range groups {
+			logins[i] = g.Login
+			passwords[i] = g.Password
+		}
+		query := `
+        INSERT INTO groups (eventId, login, password)
+        SELECT $1, unnest($2::text[]), unnest($3::text[])
+    `
+		_, err = s.db.Exec(ctx, query, eventId, logins, passwords)
+		if err != nil {
+			return fmt.Errorf("%s: insert failed: %w", op, err)
+		}
+	}
+
+	return nil
 }

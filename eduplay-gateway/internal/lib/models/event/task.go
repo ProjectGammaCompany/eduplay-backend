@@ -11,16 +11,16 @@ type TaskOption struct {
 }
 
 type Task struct {
-	TaskId        string        `json:"id"`
-	BlockId       string        `json:"blockId"`
-	Name          string        `json:"name"`
-	Description   string        `json:"description"`
-	TaskType      int64         `json:"type"`
-	Options       []*TaskOption `json:"options"`
-	Files         []string      `json:"files"`
-	Points        int64         `json:"points"`
-	Time          int64         `json:"time"`
-	PartialPoints bool          `json:"partialPoints"`
+	TaskId        string       `json:"id"`
+	BlockId       string       `json:"blockId"`
+	Name          string       `json:"name"`
+	Description   string       `json:"description"`
+	TaskType      int64        `json:"type"`
+	Options       []TaskOption `json:"options"`
+	Files         []string     `json:"files"`
+	Points        int64        `json:"points"`
+	Time          int64        `json:"time"`
+	PartialPoints bool         `json:"partialPoints"`
 }
 
 func TaskToDto(task *Task) *dto.Task {
@@ -65,10 +65,10 @@ func TaskFromDto(task *dto.Task) *Task {
 	}
 }
 
-func TaskOptionsFromDto(taskOptions []*dto.TaskOption) []*TaskOption {
-	options := make([]*TaskOption, 0)
+func TaskOptionsFromDto(taskOptions []*dto.TaskOption) []TaskOption {
+	options := make([]TaskOption, 0)
 	for _, taskOption := range taskOptions {
-		options = append(options, &TaskOption{
+		options = append(options, TaskOption{
 			OptionId:  taskOption.OptionId,
 			Value:     taskOption.Value,
 			IsCorrect: taskOption.IsCorrect,
@@ -77,7 +77,7 @@ func TaskOptionsFromDto(taskOptions []*dto.TaskOption) []*TaskOption {
 	return options
 }
 
-func TaskOptionsToDto(taskOptions []*TaskOption) []*dto.TaskOption {
+func TaskOptionsToDto(taskOptions []TaskOption) []*dto.TaskOption {
 	dtoTaskOptions := make([]*dto.TaskOption, 0)
 	for _, taskOption := range taskOptions {
 		dtoTaskOptions = append(dtoTaskOptions, &dto.TaskOption{
@@ -148,5 +148,17 @@ func AnswerToDto(answer *Answer) *dto.Answer {
 		Points:      answer.Points,
 		Status:      answer.Status,
 		RightAnswer: answer.RightAnswer,
+	}
+}
+
+type PutTaskOut struct {
+	Order   int64        `json:"order"`
+	Options []TaskOption `json:"options"`
+}
+
+func PutTaskOutFromDto(putTaskOut *dto.PutTaskOut) *PutTaskOut {
+	return &PutTaskOut{
+		Order:   putTaskOut.Order,
+		Options: TaskOptionsFromDto(putTaskOut.Options),
 	}
 }

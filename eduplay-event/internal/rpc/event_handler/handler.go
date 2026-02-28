@@ -13,11 +13,13 @@ import (
 type UseCase interface {
 	SaveFile(ctx context.Context, in *dto.SaveFileIn) (string, error)
 	PostEvent(ctx context.Context, in *dto.PostEventIn) (string, error)
+	PutEvent(ctx context.Context, in *dto.PutEventIn) (*dto.GetGroupsOut, error)
 	GetEvent(ctx context.Context, in *dto.Id) (*dto.PostEventIn, error)
 	GetRole(ctx context.Context, in *dto.GetRoleIn) (*dto.GetRoleOut, error)
 	GetGroups(ctx context.Context, in *dto.Id) (*dto.GetGroupsOut, error)
 	GetCollaborators(ctx context.Context, in *dto.Id) (*dto.GetCollaboratorsOut, error)
 	PostEventBlock(ctx context.Context, in *dto.PostEventBlockIn) (string, error)
+	PutEventBlock(ctx context.Context, in *dto.PostEventBlockIn) (string, error)
 	GetEventBlocks(ctx context.Context, in *dto.Id) (*dto.GetEventBlocksOut, error)
 	GetPublicEvents(ctx context.Context, in *dto.EventBaseFilters) (*dto.GetPublicEventsOut, error)
 	GetUserFavorites(ctx context.Context, in *dto.EventBaseFilters) (*dto.GetPublicEventsOut, error)
@@ -26,7 +28,9 @@ type UseCase interface {
 	PutFavorite(ctx context.Context, in *dto.PutFavoriteIn) (string, error)
 	GetAllTags(ctx context.Context) (*dto.Tags, error)
 	PostTask(ctx context.Context, in *dto.Task) (string, error)
+	PutTask(ctx context.Context, in *dto.Task) (*dto.PutTaskOut, error)
 	PostBlockCondition(ctx context.Context, in *dto.Condition) (*dto.PostConditionOut, error)
+	PutBlockCondition(ctx context.Context, in *dto.Condition) (*dto.MessageOut, error)
 	DeleteBlockCondition(ctx context.Context, in *dto.Id) (string, error)
 	GetBlockInfo(ctx context.Context, in *dto.Id) (*dto.PostEventBlockIn, error)
 	GetBlockConditions(ctx context.Context, in *dto.Id) (*dto.BlockInfo, error)
@@ -72,6 +76,17 @@ func (h *Handler) PostEvent(ctx context.Context, in *dto.PostEventIn) (*dto.Mess
 	}
 
 	return &dto.MessageOut{Message: id}, nil
+}
+
+func (h *Handler) PutEvent(ctx context.Context, in *dto.PutEventIn) (*dto.GetGroupsOut, error) {
+	op := "PutEvent.Handler"
+
+	out, err := h.uc.PutEvent(ctx, in)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return out, nil
 }
 
 func (h *Handler) GetEvent(ctx context.Context, in *dto.Id) (*dto.PostEventIn, error) {
@@ -122,6 +137,17 @@ func (h *Handler) PostEventBlock(ctx context.Context, in *dto.PostEventBlockIn) 
 	op := "PostEventBlock.Handler"
 
 	id, err := h.uc.PostEventBlock(ctx, in)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return &dto.MessageOut{Message: id}, nil
+}
+
+func (h *Handler) PutEventBlock(ctx context.Context, in *dto.PostEventBlockIn) (*dto.MessageOut, error) {
+	op := "PutEventBlock.Handler"
+
+	id, err := h.uc.PutEventBlock(ctx, in)
 	if err != nil {
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
@@ -217,6 +243,17 @@ func (h *Handler) PostTask(ctx context.Context, in *dto.Task) (*dto.MessageOut, 
 	return &dto.MessageOut{Message: id}, nil
 }
 
+func (h *Handler) PutTask(ctx context.Context, in *dto.Task) (*dto.PutTaskOut, error) {
+	op := "PutTask.Handler"
+
+	ret, err := h.uc.PutTask(ctx, in)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return ret, nil
+}
+
 func (h *Handler) PostBlockCondition(ctx context.Context, in *dto.Condition) (*dto.PostConditionOut, error) {
 	op := "PostBlockCondition.Handler"
 
@@ -226,6 +263,17 @@ func (h *Handler) PostBlockCondition(ctx context.Context, in *dto.Condition) (*d
 	}
 
 	return ret, nil
+}
+
+func (h *Handler) PutBlockCondition(ctx context.Context, in *dto.Condition) (*dto.MessageOut, error) {
+	op := "PutBlockCondition.Handler"
+
+	message, err := h.uc.PutBlockCondition(ctx, in)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return message, nil
 }
 
 func (h *Handler) GetBlockInfo(ctx context.Context, in *dto.Id) (*dto.PostEventBlockIn, error) {

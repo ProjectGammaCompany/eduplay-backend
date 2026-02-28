@@ -7,6 +7,80 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
+type PutEventIn struct {
+	EventId     string `json:"id"`
+	Name        string `json:"name"`
+	Description string `json:"description"`
+	// Tags            []Tag   `json:"tags"`
+	Tags            []string `json:"tags"`
+	Cover           string   `json:"cover"`
+	StartDate       string   `json:"startDate"`
+	EndDate         string   `json:"endDate"`
+	Private         bool     `json:"private"`
+	Password        string   `json:"password"`
+	GroupEvent      bool     `json:"groupEvent"`
+	LastEditionDate string   `json:"lastEditionDate"`
+	Groups          []Group  `json:"groups"`
+	Rating          bool     `json:"rating"`
+	// Collaborators []Collaborator `json:"collaborators"`
+	Collaborators    []string `json:"collaborators"`
+	AllowDownloading bool     `json:"allowDownloading"`
+}
+
+func PutEventInToDto(in *PutEventIn) (*dto.PutEventIn, error) {
+	eventDto := &dto.PutEventIn{
+		EventId:     in.EventId,
+		Title:       in.Name,
+		Description: in.Description,
+		Tags:        in.Tags,
+		Cover:       in.Cover,
+		Private:     in.Private,
+		Password:    in.Password,
+		GroupEvent:  in.GroupEvent,
+		Rating:      in.Rating,
+		// Collaborators:   in.Collaborators,
+		Collaborators:    in.Collaborators,
+		AllowDownloading: in.AllowDownloading,
+	}
+
+	if in.StartDate != "" {
+		startDate, err := time.Parse("02.01.2006 15:04", in.StartDate)
+		if err != nil {
+			return nil, err
+		}
+		eventDto.StartDate = timestamppb.New(startDate)
+	}
+
+	if in.EndDate != "" {
+		endDate, err := time.Parse("02.01.2006 15:04", in.EndDate)
+		if err != nil {
+			return nil, err
+		}
+		eventDto.EndDate = timestamppb.New(endDate)
+	}
+
+	if in.LastEditionDate != "" {
+		lastEditionDate, err := time.Parse("02.01.2006 15:04:05.000", in.LastEditionDate)
+		if err != nil {
+			return nil, err
+		}
+		eventDto.LastEditionDate = timestamppb.New(lastEditionDate)
+	}
+
+	gps := make([]*dto.Group, len(in.Groups))
+	for i, group := range in.Groups {
+		gps[i] = &dto.Group{
+			Id:       group.Id,
+			Login:    group.Login,
+			Password: group.Password,
+		}
+	}
+
+	eventDto.Groups = gps
+
+	return eventDto, nil
+}
+
 type PostEventIn struct {
 	EventId          string   `json:"id"`
 	Title            string   `json:"title" validate:"required"`
@@ -109,6 +183,22 @@ type Group struct {
 	Id       string `json:"id"`
 	Login    string `json:"login"`
 	Password string `json:"password"`
+}
+
+type Groups struct {
+	Groups []Group `json:"groups"`
+}
+
+func GroupsFromDto(in *dto.GetGroupsOut) *Groups {
+	gps := make([]Group, len(in.Groups))
+	for i, group := range in.Groups {
+		gps[i] = Group{
+			Id:       group.Id,
+			Login:    group.Login,
+			Password: group.Password,
+		}
+	}
+	return &Groups{Groups: gps}
 }
 
 type Collaborator struct {
@@ -372,15 +462,15 @@ func NextStageInfoFromDto(in *dto.NextStageInfo) *NextStageInfo {
 }
 
 type NextStageTask struct {
-	TaskId      string        `json:"taskId"`
-	BlockId     string        `json:"blockId"`
-	Name        string        `json:"name"`
-	Description string        `json:"description"`
-	TaskType    int64         `json:"type"`
-	Options     []*TaskOption `json:"options"`
-	Files       []string      `json:"files"`
-	Time        int64         `json:"time"`
-	Timestamp   string        `json:"timestamp"`
+	TaskId      string       `json:"taskId"`
+	BlockId     string       `json:"blockId"`
+	Name        string       `json:"name"`
+	Description string       `json:"description"`
+	TaskType    int64        `json:"type"`
+	Options     []TaskOption `json:"options"`
+	Files       []string     `json:"files"`
+	Time        int64        `json:"time"`
+	Timestamp   string       `json:"timestamp"`
 }
 
 func NextStageTaskFromDto(in *dto.NextStageTask) *NextStageTask {
@@ -413,12 +503,12 @@ func NextStageTaskFromDto(in *dto.NextStageTask) *NextStageTask {
 }
 
 type NextStageBlock struct {
-	BlockId    string                `json:"blockId"`
-	Name       string                `json:"name"`
-	Order      int64                 `json:"order"`
-	IsParallel bool                  `json:"isParallel"`
-	Conditions []*Condition          `json:"conditions"`
-	Tasks      []*NextStageTaskShort `json:"tasks"`
+	BlockId    string               `json:"blockId"`
+	Name       string               `json:"name"`
+	Order      int64                `json:"order"`
+	IsParallel bool                 `json:"isParallel"`
+	Conditions []Condition          `json:"conditions"`
+	Tasks      []NextStageTaskShort `json:"tasks"`
 }
 
 func NextStageBlockFromDto(in *dto.NextStageBlock) *NextStageBlock {
@@ -444,10 +534,10 @@ type NextStageTaskShort struct {
 	Description string `json:"description"`
 }
 
-func NextStageTaskShortsFromDto(in []*dto.NextStageTaskShort) []*NextStageTaskShort {
-	ret := make([]*NextStageTaskShort, len(in))
+func NextStageTaskShortsFromDto(in []*dto.NextStageTaskShort) []NextStageTaskShort {
+	ret := make([]NextStageTaskShort, len(in))
 	for i, task := range in {
-		ret[i] = &NextStageTaskShort{
+		ret[i] = NextStageTaskShort{
 			TaskId:      task.TaskId,
 			Name:        task.Name,
 			Time:        task.Time,

@@ -24,6 +24,7 @@ CREATE TABLE blocks (
     isParallel BOOLEAN DEFAULT false,
     showPoints BOOLEAN DEFAULT false,
     showAnswers BOOLEAN DEFAULT false,
+    partialPoints BOOLEAN DEFAULT false,
     FOREIGN KEY (eventId) REFERENCES events(eventId) ON DELETE CASCADE
 );
 

@@ -13,11 +13,13 @@ import (
 type storage interface {
 	SaveFile(ctx context.Context, fileName string, fileUUID string) (string, error)
 	PostEvent(ctx context.Context, in *dto.PostEventIn) (string, error)
+	PutEvent(ctx context.Context, in *dto.PutEventIn) (string, error)
 	GetEvent(ctx context.Context, id string) (*dto.PostEventIn, error)
 	GetRole(ctx context.Context, userId string, eventId string) (int64, error)
 	GetGroups(ctx context.Context, eventId string) (*dto.GetGroupsOut, error)
 	GetCollaborators(ctx context.Context, eventId string) (*dto.GetCollaboratorsOut, error)
 	PostEventBlock(ctx context.Context, in *dto.PostEventBlockIn) (string, error)
+	PutEventBlock(ctx context.Context, in *dto.PostEventBlockIn) (string, error)
 	GetEventBlocks(ctx context.Context, eventId string) (*dto.GetEventBlocksOut, error)
 	GetPublicEvents(ctx context.Context, in *dto.EventBaseFilters) (*dto.GetPublicEventsOut, error)
 	GetUserFavorites(ctx context.Context, in *dto.EventBaseFilters) (*dto.GetPublicEventsOut, error)
@@ -26,7 +28,9 @@ type storage interface {
 	PutFavorite(ctx context.Context, in *dto.PutFavoriteIn) (string, error)
 	GetAllTags(ctx context.Context) (*dto.Tags, error)
 	PostTask(ctx context.Context, in *dto.Task) (string, error)
+	PutTask(ctx context.Context, in *dto.Task) (*dto.PutTaskOut, error)
 	PostBlockCondition(ctx context.Context, in *dto.Condition) (*dto.PostConditionOut, error)
+	PutBlockCondition(ctx context.Context, in *dto.Condition) (string, error)
 	DeleteBlockCondition(ctx context.Context, conditionId string) (string, error)
 	GetBlockInfo(ctx context.Context, id string) (*dto.PostEventBlockIn, error)
 	GetBlockConditionsFull(ctx context.Context, id string) (*dto.BlockInfo, error)
@@ -44,6 +48,9 @@ type storage interface {
 	GetUserBlockPointsSum(ctx context.Context, userId string, blockId string) (int64, error)
 	GetUserBlockTasksShort(ctx context.Context, blockId string, userId string) ([]*dto.NextStageTaskShort, error)
 	GetUserStatus(ctx context.Context, userId string, eventId string) (*dto.MessageOut, error)
+	GetCollaboratorIds(ctx context.Context, emails []string) ([]string, error)
+	UpdateEventCollaborators(ctx context.Context, eventId string, collaboratorIds []string) error
+	UpdateEventGroups(ctx context.Context, eventId string, groups []*dto.Group) error
 }
 
 type UseCase struct {

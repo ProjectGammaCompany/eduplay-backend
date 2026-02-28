@@ -21,11 +21,13 @@ const _ = grpc.SupportPackageIsVersion9
 const (
 	Events_SaveFile_FullMethodName             = "/event_data.Events/SaveFile"
 	Events_PostEvent_FullMethodName            = "/event_data.Events/PostEvent"
+	Events_PutEvent_FullMethodName             = "/event_data.Events/PutEvent"
 	Events_GetEvent_FullMethodName             = "/event_data.Events/GetEvent"
 	Events_GetRole_FullMethodName              = "/event_data.Events/GetRole"
 	Events_GetGroups_FullMethodName            = "/event_data.Events/GetGroups"
 	Events_GetCollaborators_FullMethodName     = "/event_data.Events/GetCollaborators"
 	Events_PostEventBlock_FullMethodName       = "/event_data.Events/PostEventBlock"
+	Events_PutEventBlock_FullMethodName        = "/event_data.Events/PutEventBlock"
 	Events_GetEventBlocks_FullMethodName       = "/event_data.Events/GetEventBlocks"
 	Events_GetPublicEvents_FullMethodName      = "/event_data.Events/GetPublicEvents"
 	Events_GetUserFavorites_FullMethodName     = "/event_data.Events/GetUserFavorites"
@@ -34,7 +36,9 @@ const (
 	Events_PutFavorite_FullMethodName          = "/event_data.Events/PutFavorite"
 	Events_GetAllTags_FullMethodName           = "/event_data.Events/GetAllTags"
 	Events_PostTask_FullMethodName             = "/event_data.Events/PostTask"
+	Events_PutTask_FullMethodName              = "/event_data.Events/PutTask"
 	Events_PostBlockCondition_FullMethodName   = "/event_data.Events/PostBlockCondition"
+	Events_PutBlockCondition_FullMethodName    = "/event_data.Events/PutBlockCondition"
 	Events_DeleteBlockCondition_FullMethodName = "/event_data.Events/DeleteBlockCondition"
 	Events_GetBlockInfo_FullMethodName         = "/event_data.Events/GetBlockInfo"
 	Events_GetBlockConditions_FullMethodName   = "/event_data.Events/GetBlockConditions"
@@ -57,11 +61,13 @@ const (
 type EventsClient interface {
 	SaveFile(ctx context.Context, in *SaveFileIn, opts ...grpc.CallOption) (*MessageOut, error)
 	PostEvent(ctx context.Context, in *PostEventIn, opts ...grpc.CallOption) (*MessageOut, error)
+	PutEvent(ctx context.Context, in *PutEventIn, opts ...grpc.CallOption) (*GetGroupsOut, error)
 	GetEvent(ctx context.Context, in *Id, opts ...grpc.CallOption) (*PostEventIn, error)
 	GetRole(ctx context.Context, in *GetRoleIn, opts ...grpc.CallOption) (*GetRoleOut, error)
 	GetGroups(ctx context.Context, in *Id, opts ...grpc.CallOption) (*GetGroupsOut, error)
 	GetCollaborators(ctx context.Context, in *Id, opts ...grpc.CallOption) (*GetCollaboratorsOut, error)
 	PostEventBlock(ctx context.Context, in *PostEventBlockIn, opts ...grpc.CallOption) (*MessageOut, error)
+	PutEventBlock(ctx context.Context, in *PostEventBlockIn, opts ...grpc.CallOption) (*MessageOut, error)
 	GetEventBlocks(ctx context.Context, in *Id, opts ...grpc.CallOption) (*GetEventBlocksOut, error)
 	GetPublicEvents(ctx context.Context, in *EventBaseFilters, opts ...grpc.CallOption) (*GetPublicEventsOut, error)
 	GetUserFavorites(ctx context.Context, in *EventBaseFilters, opts ...grpc.CallOption) (*GetPublicEventsOut, error)
@@ -70,7 +76,9 @@ type EventsClient interface {
 	PutFavorite(ctx context.Context, in *PutFavoriteIn, opts ...grpc.CallOption) (*MessageOut, error)
 	GetAllTags(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*Tags, error)
 	PostTask(ctx context.Context, in *Task, opts ...grpc.CallOption) (*MessageOut, error)
+	PutTask(ctx context.Context, in *Task, opts ...grpc.CallOption) (*PutTaskOut, error)
 	PostBlockCondition(ctx context.Context, in *Condition, opts ...grpc.CallOption) (*PostConditionOut, error)
+	PutBlockCondition(ctx context.Context, in *Condition, opts ...grpc.CallOption) (*MessageOut, error)
 	DeleteBlockCondition(ctx context.Context, in *Id, opts ...grpc.CallOption) (*MessageOut, error)
 	GetBlockInfo(ctx context.Context, in *Id, opts ...grpc.CallOption) (*PostEventBlockIn, error)
 	GetBlockConditions(ctx context.Context, in *Id, opts ...grpc.CallOption) (*BlockInfo, error)
@@ -109,6 +117,16 @@ func (c *eventsClient) PostEvent(ctx context.Context, in *PostEventIn, opts ...g
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(MessageOut)
 	err := c.cc.Invoke(ctx, Events_PostEvent_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *eventsClient) PutEvent(ctx context.Context, in *PutEventIn, opts ...grpc.CallOption) (*GetGroupsOut, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetGroupsOut)
+	err := c.cc.Invoke(ctx, Events_PutEvent_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -159,6 +177,16 @@ func (c *eventsClient) PostEventBlock(ctx context.Context, in *PostEventBlockIn,
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(MessageOut)
 	err := c.cc.Invoke(ctx, Events_PostEventBlock_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *eventsClient) PutEventBlock(ctx context.Context, in *PostEventBlockIn, opts ...grpc.CallOption) (*MessageOut, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(MessageOut)
+	err := c.cc.Invoke(ctx, Events_PutEventBlock_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -245,10 +273,30 @@ func (c *eventsClient) PostTask(ctx context.Context, in *Task, opts ...grpc.Call
 	return out, nil
 }
 
+func (c *eventsClient) PutTask(ctx context.Context, in *Task, opts ...grpc.CallOption) (*PutTaskOut, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(PutTaskOut)
+	err := c.cc.Invoke(ctx, Events_PutTask_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *eventsClient) PostBlockCondition(ctx context.Context, in *Condition, opts ...grpc.CallOption) (*PostConditionOut, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(PostConditionOut)
 	err := c.cc.Invoke(ctx, Events_PostBlockCondition_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *eventsClient) PutBlockCondition(ctx context.Context, in *Condition, opts ...grpc.CallOption) (*MessageOut, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(MessageOut)
+	err := c.cc.Invoke(ctx, Events_PutBlockCondition_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -401,11 +449,13 @@ func (c *eventsClient) GetUserStatus(ctx context.Context, in *UserEventIds, opts
 type EventsServer interface {
 	SaveFile(context.Context, *SaveFileIn) (*MessageOut, error)
 	PostEvent(context.Context, *PostEventIn) (*MessageOut, error)
+	PutEvent(context.Context, *PutEventIn) (*GetGroupsOut, error)
 	GetEvent(context.Context, *Id) (*PostEventIn, error)
 	GetRole(context.Context, *GetRoleIn) (*GetRoleOut, error)
 	GetGroups(context.Context, *Id) (*GetGroupsOut, error)
 	GetCollaborators(context.Context, *Id) (*GetCollaboratorsOut, error)
 	PostEventBlock(context.Context, *PostEventBlockIn) (*MessageOut, error)
+	PutEventBlock(context.Context, *PostEventBlockIn) (*MessageOut, error)
 	GetEventBlocks(context.Context, *Id) (*GetEventBlocksOut, error)
 	GetPublicEvents(context.Context, *EventBaseFilters) (*GetPublicEventsOut, error)
 	GetUserFavorites(context.Context, *EventBaseFilters) (*GetPublicEventsOut, error)
@@ -414,7 +464,9 @@ type EventsServer interface {
 	PutFavorite(context.Context, *PutFavoriteIn) (*MessageOut, error)
 	GetAllTags(context.Context, *Empty) (*Tags, error)
 	PostTask(context.Context, *Task) (*MessageOut, error)
+	PutTask(context.Context, *Task) (*PutTaskOut, error)
 	PostBlockCondition(context.Context, *Condition) (*PostConditionOut, error)
+	PutBlockCondition(context.Context, *Condition) (*MessageOut, error)
 	DeleteBlockCondition(context.Context, *Id) (*MessageOut, error)
 	GetBlockInfo(context.Context, *Id) (*PostEventBlockIn, error)
 	GetBlockConditions(context.Context, *Id) (*BlockInfo, error)
@@ -445,6 +497,9 @@ func (UnimplementedEventsServer) SaveFile(context.Context, *SaveFileIn) (*Messag
 func (UnimplementedEventsServer) PostEvent(context.Context, *PostEventIn) (*MessageOut, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method PostEvent not implemented")
 }
+func (UnimplementedEventsServer) PutEvent(context.Context, *PutEventIn) (*GetGroupsOut, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method PutEvent not implemented")
+}
 func (UnimplementedEventsServer) GetEvent(context.Context, *Id) (*PostEventIn, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetEvent not implemented")
 }
@@ -459,6 +514,9 @@ func (UnimplementedEventsServer) GetCollaborators(context.Context, *Id) (*GetCol
 }
 func (UnimplementedEventsServer) PostEventBlock(context.Context, *PostEventBlockIn) (*MessageOut, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method PostEventBlock not implemented")
+}
+func (UnimplementedEventsServer) PutEventBlock(context.Context, *PostEventBlockIn) (*MessageOut, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method PutEventBlock not implemented")
 }
 func (UnimplementedEventsServer) GetEventBlocks(context.Context, *Id) (*GetEventBlocksOut, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetEventBlocks not implemented")
@@ -484,8 +542,14 @@ func (UnimplementedEventsServer) GetAllTags(context.Context, *Empty) (*Tags, err
 func (UnimplementedEventsServer) PostTask(context.Context, *Task) (*MessageOut, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method PostTask not implemented")
 }
+func (UnimplementedEventsServer) PutTask(context.Context, *Task) (*PutTaskOut, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method PutTask not implemented")
+}
 func (UnimplementedEventsServer) PostBlockCondition(context.Context, *Condition) (*PostConditionOut, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method PostBlockCondition not implemented")
+}
+func (UnimplementedEventsServer) PutBlockCondition(context.Context, *Condition) (*MessageOut, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method PutBlockCondition not implemented")
 }
 func (UnimplementedEventsServer) DeleteBlockCondition(context.Context, *Id) (*MessageOut, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteBlockCondition not implemented")
@@ -586,6 +650,24 @@ func _Events_PostEvent_Handler(srv interface{}, ctx context.Context, dec func(in
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Events_PutEvent_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(PutEventIn)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(EventsServer).PutEvent(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Events_PutEvent_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(EventsServer).PutEvent(ctx, req.(*PutEventIn))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Events_GetEvent_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(Id)
 	if err := dec(in); err != nil {
@@ -672,6 +754,24 @@ func _Events_PostEventBlock_Handler(srv interface{}, ctx context.Context, dec fu
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(EventsServer).PostEventBlock(ctx, req.(*PostEventBlockIn))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Events_PutEventBlock_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(PostEventBlockIn)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(EventsServer).PutEventBlock(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Events_PutEventBlock_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(EventsServer).PutEventBlock(ctx, req.(*PostEventBlockIn))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -820,6 +920,24 @@ func _Events_PostTask_Handler(srv interface{}, ctx context.Context, dec func(int
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Events_PutTask_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Task)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(EventsServer).PutTask(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Events_PutTask_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(EventsServer).PutTask(ctx, req.(*Task))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Events_PostBlockCondition_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(Condition)
 	if err := dec(in); err != nil {
@@ -834,6 +952,24 @@ func _Events_PostBlockCondition_Handler(srv interface{}, ctx context.Context, de
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(EventsServer).PostBlockCondition(ctx, req.(*Condition))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Events_PutBlockCondition_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Condition)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(EventsServer).PutBlockCondition(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Events_PutBlockCondition_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(EventsServer).PutBlockCondition(ctx, req.(*Condition))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -1106,6 +1242,10 @@ var Events_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Events_PostEvent_Handler,
 		},
 		{
+			MethodName: "PutEvent",
+			Handler:    _Events_PutEvent_Handler,
+		},
+		{
 			MethodName: "GetEvent",
 			Handler:    _Events_GetEvent_Handler,
 		},
@@ -1124,6 +1264,10 @@ var Events_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "PostEventBlock",
 			Handler:    _Events_PostEventBlock_Handler,
+		},
+		{
+			MethodName: "PutEventBlock",
+			Handler:    _Events_PutEventBlock_Handler,
 		},
 		{
 			MethodName: "GetEventBlocks",
@@ -1158,8 +1302,16 @@ var Events_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Events_PostTask_Handler,
 		},
 		{
+			MethodName: "PutTask",
+			Handler:    _Events_PutTask_Handler,
+		},
+		{
 			MethodName: "PostBlockCondition",
 			Handler:    _Events_PostBlockCondition_Handler,
+		},
+		{
+			MethodName: "PutBlockCondition",
+			Handler:    _Events_PutBlockCondition_Handler,
 		},
 		{
 			MethodName: "DeleteBlockCondition",

@@ -28,8 +28,12 @@ import (
 	"eduplay-gateway/internal/http/handlers/event/postEvent"
 	"eduplay-gateway/internal/http/handlers/event/postEventBlock"
 	"eduplay-gateway/internal/http/handlers/event/postTask"
+	"eduplay-gateway/internal/http/handlers/event/putBlockCondition"
+	"eduplay-gateway/internal/http/handlers/event/putEvent"
+	"eduplay-gateway/internal/http/handlers/event/putEventBlock"
 	"eduplay-gateway/internal/http/handlers/event/putFavorite"
 	"eduplay-gateway/internal/http/handlers/event/putNextStage"
+	"eduplay-gateway/internal/http/handlers/event/putTask"
 	"eduplay-gateway/internal/http/handlers/event/putTimestamp"
 	"eduplay-gateway/internal/http/handlers/file/postFile"
 
@@ -76,12 +80,16 @@ func EventRouter(router chi.Router, log *slog.Logger, cfg *config.Config) chi.Ro
 	router.Route("/event", func(r chi.Router) {
 		r.Post("/", postEvent.New(log, events.New(log, eventClient, userClient)))
 		r.Get("/{eventId}", getEvent.New(log, events.New(log, eventClient, userClient)))
+		r.Put("/{eventId}", putEvent.New(log, events.New(log, eventClient, userClient)))
 		r.Get("/{eventId}/role", getEventRole.New(log, events.New(log, eventClient, userClient)))
 		r.Get("/{eventId}/settings", getEventSettings.New(log, events.New(log, eventClient, userClient)))
 		r.Post("/{eventId}/block", postEventBlock.New(log, events.New(log, eventClient, userClient)))
+		r.Put("/{eventId}/blocks/{blockId}", putEventBlock.New(log, events.New(log, eventClient, userClient)))
 		r.Get("/{eventId}", getEventBlocks.New(log, events.New(log, eventClient, userClient)))
 		r.Post("/{eventId}/blocks/{blockId}/task", postTask.New(log, events.New(log, eventClient, userClient)))
+		r.Put("/{eventId}/blocks/{blockId}/tasks/{taskId}", putTask.New(log, events.New(log, eventClient, userClient)))
 		r.Post("/{eventId}/blocks/{blockId}/conditions", postBlockCondition.New(log, events.New(log, eventClient, userClient)))
+		r.Put("/{eventId}/blocks/{blockId}/conditions/{conditionId}", putBlockCondition.New(log, events.New(log, eventClient, userClient)))
 		r.Get("/{eventId}/blocks/{blockId}", getBlockInfo.New(log, events.New(log, eventClient, userClient)))
 		r.Get("/{eventId}/blocks/{blockId}/conditions", getBlockConditions.New(log, events.New(log, eventClient, userClient)))
 		r.Delete("/{eventId}/blocks/{blockId}/conditions/{conditionId}", deleteBlockCondition.New(log, events.New(log, eventClient, userClient)))

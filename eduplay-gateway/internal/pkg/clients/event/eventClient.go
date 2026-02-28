@@ -71,6 +71,16 @@ func (cl *Client) PostEvent(ctx context.Context, in *events.PostEventIn) (*event
 	return out, nil
 }
 
+func (cl *Client) PutEvent(ctx context.Context, in *events.PutEventIn) (*events.GetGroupsOut, error) {
+	op := "PutEvent.Client"
+	out, err := cl.api.PutEvent(ctx, in)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return out, nil
+}
+
 func (cl *Client) GetEvent(ctx context.Context, in *events.Id) (*events.PostEventIn, error) {
 	op := "GetEvent.Client"
 	out, err := cl.api.GetEvent(ctx, in)
@@ -114,6 +124,16 @@ func (cl *Client) GetCollaborators(ctx context.Context, in *events.Id) (*events.
 func (cl *Client) PostEventBlock(ctx context.Context, in *events.PostEventBlockIn) (*events.MessageOut, error) {
 	op := "PostEventBlock.Client"
 	out, err := cl.api.PostEventBlock(ctx, in)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return out, nil
+}
+
+func (cl *Client) PutEventBlock(ctx context.Context, in *events.PostEventBlockIn) (*events.MessageOut, error) {
+	op := "PutEventBlock.Client"
+	out, err := cl.api.PutEventBlock(ctx, in)
 	if err != nil {
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
@@ -201,9 +221,29 @@ func (cl *Client) PostTask(ctx context.Context, in *events.Task) (*events.Messag
 	return out, nil
 }
 
+func (cl *Client) PutTask(ctx context.Context, in *events.Task) (*events.PutTaskOut, error) {
+	op := "PutTask.Client"
+	out, err := cl.api.PutTask(ctx, in)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return out, nil
+}
+
 func (cl *Client) PostBlockCondition(ctx context.Context, in *events.Condition) (*events.PostConditionOut, error) {
 	op := "PostBlockCondition.Client"
 	out, err := cl.api.PostBlockCondition(ctx, in)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return out, nil
+}
+
+func (cl *Client) PutBlockCondition(ctx context.Context, in *events.Condition) (*events.MessageOut, error) {
+	op := "PutBlockCondition.Client"
+	out, err := cl.api.PutBlockCondition(ctx, in)
 	if err != nil {
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}

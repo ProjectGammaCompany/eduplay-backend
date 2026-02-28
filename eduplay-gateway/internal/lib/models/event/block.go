@@ -5,36 +5,63 @@ import (
 )
 
 type PostEventBlockIn struct {
-	BlockId    string `json:"id"`
-	EventId    string `json:"eventId"`
-	Name       string `json:"name" validate:"required"`
-	Order      int    `json:"order" validate:"required"`
-	IsParallel bool   `json:"isParallel"`
-	Points     bool   `json:"points"`
-	Answers    bool   `json:"answers"`
+	BlockId       string `json:"id"`
+	EventId       string `json:"eventId"`
+	Name          string `json:"name" validate:"required"`
+	Order         int    `json:"order" validate:"required"`
+	IsParallel    bool   `json:"isParallel"`
+	Points        bool   `json:"points"`
+	Answers       bool   `json:"answers"`
+	PartialPoints bool   `json:"partialPoints"`
+}
+
+type PutEventBlockIn struct {
+	BlockId       string `json:"id"`
+	EventId       string `json:"eventId"`
+	Name          string `json:"name"`
+	Order         int    `json:"order"`
+	IsParallel    bool   `json:"isParallel"`
+	Points        bool   `json:"points"`
+	Answers       bool   `json:"answers"`
+	PartialPoints bool   `json:"partialPoints"`
+}
+
+func PutEventBlockToDto(in *PutEventBlockIn) *dto.PostEventBlockIn {
+	return &dto.PostEventBlockIn{
+		BlockId:       in.BlockId,
+		EventId:       in.EventId,
+		Name:          in.Name,
+		Order:         int64(in.Order),
+		IsParallel:    in.IsParallel,
+		ShowPoints:    in.Points,
+		ShowAnswers:   in.Answers,
+		PartialPoints: in.PartialPoints,
+	}
 }
 
 func PostEventBlockToDto(in *PostEventBlockIn) *dto.PostEventBlockIn {
 	return &dto.PostEventBlockIn{
-		BlockId:     in.BlockId,
-		EventId:     in.EventId,
-		Name:        in.Name,
-		Order:       int64(in.Order),
-		IsParallel:  in.IsParallel,
-		ShowPoints:  in.Points,
-		ShowAnswers: in.Answers,
+		BlockId:       in.BlockId,
+		EventId:       in.EventId,
+		Name:          in.Name,
+		Order:         int64(in.Order),
+		IsParallel:    in.IsParallel,
+		ShowPoints:    in.Points,
+		ShowAnswers:   in.Answers,
+		PartialPoints: in.PartialPoints,
 	}
 }
 
 func PostEventBlockFromDto(in *dto.PostEventBlockIn) *PostEventBlockIn {
 	return &PostEventBlockIn{
-		BlockId:    in.BlockId,
-		EventId:    in.EventId,
-		Name:       in.Name,
-		Order:      int(in.Order),
-		IsParallel: in.IsParallel,
-		Points:     in.ShowPoints,
-		Answers:    in.ShowAnswers,
+		BlockId:       in.BlockId,
+		EventId:       in.EventId,
+		Name:          in.Name,
+		Order:         int(in.Order),
+		IsParallel:    in.IsParallel,
+		Points:        in.ShowPoints,
+		Answers:       in.ShowAnswers,
+		PartialPoints: in.PartialPoints,
 	}
 }
 
@@ -97,6 +124,10 @@ func ConditionToDto(in *Condition) *dto.Condition {
 }
 
 func ConditionFromDto(in *dto.Condition) *Condition {
+	if len(in.GroupIds) == 0 {
+		in.GroupIds = []string{}
+	}
+
 	return &Condition{
 		СonditionId:     in.ConditionId,
 		PreviousBlockId: in.PreviousBlockId,
@@ -109,22 +140,14 @@ func ConditionFromDto(in *dto.Condition) *Condition {
 }
 
 type Conditions struct {
-	Conditions []*Condition `json:"conditions"`
+	Conditions []Condition `json:"conditions"`
 }
 
 func ConditionsFromDto(in []*dto.Condition) *Conditions {
-	conditions := make([]*Condition, len(in))
+	conditions := make([]Condition, 0)
 
-	for i, condition := range in {
-		conditions[i] = &Condition{
-			СonditionId:     condition.ConditionId,
-			PreviousBlockId: condition.PreviousBlockId,
-			NextBlockId:     condition.NextBlockId,
-			NextBlockOrder:  condition.NextBlockOrder,
-			GroupIds:        condition.GroupIds,
-			Min:             condition.Min,
-			Max:             condition.Max,
-		}
+	for _, condition := range in {
+		conditions = append(conditions, *ConditionFromDto(condition))
 	}
 
 	return &Conditions{Conditions: conditions}

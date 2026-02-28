@@ -7,7 +7,7 @@ import (
 )
 
 func (s *UseCase) PostBlockCondition(ctx context.Context, req *eventModel.Condition) (*eventModel.PostConditionOut, error) {
-	const op = "event.UseCase.POstBlockCondition"
+	const op = "event.UseCase.PostBlockCondition"
 
 	s.log.With(slog.String("op", op)).Info("attempting to post block condition")
 

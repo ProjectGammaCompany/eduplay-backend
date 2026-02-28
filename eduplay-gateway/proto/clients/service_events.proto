@@ -9,11 +9,13 @@ option go_package = "eduplay-event.v1";
 service Events {
     rpc SaveFile (SaveFileIn) returns (MessageOut);
     rpc PostEvent (PostEventIn) returns (MessageOut);
+    rpc PutEvent (PutEventIn) returns (GetGroupsOut);
     rpc GetEvent (Id) returns (PostEventIn);
     rpc GetRole (GetRoleIn) returns (GetRoleOut);
     rpc GetGroups (Id) returns (GetGroupsOut);
     rpc GetCollaborators (Id) returns (GetCollaboratorsOut);
     rpc PostEventBlock (PostEventBlockIn) returns (MessageOut);
+    rpc PutEventBlock (PostEventBlockIn) returns (MessageOut);
     rpc GetEventBlocks (Id) returns (GetEventBlocksOut);
     rpc GetPublicEvents (EventBaseFilters) returns (GetPublicEventsOut);
     rpc GetUserFavorites (EventBaseFilters) returns (GetPublicEventsOut);
@@ -22,7 +24,9 @@ service Events {
     rpc PutFavorite (PutFavoriteIn) returns (MessageOut);
     rpc GetAllTags (Empty) returns (Tags);
     rpc PostTask (Task) returns (MessageOut);
+    rpc PutTask (Task) returns (PutTaskOut);
     rpc PostBlockCondition (Condition) returns (PostConditionOut);
+    rpc PutBlockCondition (Condition) returns (MessageOut);
     rpc DeleteBlockCondition (Id) returns (MessageOut);
     rpc GetBlockInfo (Id) returns (PostEventBlockIn);
     rpc GetBlockConditions (Id) returns (BlockInfo);
@@ -92,6 +96,24 @@ message PostEventIn {
     bool groupEvent = 13; 
 }
 
+message PutEventIn {
+    string eventId = 1;
+    string title = 2;
+    string description = 3;
+    repeated string tags = 4;
+    string cover = 5;
+    optional google.protobuf.Timestamp startDate = 6;
+    optional google.protobuf.Timestamp endDate = 7;
+    bool private = 8;
+    string password = 9;
+    bool groupEvent = 10;
+    optional google.protobuf.Timestamp lastEditionDate = 11;
+    repeated Group groups = 12;
+    bool rating = 13;
+    repeated string collaborators = 14;
+    bool allowDownloading = 15;
+}
+
 message GetRoleIn {
     string userId = 1;
     string eventId = 2;
@@ -129,6 +151,7 @@ message PostEventBlockIn {
     bool isParallel = 5; 
     bool showPoints = 6; 
     bool showAnswers = 7;
+    bool partialPoints = 8;
 }
 
 message Condition {
@@ -213,6 +236,11 @@ message Task {
 
 message Tasks {
     repeated Task tasks = 1;
+}
+
+message PutTaskOut {
+    int64 order = 1; 
+    repeated TaskOption options = 2;
 }
 
 message PostConditionOut {
