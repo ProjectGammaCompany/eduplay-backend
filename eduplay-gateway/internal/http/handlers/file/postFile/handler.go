@@ -23,7 +23,7 @@ import (
 )
 
 type UseCase interface {
-	SaveFile(ctx context.Context, fileName string, fileUUID string) (string, error)
+	SaveFile(ctx context.Context, fileName string, fileKey string, fileUUID string) (string, error)
 }
 
 func New(log *slog.Logger, uc UseCase) http.HandlerFunc {
@@ -103,7 +103,9 @@ func New(log *slog.Logger, uc UseCase) http.HandlerFunc {
 
 		splitFileName := strings.Split(fileName, ".")
 
-		newFileName := uuid.New().String() + "." + splitFileName[len(splitFileName)-1]
+		fileUUID := uuid.New().String()
+
+		newFileName := fileUUID + "." + splitFileName[len(splitFileName)-1]
 
 		var awsS3Client *s3.Client
 
@@ -169,7 +171,7 @@ func New(log *slog.Logger, uc UseCase) http.HandlerFunc {
 
 		log.Info("file uploaded", slog.String("file_name", fileName), slog.String("file_path", result.Location))
 
-		_, err = uc.SaveFile(context.Background(), fileName, key)
+		_, err = uc.SaveFile(context.Background(), fileName, key, fileUUID)
 		if err != nil {
 			log.Error("failed to save file", slog.String("error", err.Error()))
 			writer.WriteHeader(http.StatusInternalServerError)

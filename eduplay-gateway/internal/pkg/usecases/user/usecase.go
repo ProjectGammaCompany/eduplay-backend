@@ -10,6 +10,7 @@ type UserClient interface {
 	SignUp(ctx context.Context, in *users.SignUpIn) (*users.SignUpOut, error)
 	SignIn(ctx context.Context, in *users.SignInIn) (*users.SignUpOut, error)
 	Refresh(ctx context.Context, in *users.RefreshIn) (*users.RefreshOut, error)
+	PutAvatar(ctx context.Context, in *users.Profile) (*users.Empty, error)
 	// GetUserAccess(ctx context.Context, in *users.GetUserAccessIn) (*users.GetUserAccessOut, error)
 	// GetUserData(ctx context.Context, token string) (*users.GetUserInfoOut, error)
 	// ChangeUserData(ctx context.Context, in *users.ChangeUserInfoIn) (*users.GetUserInfoOut, error)

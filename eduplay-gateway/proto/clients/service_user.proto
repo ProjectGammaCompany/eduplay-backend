@@ -5,16 +5,17 @@ package user_data;
 option go_package = "eduplay-user.v1";
 
 service Users {
-    rpc SignUp (SignUpIn) returns (SignUpOut);
-    rpc SignIn (SignInIn) returns (SignUpOut);
-    rpc Refresh (RefreshIn) returns (RefreshOut);
+    rpc SignUp(SignUpIn) returns (SignUpOut);
+    rpc SignIn(SignInIn) returns (SignUpOut);
+    rpc Refresh(RefreshIn) returns (RefreshOut);
+    rpc PutAvatar(Profile) returns (Empty);
     // rpc GetUserAccess (GetUserAccessIn) returns (GetUserAccessOut);
     // rpc GetUserInfo (GetUserAccessIn) returns (GetUserInfoOut);
     // rpc ChangeUserInfo (ChangeUserInfoIn) returns (GetUserInfoOut);
     rpc ChangePassword(ChangePasswordIn) returns (Empty);
     rpc DeleteAccount(DeleteAccountIn) returns (Empty);
-    rpc SignOut (DeleteAccountIn) returns (Empty);
-    rpc GetProfile (Id) returns (Profile);
+    rpc SignOut(DeleteAccountIn) returns (Empty);
+    rpc GetProfile(Id) returns (Profile);
 }
 
 message Empty{}

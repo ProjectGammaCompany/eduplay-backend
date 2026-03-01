@@ -48,11 +48,11 @@ func (s *Storage) Stop(ctx context.Context) error {
 	return nil
 }
 
-func (s *Storage) SaveFile(ctx context.Context, fileName string, fileKey string) (string, error) {
+func (s *Storage) SaveFile(ctx context.Context, fileName string, fileKey string, fileUUID string) (string, error) {
 	const op = "storage.postgres.SaveFile"
 
-	state := `INSERT INTO files (fileKey, filename) VALUES ($1, $2) RETURNING fileId;`
-	res := s.db.QueryRow(ctx, state, fileKey, fileName)
+	state := `INSERT INTO files (fileId, fileKey, filename) VALUES ($1, $2, $3) RETURNING fileId;`
+	res := s.db.QueryRow(ctx, state, fileUUID, fileKey, fileName)
 
 	var id string
 	err := res.Scan(&id)

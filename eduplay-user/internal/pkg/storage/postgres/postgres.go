@@ -227,6 +227,19 @@ func (s *Storage) CheckRefreshTokenExists(ctx context.Context, refreshToken stri
 	return token == refreshToken, expiry, nil
 }
 
+func (s *Storage) PutAvatar(ctx context.Context, in *dto.Profile) (string, error) {
+	const op = "storage.postgres.PutAvatar"
+
+	state := `UPDATE users SET avatar = $1 WHERE userId = $2`
+
+	_, err := s.db.Exec(ctx, state, in.Avatar, in.Email)
+	if err != nil {
+		return "", fmt.Errorf("%s: %w", op, err)
+	}
+
+	return "success", nil
+}
+
 // func (s *Storage) GetUserInfoByAuthToken(ctx context.Context, userID string) (*model.UserInfo, error) {
 // 	const op = "storage.postgres.GetUserInfoByAuthToken"
 

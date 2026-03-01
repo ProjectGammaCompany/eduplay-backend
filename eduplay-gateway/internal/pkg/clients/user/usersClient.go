@@ -82,6 +82,16 @@ func (cl *Client) Refresh(ctx context.Context, in *users.RefreshIn) (*users.Refr
 	return out, nil
 }
 
+func (cl *Client) PutAvatar(ctx context.Context, in *users.Profile) (*users.Empty, error) {
+	op := "PutAvatar.Client"
+	out, err := cl.api.PutAvatar(ctx, in)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return out, nil
+}
+
 // func (cl *Client) GetUserAccess(ctx context.Context, in *users.GetUserAccessIn) (*users.GetUserAccessOut, error) {
 // 	op := "GetUserAccess.Client"
 // 	out, err := cl.api.GetUserAccess(ctx, in)

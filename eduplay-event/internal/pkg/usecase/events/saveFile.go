@@ -16,7 +16,7 @@ func (a *UseCase) SaveFile(ctx context.Context, in *dto.SaveFileIn) (string, err
 
 	log.Info("saving file")
 
-	message, err := a.storage.SaveFile(ctx, in.Filename, in.FileUUID)
+	message, err := a.storage.SaveFile(ctx, in.Filename, in.FileKey, in.FileUUID)
 	if err != nil {
 		log.Error("failed to save file info", err.Error(), slog.String("filename", in.Filename))
 		return "", err

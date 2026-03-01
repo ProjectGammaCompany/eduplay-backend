@@ -18,6 +18,7 @@ type UseCase interface {
 	SignUpUser(ctx context.Context, in *dto.SignUpIn) (*model.Session, error)
 	SignInUser(ctx context.Context, in *dto.SignInIn) (*model.Session, error)
 	RefreshSession(ctx context.Context, refreshToken string) (*model.Tokens, error)
+	PutAvatar(ctx context.Context, in *dto.Profile) (string, error)
 	// GetUserAccess(ctx context.Context, authToken string) (*dto.GetUserAccessOut, error)
 	// GetUserInfo(ctx context.Context, accessToken string) (*model.UserInfo, error)
 	// ChangeUserInfo(ctx context.Context, in *dto.ChangeUserInfoIn) (*model.UserInfo, error)
@@ -94,6 +95,17 @@ func (h *Handler) Refresh(ctx context.Context, in *dto.RefreshIn) (*dto.RefreshO
 	}
 
 	return &dto.RefreshOut{AccessToken: tokens.AccessToken, RefreshToken: tokens.RefreshToken}, nil
+}
+
+func (h *Handler) PutAvatar(ctx context.Context, in *dto.Profile) (*dto.Empty, error) {
+	op := "PutAvatar.Handler"
+
+	_, err := h.uc.PutAvatar(ctx, in)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return &dto.Empty{}, nil
 }
 
 // func (h *Handler) GetUserAccess(ctx context.Context, in *dto.GetUserAccessIn) (*dto.GetUserAccessOut, error) {

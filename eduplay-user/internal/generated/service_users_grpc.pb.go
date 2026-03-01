@@ -22,6 +22,7 @@ const (
 	Users_SignUp_FullMethodName         = "/user_data.Users/SignUp"
 	Users_SignIn_FullMethodName         = "/user_data.Users/SignIn"
 	Users_Refresh_FullMethodName        = "/user_data.Users/Refresh"
+	Users_PutAvatar_FullMethodName      = "/user_data.Users/PutAvatar"
 	Users_ChangePassword_FullMethodName = "/user_data.Users/ChangePassword"
 	Users_DeleteAccount_FullMethodName  = "/user_data.Users/DeleteAccount"
 	Users_SignOut_FullMethodName        = "/user_data.Users/SignOut"
@@ -35,6 +36,7 @@ type UsersClient interface {
 	SignUp(ctx context.Context, in *SignUpIn, opts ...grpc.CallOption) (*SignUpOut, error)
 	SignIn(ctx context.Context, in *SignInIn, opts ...grpc.CallOption) (*SignUpOut, error)
 	Refresh(ctx context.Context, in *RefreshIn, opts ...grpc.CallOption) (*RefreshOut, error)
+	PutAvatar(ctx context.Context, in *Profile, opts ...grpc.CallOption) (*Empty, error)
 	// rpc GetUserAccess (GetUserAccessIn) returns (GetUserAccessOut);
 	// rpc GetUserInfo (GetUserAccessIn) returns (GetUserInfoOut);
 	// rpc ChangeUserInfo (ChangeUserInfoIn) returns (GetUserInfoOut);
@@ -76,6 +78,16 @@ func (c *usersClient) Refresh(ctx context.Context, in *RefreshIn, opts ...grpc.C
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(RefreshOut)
 	err := c.cc.Invoke(ctx, Users_Refresh_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *usersClient) PutAvatar(ctx context.Context, in *Profile, opts ...grpc.CallOption) (*Empty, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(Empty)
+	err := c.cc.Invoke(ctx, Users_PutAvatar_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -129,6 +141,7 @@ type UsersServer interface {
 	SignUp(context.Context, *SignUpIn) (*SignUpOut, error)
 	SignIn(context.Context, *SignInIn) (*SignUpOut, error)
 	Refresh(context.Context, *RefreshIn) (*RefreshOut, error)
+	PutAvatar(context.Context, *Profile) (*Empty, error)
 	// rpc GetUserAccess (GetUserAccessIn) returns (GetUserAccessOut);
 	// rpc GetUserInfo (GetUserAccessIn) returns (GetUserInfoOut);
 	// rpc ChangeUserInfo (ChangeUserInfoIn) returns (GetUserInfoOut);
@@ -154,6 +167,9 @@ func (UnimplementedUsersServer) SignIn(context.Context, *SignInIn) (*SignUpOut, 
 }
 func (UnimplementedUsersServer) Refresh(context.Context, *RefreshIn) (*RefreshOut, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Refresh not implemented")
+}
+func (UnimplementedUsersServer) PutAvatar(context.Context, *Profile) (*Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method PutAvatar not implemented")
 }
 func (UnimplementedUsersServer) ChangePassword(context.Context, *ChangePasswordIn) (*Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ChangePassword not implemented")
@@ -238,6 +254,24 @@ func _Users_Refresh_Handler(srv interface{}, ctx context.Context, dec func(inter
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(UsersServer).Refresh(ctx, req.(*RefreshIn))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Users_PutAvatar_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Profile)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UsersServer).PutAvatar(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Users_PutAvatar_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UsersServer).PutAvatar(ctx, req.(*Profile))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -332,6 +366,10 @@ var Users_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Refresh",
 			Handler:    _Users_Refresh_Handler,
+		},
+		{
+			MethodName: "PutAvatar",
+			Handler:    _Users_PutAvatar_Handler,
 		},
 		{
 			MethodName: "ChangePassword",

@@ -78,6 +78,7 @@ message Tags {
 message SaveFileIn {
     string filename = 1;
     string fileUUID = 2;
+    string fileKey = 3;
 }
 
 message PostEventIn {

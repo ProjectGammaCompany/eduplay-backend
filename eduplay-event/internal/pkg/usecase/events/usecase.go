@@ -11,7 +11,7 @@ import (
 )
 
 type storage interface {
-	SaveFile(ctx context.Context, fileName string, fileUUID string) (string, error)
+	SaveFile(ctx context.Context, fileName string, fileKey string, fileUUID string) (string, error)
 	PostEvent(ctx context.Context, in *dto.PostEventIn) (string, error)
 	PutEvent(ctx context.Context, in *dto.PutEventIn) (string, error)
 	GetEvent(ctx context.Context, id string) (*dto.PostEventIn, error)
