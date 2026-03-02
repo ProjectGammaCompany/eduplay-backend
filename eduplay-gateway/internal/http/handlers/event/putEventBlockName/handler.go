@@ -1,4 +1,4 @@
-package putEvent
+package putEventBlockName
 
 import (
 	"context"
@@ -18,13 +18,13 @@ import (
 )
 
 type UseCase interface {
-	PutEvent(ctx context.Context, pd *eventModel.PutEventIn) (*eventModel.Groups, error)
 	GetRole(ctx context.Context, userId string, eventId string) (int64, error)
+	PutEventBlockName(ctx context.Context, pd *eventModel.EventBlockName) (string, error)
 }
 
 func New(log *slog.Logger, uc UseCase) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
-		const op = "handlers.event.putEvent"
+		const op = "handlers.event.postEventBlockName"
 
 		log = log.With(slog.String("op", op),
 			slog.String("request_id", middleware.GetReqID(request.Context())))
@@ -65,40 +65,7 @@ func New(log *slog.Logger, uc UseCase) http.HandlerFunc {
 			return
 		}
 
-		eventId := chi.URLParam(request, "eventId")
-		if eventId == "" {
-			log.Error("no Id provided")
-			writer.WriteHeader(http.StatusBadRequest)
-			render.JSON(writer, request, lib.Error("no Id provided"))
-			return
-		}
-
-		isUUID := tokens.ValidateUUID(eventId)
-		if !isUUID {
-			log.Error("invalid id provided")
-			writer.WriteHeader(http.StatusBadRequest)
-			render.JSON(writer, request, lib.Error("invalid id provided"))
-			return
-		}
-
-		role, err := uc.GetRole(request.Context(), accessClaims.ID, eventId)
-		if err != nil {
-			log.Error(err.Error(), slog.String("error", err.Error()))
-			writer.WriteHeader(http.StatusInternalServerError)
-			render.JSON(writer, request, err)
-			return
-		}
-
-		if role != 1 {
-			log.Error("forbidden action")
-			writer.WriteHeader(http.StatusForbidden)
-			render.JSON(writer, request, lib.Error("user is forbidden to perform this action"))
-			return
-		}
-
-		var req eventModel.PutEventIn
-
-		req.EventId = eventId
+		var req eventModel.EventBlockName
 
 		err = render.DecodeJSON(request.Body, &req)
 		if err != nil {
@@ -119,7 +86,56 @@ func New(log *slog.Logger, uc UseCase) http.HandlerFunc {
 			return
 		}
 
-		groups, err := uc.PutEvent(request.Context(), &req)
+		eventId := chi.URLParam(request, "eventId")
+		if eventId == "" {
+			log.Error("no event Id provided")
+			writer.WriteHeader(http.StatusBadRequest)
+			render.JSON(writer, request, lib.Error("no event Id provided"))
+			return
+		}
+
+		isUUID := tokens.ValidateUUID(eventId)
+		if !isUUID {
+			log.Error("invalid event id provided")
+			writer.WriteHeader(http.StatusBadRequest)
+			render.JSON(writer, request, lib.Error("invalid event id provided"))
+			return
+		}
+
+		blockId := chi.URLParam(request, "blockId")
+		if blockId == "" {
+			log.Error("no block Id provided")
+			writer.WriteHeader(http.StatusBadRequest)
+			render.JSON(writer, request, lib.Error("no block Id provided"))
+			return
+		}
+
+		isUUID = tokens.ValidateUUID(blockId)
+		if !isUUID {
+			log.Error("invalid block id provided")
+			writer.WriteHeader(http.StatusBadRequest)
+			render.JSON(writer, request, lib.Error("invalid block id provided"))
+			return
+		}
+
+		role, err := uc.GetRole(request.Context(), accessClaims.ID, eventId)
+		if err != nil {
+			log.Error(err.Error(), slog.String("error", err.Error()))
+			writer.WriteHeader(http.StatusInternalServerError)
+			render.JSON(writer, request, err)
+			return
+		}
+
+		if role != 1 {
+			log.Error("forbidden action")
+			writer.WriteHeader(http.StatusForbidden)
+			render.JSON(writer, request, lib.Error("user is forbidden to perform this action"))
+			return
+		}
+
+		req.BlockId = blockId
+
+		_, err = uc.PutEventBlockName(request.Context(), &req)
 
 		if err != nil {
 			log.Error(err.Error(), slog.String("error", err.Error()))
@@ -129,6 +145,6 @@ func New(log *slog.Logger, uc UseCase) http.HandlerFunc {
 		}
 
 		writer.WriteHeader(http.StatusOK)
-		render.JSON(writer, request, groups)
+		render.JSON(writer, request, "success")
 	}
 }

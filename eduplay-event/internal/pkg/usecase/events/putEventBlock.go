@@ -18,7 +18,7 @@ func (a *UseCase) PutEventBlock(ctx context.Context, in *dto.PostEventBlockIn) (
 
 	id, err := a.storage.PutEventBlock(ctx, in)
 	if err != nil {
-		log.Error("failed to create event block", err.Error(), slog.String("event", in.EventId))
+		log.Error("failed to update event block", err.Error(), slog.String("event", in.EventId))
 		return "", err
 	}
 

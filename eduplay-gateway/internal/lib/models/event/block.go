@@ -4,6 +4,11 @@ import (
 	dto "eduplay-gateway/internal/generated/clients/event"
 )
 
+type EventBlockName struct {
+	BlockId string `json:"Id"`
+	Name    string `json:"name" validate:"required"`
+}
+
 type PostEventBlockIn struct {
 	BlockId       string `json:"id"`
 	EventId       string `json:"eventId"`

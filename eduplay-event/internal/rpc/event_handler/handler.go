@@ -17,9 +17,11 @@ type UseCase interface {
 	GetEvent(ctx context.Context, in *dto.Id) (*dto.PostEventIn, error)
 	GetRole(ctx context.Context, in *dto.GetRoleIn) (*dto.GetRoleOut, error)
 	GetGroups(ctx context.Context, in *dto.Id) (*dto.GetGroupsOut, error)
+	PutGroups(ctx context.Context, in *dto.PutGroupsIn) (string, error)
 	GetCollaborators(ctx context.Context, in *dto.Id) (*dto.GetCollaboratorsOut, error)
 	PostEventBlock(ctx context.Context, in *dto.PostEventBlockIn) (string, error)
 	PutEventBlock(ctx context.Context, in *dto.PostEventBlockIn) (string, error)
+	PutEventBlockName(ctx context.Context, in *dto.Tag) (string, error)
 	GetEventBlocks(ctx context.Context, in *dto.Id) (*dto.GetEventBlocksOut, error)
 	GetPublicEvents(ctx context.Context, in *dto.EventBaseFilters) (*dto.GetPublicEventsOut, error)
 	GetUserFavorites(ctx context.Context, in *dto.EventBaseFilters) (*dto.GetPublicEventsOut, error)
@@ -122,6 +124,17 @@ func (h *Handler) GetGroups(ctx context.Context, in *dto.Id) (*dto.GetGroupsOut,
 	return groups, nil
 }
 
+func (h *Handler) PutGroups(ctx context.Context, in *dto.PutGroupsIn) (*dto.MessageOut, error) {
+	op := "PutGroups.Handler"
+
+	message, err := h.uc.PutGroups(ctx, in)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return &dto.MessageOut{Message: message}, nil
+}
+
 func (h *Handler) GetCollaborators(ctx context.Context, in *dto.Id) (*dto.GetCollaboratorsOut, error) {
 	op := "GetCollaborators.Handler"
 
@@ -153,6 +166,17 @@ func (h *Handler) PutEventBlock(ctx context.Context, in *dto.PostEventBlockIn) (
 	}
 
 	return &dto.MessageOut{Message: id}, nil
+}
+
+func (h *Handler) PutEventBlockName(ctx context.Context, in *dto.Tag) (*dto.MessageOut, error) {
+	op := "PutEventBlock.Handler"
+
+	message, err := h.uc.PutEventBlockName(ctx, in)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return &dto.MessageOut{Message: message}, nil
 }
 
 func (h *Handler) GetEventBlocks(ctx context.Context, in *dto.Id) (*dto.GetEventBlocksOut, error) {

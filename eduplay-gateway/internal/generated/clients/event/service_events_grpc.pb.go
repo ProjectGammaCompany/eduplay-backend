@@ -25,9 +25,11 @@ const (
 	Events_GetEvent_FullMethodName             = "/event_data.Events/GetEvent"
 	Events_GetRole_FullMethodName              = "/event_data.Events/GetRole"
 	Events_GetGroups_FullMethodName            = "/event_data.Events/GetGroups"
+	Events_PutGroups_FullMethodName            = "/event_data.Events/PutGroups"
 	Events_GetCollaborators_FullMethodName     = "/event_data.Events/GetCollaborators"
 	Events_PostEventBlock_FullMethodName       = "/event_data.Events/PostEventBlock"
 	Events_PutEventBlock_FullMethodName        = "/event_data.Events/PutEventBlock"
+	Events_PutEventBlockName_FullMethodName    = "/event_data.Events/PutEventBlockName"
 	Events_GetEventBlocks_FullMethodName       = "/event_data.Events/GetEventBlocks"
 	Events_GetPublicEvents_FullMethodName      = "/event_data.Events/GetPublicEvents"
 	Events_GetUserFavorites_FullMethodName     = "/event_data.Events/GetUserFavorites"
@@ -65,9 +67,11 @@ type EventsClient interface {
 	GetEvent(ctx context.Context, in *Id, opts ...grpc.CallOption) (*PostEventIn, error)
 	GetRole(ctx context.Context, in *GetRoleIn, opts ...grpc.CallOption) (*GetRoleOut, error)
 	GetGroups(ctx context.Context, in *Id, opts ...grpc.CallOption) (*GetGroupsOut, error)
+	PutGroups(ctx context.Context, in *PutGroupsIn, opts ...grpc.CallOption) (*MessageOut, error)
 	GetCollaborators(ctx context.Context, in *Id, opts ...grpc.CallOption) (*GetCollaboratorsOut, error)
 	PostEventBlock(ctx context.Context, in *PostEventBlockIn, opts ...grpc.CallOption) (*MessageOut, error)
 	PutEventBlock(ctx context.Context, in *PostEventBlockIn, opts ...grpc.CallOption) (*MessageOut, error)
+	PutEventBlockName(ctx context.Context, in *Tag, opts ...grpc.CallOption) (*MessageOut, error)
 	GetEventBlocks(ctx context.Context, in *Id, opts ...grpc.CallOption) (*GetEventBlocksOut, error)
 	GetPublicEvents(ctx context.Context, in *EventBaseFilters, opts ...grpc.CallOption) (*GetPublicEventsOut, error)
 	GetUserFavorites(ctx context.Context, in *EventBaseFilters, opts ...grpc.CallOption) (*GetPublicEventsOut, error)
@@ -163,6 +167,16 @@ func (c *eventsClient) GetGroups(ctx context.Context, in *Id, opts ...grpc.CallO
 	return out, nil
 }
 
+func (c *eventsClient) PutGroups(ctx context.Context, in *PutGroupsIn, opts ...grpc.CallOption) (*MessageOut, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(MessageOut)
+	err := c.cc.Invoke(ctx, Events_PutGroups_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *eventsClient) GetCollaborators(ctx context.Context, in *Id, opts ...grpc.CallOption) (*GetCollaboratorsOut, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(GetCollaboratorsOut)
@@ -187,6 +201,16 @@ func (c *eventsClient) PutEventBlock(ctx context.Context, in *PostEventBlockIn, 
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(MessageOut)
 	err := c.cc.Invoke(ctx, Events_PutEventBlock_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *eventsClient) PutEventBlockName(ctx context.Context, in *Tag, opts ...grpc.CallOption) (*MessageOut, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(MessageOut)
+	err := c.cc.Invoke(ctx, Events_PutEventBlockName_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -453,9 +477,11 @@ type EventsServer interface {
 	GetEvent(context.Context, *Id) (*PostEventIn, error)
 	GetRole(context.Context, *GetRoleIn) (*GetRoleOut, error)
 	GetGroups(context.Context, *Id) (*GetGroupsOut, error)
+	PutGroups(context.Context, *PutGroupsIn) (*MessageOut, error)
 	GetCollaborators(context.Context, *Id) (*GetCollaboratorsOut, error)
 	PostEventBlock(context.Context, *PostEventBlockIn) (*MessageOut, error)
 	PutEventBlock(context.Context, *PostEventBlockIn) (*MessageOut, error)
+	PutEventBlockName(context.Context, *Tag) (*MessageOut, error)
 	GetEventBlocks(context.Context, *Id) (*GetEventBlocksOut, error)
 	GetPublicEvents(context.Context, *EventBaseFilters) (*GetPublicEventsOut, error)
 	GetUserFavorites(context.Context, *EventBaseFilters) (*GetPublicEventsOut, error)
@@ -509,6 +535,9 @@ func (UnimplementedEventsServer) GetRole(context.Context, *GetRoleIn) (*GetRoleO
 func (UnimplementedEventsServer) GetGroups(context.Context, *Id) (*GetGroupsOut, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetGroups not implemented")
 }
+func (UnimplementedEventsServer) PutGroups(context.Context, *PutGroupsIn) (*MessageOut, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method PutGroups not implemented")
+}
 func (UnimplementedEventsServer) GetCollaborators(context.Context, *Id) (*GetCollaboratorsOut, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetCollaborators not implemented")
 }
@@ -517,6 +546,9 @@ func (UnimplementedEventsServer) PostEventBlock(context.Context, *PostEventBlock
 }
 func (UnimplementedEventsServer) PutEventBlock(context.Context, *PostEventBlockIn) (*MessageOut, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method PutEventBlock not implemented")
+}
+func (UnimplementedEventsServer) PutEventBlockName(context.Context, *Tag) (*MessageOut, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method PutEventBlockName not implemented")
 }
 func (UnimplementedEventsServer) GetEventBlocks(context.Context, *Id) (*GetEventBlocksOut, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetEventBlocks not implemented")
@@ -722,6 +754,24 @@ func _Events_GetGroups_Handler(srv interface{}, ctx context.Context, dec func(in
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Events_PutGroups_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(PutGroupsIn)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(EventsServer).PutGroups(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Events_PutGroups_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(EventsServer).PutGroups(ctx, req.(*PutGroupsIn))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Events_GetCollaborators_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(Id)
 	if err := dec(in); err != nil {
@@ -772,6 +822,24 @@ func _Events_PutEventBlock_Handler(srv interface{}, ctx context.Context, dec fun
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(EventsServer).PutEventBlock(ctx, req.(*PostEventBlockIn))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Events_PutEventBlockName_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Tag)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(EventsServer).PutEventBlockName(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Events_PutEventBlockName_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(EventsServer).PutEventBlockName(ctx, req.(*Tag))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -1258,6 +1326,10 @@ var Events_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Events_GetGroups_Handler,
 		},
 		{
+			MethodName: "PutGroups",
+			Handler:    _Events_PutGroups_Handler,
+		},
+		{
 			MethodName: "GetCollaborators",
 			Handler:    _Events_GetCollaborators_Handler,
 		},
@@ -1268,6 +1340,10 @@ var Events_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "PutEventBlock",
 			Handler:    _Events_PutEventBlock_Handler,
+		},
+		{
+			MethodName: "PutEventBlockName",
+			Handler:    _Events_PutEventBlockName_Handler,
 		},
 		{
 			MethodName: "GetEventBlocks",

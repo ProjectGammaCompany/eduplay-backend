@@ -1,10 +1,9 @@
-package putEvent
+package getGroups
 
 import (
 	"context"
 	"eduplay-gateway/internal/http/tokens"
 	"eduplay-gateway/internal/lib"
-	eventModel "eduplay-gateway/internal/lib/models/event"
 	"eduplay-gateway/internal/storage"
 	"errors"
 	"log/slog"
@@ -14,17 +13,18 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/render"
-	"github.com/go-playground/validator/v10"
+
+	eventModel "eduplay-gateway/internal/lib/models/event"
 )
 
 type UseCase interface {
-	PutEvent(ctx context.Context, pd *eventModel.PutEventIn) (*eventModel.Groups, error)
 	GetRole(ctx context.Context, userId string, eventId string) (int64, error)
+	GetGroups(ctx context.Context, pd *eventModel.Id) (*eventModel.GroupsShort, error)
 }
 
 func New(log *slog.Logger, uc UseCase) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
-		const op = "handlers.event.putEvent"
+		const op = "handlers.event.getGroups"
 
 		log = log.With(slog.String("op", op),
 			slog.String("request_id", middleware.GetReqID(request.Context())))
@@ -65,15 +65,15 @@ func New(log *slog.Logger, uc UseCase) http.HandlerFunc {
 			return
 		}
 
-		eventId := chi.URLParam(request, "eventId")
-		if eventId == "" {
+		id := chi.URLParam(request, "eventId")
+		if id == "" {
 			log.Error("no Id provided")
 			writer.WriteHeader(http.StatusBadRequest)
 			render.JSON(writer, request, lib.Error("no Id provided"))
 			return
 		}
 
-		isUUID := tokens.ValidateUUID(eventId)
+		isUUID := tokens.ValidateUUID(id)
 		if !isUUID {
 			log.Error("invalid id provided")
 			writer.WriteHeader(http.StatusBadRequest)
@@ -81,7 +81,7 @@ func New(log *slog.Logger, uc UseCase) http.HandlerFunc {
 			return
 		}
 
-		role, err := uc.GetRole(request.Context(), accessClaims.ID, eventId)
+		role, err := uc.GetRole(request.Context(), accessClaims.ID, id)
 		if err != nil {
 			log.Error(err.Error(), slog.String("error", err.Error()))
 			writer.WriteHeader(http.StatusInternalServerError)
@@ -96,31 +96,7 @@ func New(log *slog.Logger, uc UseCase) http.HandlerFunc {
 			return
 		}
 
-		var req eventModel.PutEventIn
-
-		req.EventId = eventId
-
-		err = render.DecodeJSON(request.Body, &req)
-		if err != nil {
-			log.Error(storage.ErrInvalidRequest.Error(), slog.String("error", err.Error()))
-			writer.WriteHeader(http.StatusBadRequest)
-			render.JSON(writer, request, storage.ErrInvalidRequest)
-			return
-		}
-
-		log.Info("request body decoded", slog.Any("request", req))
-
-		if err := validator.New().Struct(req); err != nil {
-			var validationErrors validator.ValidationErrors
-			errors.As(err, &validationErrors)
-			log.Error(storage.ErrValidationError.Error(), slog.String("error", err.Error()))
-			writer.WriteHeader(http.StatusBadRequest)
-			render.JSON(writer, request, storage.ErrValidationError.Error())
-			return
-		}
-
-		groups, err := uc.PutEvent(request.Context(), &req)
-
+		eventGroups, err := uc.GetGroups(request.Context(), &eventModel.Id{Id: id})
 		if err != nil {
 			log.Error(err.Error(), slog.String("error", err.Error()))
 			writer.WriteHeader(http.StatusInternalServerError)
@@ -129,6 +105,6 @@ func New(log *slog.Logger, uc UseCase) http.HandlerFunc {
 		}
 
 		writer.WriteHeader(http.StatusOK)
-		render.JSON(writer, request, groups)
+		render.JSON(writer, request, eventGroups)
 	}
 }

@@ -1,4 +1,4 @@
-package putEvent
+package putGroups
 
 import (
 	"context"
@@ -18,13 +18,13 @@ import (
 )
 
 type UseCase interface {
-	PutEvent(ctx context.Context, pd *eventModel.PutEventIn) (*eventModel.Groups, error)
+	PutGroups(ctx context.Context, pd *eventModel.PutGroupsIn) (string, error)
 	GetRole(ctx context.Context, userId string, eventId string) (int64, error)
 }
 
 func New(log *slog.Logger, uc UseCase) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
-		const op = "handlers.event.putEvent"
+		const op = "handlers.event.putGroups"
 
 		log = log.With(slog.String("op", op),
 			slog.String("request_id", middleware.GetReqID(request.Context())))
@@ -67,17 +67,33 @@ func New(log *slog.Logger, uc UseCase) http.HandlerFunc {
 
 		eventId := chi.URLParam(request, "eventId")
 		if eventId == "" {
-			log.Error("no Id provided")
+			log.Error("no event Id provided")
 			writer.WriteHeader(http.StatusBadRequest)
-			render.JSON(writer, request, lib.Error("no Id provided"))
+			render.JSON(writer, request, lib.Error("no event Id provided"))
 			return
 		}
 
 		isUUID := tokens.ValidateUUID(eventId)
 		if !isUUID {
-			log.Error("invalid id provided")
+			log.Error("invalid event id provided")
 			writer.WriteHeader(http.StatusBadRequest)
-			render.JSON(writer, request, lib.Error("invalid id provided"))
+			render.JSON(writer, request, lib.Error("invalid event id provided"))
+			return
+		}
+
+		conditionId := chi.URLParam(request, "conditionId")
+		if conditionId == "" {
+			log.Error("no condition Id provided")
+			writer.WriteHeader(http.StatusBadRequest)
+			render.JSON(writer, request, lib.Error("no condition Id provided"))
+			return
+		}
+
+		isUUID = tokens.ValidateUUID(conditionId)
+		if !isUUID {
+			log.Error("invalid condition id provided")
+			writer.WriteHeader(http.StatusBadRequest)
+			render.JSON(writer, request, lib.Error("invalid condition id provided"))
 			return
 		}
 
@@ -96,9 +112,9 @@ func New(log *slog.Logger, uc UseCase) http.HandlerFunc {
 			return
 		}
 
-		var req eventModel.PutEventIn
+		var req eventModel.PutGroupsIn
 
-		req.EventId = eventId
+		req.ConditionId = conditionId
 
 		err = render.DecodeJSON(request.Body, &req)
 		if err != nil {
@@ -119,7 +135,7 @@ func New(log *slog.Logger, uc UseCase) http.HandlerFunc {
 			return
 		}
 
-		groups, err := uc.PutEvent(request.Context(), &req)
+		groups, err := uc.PutGroups(request.Context(), &req)
 
 		if err != nil {
 			log.Error(err.Error(), slog.String("error", err.Error()))

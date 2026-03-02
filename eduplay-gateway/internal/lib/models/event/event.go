@@ -185,8 +185,17 @@ type Group struct {
 	Password string `json:"password"`
 }
 
+type GroupShort struct {
+	Id   string `json:"id"`
+	Name string `json:"name"`
+}
+
 type Groups struct {
 	Groups []Group `json:"groups"`
+}
+
+type GroupsShort struct {
+	Groups []GroupShort `json:"groups"`
 }
 
 func GroupsFromDto(in *dto.GetGroupsOut) *Groups {
@@ -199,6 +208,29 @@ func GroupsFromDto(in *dto.GetGroupsOut) *Groups {
 		}
 	}
 	return &Groups{Groups: gps}
+}
+
+func GroupsShortFromDto(in *dto.GetGroupsOut) *GroupsShort {
+	gps := make([]GroupShort, len(in.Groups))
+	for i, group := range in.Groups {
+		gps[i] = GroupShort{
+			Id:   group.Id,
+			Name: group.Login,
+		}
+	}
+	return &GroupsShort{Groups: gps}
+}
+
+type PutGroupsIn struct {
+	ConditionId string   `json:"conditionId"`
+	GroupIds    []string `json:"groups"`
+}
+
+func PutGroupsInToDto(in *PutGroupsIn) *dto.PutGroupsIn {
+	return &dto.PutGroupsIn{
+		ConditionId: in.ConditionId,
+		GroupIds:    in.GroupIds,
+	}
 }
 
 type Collaborator struct {

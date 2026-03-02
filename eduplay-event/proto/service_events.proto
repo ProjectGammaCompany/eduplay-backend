@@ -13,9 +13,11 @@ service Events {
     rpc GetEvent (Id) returns (PostEventIn);
     rpc GetRole (GetRoleIn) returns (GetRoleOut);
     rpc GetGroups (Id) returns (GetGroupsOut);
+    rpc PutGroups (PutGroupsIn) returns (MessageOut);
     rpc GetCollaborators (Id) returns (GetCollaboratorsOut);
     rpc PostEventBlock (PostEventBlockIn) returns (MessageOut);
     rpc PutEventBlock (PostEventBlockIn) returns (MessageOut);
+    rpc PutEventBlockName (Tag) returns (MessageOut);
     rpc GetEventBlocks (Id) returns (GetEventBlocksOut);
     rpc GetPublicEvents (EventBaseFilters) returns (GetPublicEventsOut);
     rpc GetUserFavorites (EventBaseFilters) returns (GetPublicEventsOut);
@@ -132,6 +134,11 @@ message Group {
     string login = 1;
     string password = 2; 
     string id = 3; 
+}
+
+message PutGroupsIn {
+    string conditionId = 1; 
+    repeated string groupIds = 2;
 }
 
 message GetCollaboratorsOut {

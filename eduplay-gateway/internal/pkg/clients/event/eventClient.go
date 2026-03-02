@@ -111,6 +111,16 @@ func (cl *Client) GetGroups(ctx context.Context, in *events.Id) (*events.GetGrou
 	return out, nil
 }
 
+func (cl *Client) PutGroups(ctx context.Context, in *events.PutGroupsIn) (*events.MessageOut, error) {
+	op := "PutGroups.Client"
+	out, err := cl.api.PutGroups(ctx, in)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return out, nil
+}
+
 func (cl *Client) GetCollaborators(ctx context.Context, in *events.Id) (*events.GetCollaboratorsOut, error) {
 	op := "GetCollaborators.Client"
 	out, err := cl.api.GetCollaborators(ctx, in)
@@ -134,6 +144,16 @@ func (cl *Client) PostEventBlock(ctx context.Context, in *events.PostEventBlockI
 func (cl *Client) PutEventBlock(ctx context.Context, in *events.PostEventBlockIn) (*events.MessageOut, error) {
 	op := "PutEventBlock.Client"
 	out, err := cl.api.PutEventBlock(ctx, in)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return out, nil
+}
+
+func (cl *Client) PutEventBlockName(ctx context.Context, in *events.Tag) (*events.MessageOut, error) {
+	op := "PutEventBlockName.Client"
+	out, err := cl.api.PutEventBlockName(ctx, in)
 	if err != nil {
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}

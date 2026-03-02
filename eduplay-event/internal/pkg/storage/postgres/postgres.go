@@ -249,6 +249,19 @@ func (s *Storage) GetGroups(ctx context.Context, eventId string) (*dto.GetGroups
 	return &dto.GetGroupsOut{Groups: groups}, nil
 }
 
+func (s *Storage) PutGroupsInCondition(ctx context.Context, in *dto.PutGroupsIn) (string, error) {
+	const op = "storage.postgres.PutGroups"
+
+	state := `UPDATE conditions SET groupName = COALESCE($1, '{}'::text[]) WHERE conditionId = $2;`
+
+	_, err := s.db.Exec(ctx, state, in.GroupIds, in.ConditionId)
+	if err != nil {
+		return "", fmt.Errorf("%s: %w", op, err)
+	}
+
+	return "condition " + in.ConditionId + " updated", nil
+}
+
 func (s *Storage) GetCollaborators(ctx context.Context, eventId string) (*dto.GetCollaboratorsOut, error) {
 	const op = "storage.postgres.GetCollaborators"
 
@@ -312,6 +325,19 @@ func (s *Storage) PutEventBlock(ctx context.Context, in *dto.PostEventBlockIn) (
 	}
 
 	return "block " + in.BlockId + " updated", nil
+}
+
+func (s *Storage) PutEventBlockName(ctx context.Context, in *dto.Tag) (string, error) {
+	const op = "storage.postgres.PutEventBlockName"
+
+	state := `UPDATE blocks SET name = $2 WHERE blockId = $1;`
+
+	_, err := s.db.Exec(ctx, state, in.Id, in.Name)
+	if err != nil {
+		return "", fmt.Errorf("%s: %w", op, err)
+	}
+
+	return "block " + in.Id + " updated", nil
 }
 
 func (s *Storage) DeleteEventBlock(ctx context.Context, blockId string) (string, error) {
