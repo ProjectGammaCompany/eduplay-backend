@@ -195,3 +195,15 @@ func GetBlocksForConditionsOutFromDto(in *dto.GetEventBlocksOut) *GetBlocksForCo
 		Blocks: eb,
 	}
 }
+
+type PutBlockListIn struct {
+	EventId string   `json:"eventId"`
+	Blocks  []string `json:"blocks"`
+}
+
+func PutBlockListInToDto(putTaskListIn *PutBlockListIn) *dto.PutListIn {
+	return &dto.PutListIn{
+		Id:   putTaskListIn.EventId,
+		List: putTaskListIn.Blocks,
+	}
+}

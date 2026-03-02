@@ -17,7 +17,9 @@ type UseCase interface {
 	GetEvent(ctx context.Context, in *dto.Id) (*dto.PostEventIn, error)
 	GetRole(ctx context.Context, in *dto.GetRoleIn) (*dto.GetRoleOut, error)
 	GetGroups(ctx context.Context, in *dto.Id) (*dto.GetGroupsOut, error)
-	PutGroups(ctx context.Context, in *dto.PutGroupsIn) (string, error)
+	PutGroups(ctx context.Context, in *dto.PutListIn) (string, error)
+	PutTaskList(ctx context.Context, in *dto.PutListIn) (string, error)
+	PutBlockList(ctx context.Context, in *dto.PutListIn) (string, error)
 	GetCollaborators(ctx context.Context, in *dto.Id) (*dto.GetCollaboratorsOut, error)
 	PostEventBlock(ctx context.Context, in *dto.PostEventBlockIn) (string, error)
 	PutEventBlock(ctx context.Context, in *dto.PostEventBlockIn) (string, error)
@@ -124,10 +126,32 @@ func (h *Handler) GetGroups(ctx context.Context, in *dto.Id) (*dto.GetGroupsOut,
 	return groups, nil
 }
 
-func (h *Handler) PutGroups(ctx context.Context, in *dto.PutGroupsIn) (*dto.MessageOut, error) {
+func (h *Handler) PutGroups(ctx context.Context, in *dto.PutListIn) (*dto.MessageOut, error) {
 	op := "PutGroups.Handler"
 
 	message, err := h.uc.PutGroups(ctx, in)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return &dto.MessageOut{Message: message}, nil
+}
+
+func (h *Handler) PutTaskList(ctx context.Context, in *dto.PutListIn) (*dto.MessageOut, error) {
+	op := "PutTaskList.Handler"
+
+	message, err := h.uc.PutTaskList(ctx, in)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return &dto.MessageOut{Message: message}, nil
+}
+
+func (h *Handler) PutBlockList(ctx context.Context, in *dto.PutListIn) (*dto.MessageOut, error) {
+	op := "PutBlockList.Handler"
+
+	message, err := h.uc.PutBlockList(ctx, in)
 	if err != nil {
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}

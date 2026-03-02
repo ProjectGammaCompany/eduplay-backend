@@ -226,10 +226,10 @@ type PutGroupsIn struct {
 	GroupIds    []string `json:"groups"`
 }
 
-func PutGroupsInToDto(in *PutGroupsIn) *dto.PutGroupsIn {
-	return &dto.PutGroupsIn{
-		ConditionId: in.ConditionId,
-		GroupIds:    in.GroupIds,
+func PutGroupsInToDto(in *PutGroupsIn) *dto.PutListIn {
+	return &dto.PutListIn{
+		Id:   in.ConditionId,
+		List: in.GroupIds,
 	}
 }
 

@@ -162,3 +162,15 @@ func PutTaskOutFromDto(putTaskOut *dto.PutTaskOut) *PutTaskOut {
 		Options: TaskOptionsFromDto(putTaskOut.Options),
 	}
 }
+
+type PutTaskListIn struct {
+	BlockId string   `json:"blockId"`
+	Tasks   []string `json:"tasks"`
+}
+
+func PutTaskListInToDto(putTaskListIn *PutTaskListIn) *dto.PutListIn {
+	return &dto.PutListIn{
+		Id:   putTaskListIn.BlockId,
+		List: putTaskListIn.Tasks,
+	}
+}

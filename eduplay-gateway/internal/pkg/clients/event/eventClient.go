@@ -111,9 +111,29 @@ func (cl *Client) GetGroups(ctx context.Context, in *events.Id) (*events.GetGrou
 	return out, nil
 }
 
-func (cl *Client) PutGroups(ctx context.Context, in *events.PutGroupsIn) (*events.MessageOut, error) {
+func (cl *Client) PutGroups(ctx context.Context, in *events.PutListIn) (*events.MessageOut, error) {
 	op := "PutGroups.Client"
 	out, err := cl.api.PutGroups(ctx, in)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return out, nil
+}
+
+func (cl *Client) PutTaskList(ctx context.Context, in *events.PutListIn) (*events.MessageOut, error) {
+	op := "PutTaskList.Client"
+	out, err := cl.api.PutTaskList(ctx, in)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return out, nil
+}
+
+func (cl *Client) PutBlockList(ctx context.Context, in *events.PutListIn) (*events.MessageOut, error) {
+	op := "PutBlockList.Client"
+	out, err := cl.api.PutBlockList(ctx, in)
 	if err != nil {
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}

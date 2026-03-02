@@ -13,7 +13,9 @@ service Events {
     rpc GetEvent (Id) returns (PostEventIn);
     rpc GetRole (GetRoleIn) returns (GetRoleOut);
     rpc GetGroups (Id) returns (GetGroupsOut);
-    rpc PutGroups (PutGroupsIn) returns (MessageOut);
+    rpc PutGroups (PutListIn) returns (MessageOut);
+    rpc PutTaskList (PutListIn) returns (MessageOut);
+    rpc PutBlockList (PutListIn) returns (MessageOut);
     rpc GetCollaborators (Id) returns (GetCollaboratorsOut);
     rpc PostEventBlock (PostEventBlockIn) returns (MessageOut);
     rpc PutEventBlock (PostEventBlockIn) returns (MessageOut);
@@ -49,6 +51,11 @@ message Empty {}
 
 message Id {
     string id = 1;
+}
+
+message PutListIn {
+    string id = 1; 
+    repeated string list = 2;
 }
 
 message UserEventIds {

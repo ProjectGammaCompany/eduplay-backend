@@ -30,6 +30,7 @@ import (
 	"eduplay-gateway/internal/http/handlers/event/postEventBlock"
 	"eduplay-gateway/internal/http/handlers/event/postTask"
 	"eduplay-gateway/internal/http/handlers/event/putBlockCondition"
+	"eduplay-gateway/internal/http/handlers/event/putBlockList"
 	"eduplay-gateway/internal/http/handlers/event/putEvent"
 	"eduplay-gateway/internal/http/handlers/event/putEventBlock"
 	"eduplay-gateway/internal/http/handlers/event/putEventBlockName"
@@ -37,6 +38,7 @@ import (
 	"eduplay-gateway/internal/http/handlers/event/putGroups"
 	"eduplay-gateway/internal/http/handlers/event/putNextStage"
 	"eduplay-gateway/internal/http/handlers/event/putTask"
+	"eduplay-gateway/internal/http/handlers/event/putTaskList"
 	"eduplay-gateway/internal/http/handlers/event/putTimestamp"
 	"eduplay-gateway/internal/http/handlers/file/postFile"
 
@@ -88,10 +90,12 @@ func EventRouter(router chi.Router, log *slog.Logger, cfg *config.Config) chi.Ro
 		r.Get("/{eventId}/role", getEventRole.New(log, events.New(log, eventClient, userClient)))
 		r.Get("/{eventId}/settings", getEventSettings.New(log, events.New(log, eventClient, userClient)))
 		r.Post("/{eventId}/block", postEventBlock.New(log, events.New(log, eventClient, userClient)))
+		r.Put("/{eventId}/blocks", putBlockList.New(log, events.New(log, eventClient, userClient)))
 		r.Put("/{eventId}/blocks/{blockId}", putEventBlock.New(log, events.New(log, eventClient, userClient)))
 		r.Put("/{eventId}/blocks/{blockId}/name", putEventBlockName.New(log, events.New(log, eventClient, userClient)))
 		r.Get("/{eventId}", getEventBlocks.New(log, events.New(log, eventClient, userClient)))
 		r.Post("/{eventId}/blocks/{blockId}/task", postTask.New(log, events.New(log, eventClient, userClient)))
+		r.Put("/{eventId}/blocks/{blockId}/tasks", putTaskList.New(log, events.New(log, eventClient, userClient)))
 		r.Put("/{eventId}/blocks/{blockId}/tasks/{taskId}", putTask.New(log, events.New(log, eventClient, userClient)))
 		r.Post("/{eventId}/blocks/{blockId}/conditions", postBlockCondition.New(log, events.New(log, eventClient, userClient)))
 		r.Put("/{eventId}/blocks/{blockId}/conditions/{conditionId}", putBlockCondition.New(log, events.New(log, eventClient, userClient)))

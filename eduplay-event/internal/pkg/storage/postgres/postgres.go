@@ -249,17 +249,73 @@ func (s *Storage) GetGroups(ctx context.Context, eventId string) (*dto.GetGroups
 	return &dto.GetGroupsOut{Groups: groups}, nil
 }
 
-func (s *Storage) PutGroupsInCondition(ctx context.Context, in *dto.PutGroupsIn) (string, error) {
+func (s *Storage) PutGroupsInCondition(ctx context.Context, in *dto.PutListIn) (string, error) {
 	const op = "storage.postgres.PutGroups"
 
 	state := `UPDATE conditions SET groupName = COALESCE($1, '{}'::text[]) WHERE conditionId = $2;`
 
-	_, err := s.db.Exec(ctx, state, in.GroupIds, in.ConditionId)
+	_, err := s.db.Exec(ctx, state, in.List, in.Id)
 	if err != nil {
 		return "", fmt.Errorf("%s: %w", op, err)
 	}
 
-	return "condition " + in.ConditionId + " updated", nil
+	return "condition " + in.Id + " updated", nil
+}
+
+func (s *Storage) PutTaskList(ctx context.Context, in *dto.PutListIn) (string, error) {
+	const op = "storage.postgres.PutTaskList"
+
+	if len(in.List) == 0 {
+		return "", fmt.Errorf("%s: %w", op, errors.New("empty list"))
+	}
+
+	order := make([]int, len(in.List))
+	for i := range in.List {
+		order[i] = i + 1
+	}
+
+	state := `UPDATE tasks AS t
+			SET taskOrder = v.taskOrder
+			FROM (
+				SELECT unnest($1::int[]) AS taskOrder, unnest($2::uuid[]) AS taskId
+			) as v
+			WHERE t.taskId = v.taskId
+			AND t.blockId = $3;`
+
+	_, err := s.db.Exec(ctx, state, order, in.List, in.Id)
+	if err != nil {
+		return "", fmt.Errorf("%s: %w", op, err)
+	}
+
+	return "task list " + in.Id + " updated", nil
+}
+
+func (s *Storage) PutBlockList(ctx context.Context, in *dto.PutListIn) (string, error) {
+	const op = "storage.postgres.PutBlockList"
+
+	if len(in.List) == 0 {
+		return "", fmt.Errorf("%s: %w", op, errors.New("empty list"))
+	}
+
+	order := make([]int, len(in.List))
+	for i := range in.List {
+		order[i] = i + 1
+	}
+
+	state := `UPDATE blocks AS b
+			SET blockOrder = v.blockOrder
+			FROM (
+				SELECT unnest($1::int[]) AS blockOrder, unnest($2::uuid[]) AS blockId
+			) as v
+			WHERE b.blockId = v.blockId
+			AND b.eventId = $3;`
+
+	_, err := s.db.Exec(ctx, state, order, in.List, in.Id)
+	if err != nil {
+		return "", fmt.Errorf("%s: %w", op, err)
+	}
+
+	return "block list " + in.Id + " updated", nil
 }
 
 func (s *Storage) GetCollaborators(ctx context.Context, eventId string) (*dto.GetCollaboratorsOut, error) {
