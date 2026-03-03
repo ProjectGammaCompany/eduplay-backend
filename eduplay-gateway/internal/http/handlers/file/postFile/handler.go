@@ -179,7 +179,7 @@ func New(log *slog.Logger, uc UseCase) http.HandlerFunc {
 			return
 		}
 
-		log.Info("success to save file", slog.Any("response", fileName))
-		render.JSON(writer, request, fileName)
+		log.Info("success to save file", slog.Any("response", newFileName))
+		render.JSON(writer, request, newFileName)
 	}
 }
