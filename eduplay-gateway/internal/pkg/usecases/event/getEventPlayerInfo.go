@@ -49,10 +49,7 @@ func (s *UseCase) GetEventPlayerInfo(ctx context.Context, userId string, eventId
 	playerInfo.Description = event.Description
 	playerInfo.Cover = event.Cover
 	playerInfo.Tags = eventModel.TagsFromDto(eventForUser.Tags).Tags
-	playerInfo.LastEditionDate = event.LastEditionDate.AsTime().Format("02.01.2006 15:04:05.000")
 	playerInfo.Authors = eventModel.CollaboratorsFromDto(collaborators)
-	playerInfo.StartDate = event.StartDate.AsTime().Format("02.01.2006 15:04:05.000")
-	playerInfo.EndDate = event.EndDate.AsTime().Format("02.01.2006 15:04:05.000")
 	playerInfo.Rate = eventForUser.Rate
 	playerInfo.Favorite = eventForUser.Favorite
 	playerInfo.Status = userStatus.Message
@@ -60,6 +57,18 @@ func (s *UseCase) GetEventPlayerInfo(ctx context.Context, userId string, eventId
 	playerInfo.CanBeDownloaded = event.AllowDownloading
 	playerInfo.Status = userStatus.Message
 	playerInfo.IsPrivate = event.Private
+	playerInfo.LastEditionDate = event.LastEditionDate.AsTime().Format("02.01.2006 15:04:05.000")
+	if playerInfo.LastEditionDate == "01.01.1970 00:00:00.000" {
+		playerInfo.LastEditionDate = ""
+	}
+	playerInfo.StartDate = event.StartDate.AsTime().Format("02.01.2006 15:04:05.000")
+	if playerInfo.StartDate == "01.01.1970 00:00:00.000" {
+		playerInfo.StartDate = ""
+	}
+	playerInfo.EndDate = event.EndDate.AsTime().Format("02.01.2006 15:04:05.000")
+	if playerInfo.EndDate == "01.01.1970 00:00:00.000" {
+		playerInfo.EndDate = ""
+	}
 
 	s.log.With(slog.String("op", op)).Info("got event player info", slog.Any("event", event.EventId))
 
