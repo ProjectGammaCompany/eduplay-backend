@@ -68,7 +68,7 @@ func New(log *slog.Logger, uc UseCase) http.HandlerFunc {
 		if eventId == "" {
 			log.Error("no event Id provided")
 			writer.WriteHeader(http.StatusBadRequest)
-			render.JSON(writer, request, lib.Error("no Id provided"))
+			render.JSON(writer, request, lib.Error("no event Id provided"))
 			return
 		}
 
@@ -84,7 +84,7 @@ func New(log *slog.Logger, uc UseCase) http.HandlerFunc {
 		if blockId == "" {
 			log.Error("no block Id provided")
 			writer.WriteHeader(http.StatusBadRequest)
-			render.JSON(writer, request, lib.Error("no Id provided"))
+			render.JSON(writer, request, lib.Error("no block Id provided"))
 			return
 		}
 
@@ -93,6 +93,22 @@ func New(log *slog.Logger, uc UseCase) http.HandlerFunc {
 			log.Error("invalid block id provided")
 			writer.WriteHeader(http.StatusBadRequest)
 			render.JSON(writer, request, lib.Error("invalid block id provided"))
+			return
+		}
+
+		conditionId := chi.URLParam(request, "conditionId")
+		if conditionId == "" {
+			log.Error("no condition Id provided")
+			writer.WriteHeader(http.StatusBadRequest)
+			render.JSON(writer, request, lib.Error("no condition Id provided"))
+			return
+		}
+
+		isUUID = tokens.ValidateUUID(conditionId)
+		if !isUUID {
+			log.Error("invalid condition id provided")
+			writer.WriteHeader(http.StatusBadRequest)
+			render.JSON(writer, request, lib.Error("invalid condition id provided"))
 			return
 		}
 
@@ -112,7 +128,7 @@ func New(log *slog.Logger, uc UseCase) http.HandlerFunc {
 		}
 
 		req := eventModel.Id{
-			Id: blockId,
+			Id: conditionId,
 		}
 
 		ret, err := uc.DeleteBlockCondition(request.Context(), &req)

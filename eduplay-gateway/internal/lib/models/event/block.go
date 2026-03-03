@@ -79,7 +79,7 @@ type BlockCorrectionCheck struct {
 }
 
 type GetEventBlocksOut struct {
-	Name   string
+	Name   string                  `json:"name"`
 	Blocks []*BlockCorrectionCheck `json:"blocks"`
 }
 

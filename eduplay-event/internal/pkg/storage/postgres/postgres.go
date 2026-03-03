@@ -1106,7 +1106,8 @@ func (s *Storage) GetBlockInfo(ctx context.Context, blockId string) (*dto.PostEv
 func (s *Storage) GetBlockConditionsFull(ctx context.Context, blockId string) (*dto.BlockInfo, error) {
 	const op = "storage.postgres.GetBlockConditions"
 
-	state := `SELECT bl.blockOrder, c.prevBlockId, c.nextBlockId, c.groupName, c.min, c.max, c.conditionId FROM blocks bl INNER JOIN conditions c ON bl.blockId = c.prevBlockId WHERE bl.blockId = $1;`
+	state := `SELECT bl.blockOrder, c.prevBlockId, c.nextBlockId, c.groupName, c.min, c.max, c.conditionId FROM conditions c INNER JOIN blocks bl ON c.nextBlockId = bl.blockId WHERE c.prevBlockId = $1;`
+	// state := `SELECT bl.blockOrder, c.prevBlockId, c.nextBlockId, c.groupName, c.min, c.max, c.conditionId FROM blocks bl INNER JOIN conditions c ON bl.blockId = c.nextBlockId WHERE bl.blockId = $1;`
 
 	res, err := s.db.Query(ctx, state, blockId)
 	if err != nil {
