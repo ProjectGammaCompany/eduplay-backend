@@ -121,7 +121,7 @@ func BlockTasksListFromDto(blockTasksList *dto.Tasks) *BlockTasksList {
 // }
 
 type Answer struct {
-	TaskId      string   `json:"taskId"`
+	TaskId      string   `json:"id"`
 	UserId      string   `json:"userId"`
 	Answer      []string `json:"answer"`
 	Points      int64    `json:"points"`

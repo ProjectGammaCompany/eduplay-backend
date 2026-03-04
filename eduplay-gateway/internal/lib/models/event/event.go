@@ -558,12 +558,12 @@ func NextStageBlockFromDto(in *dto.NextStageBlock) *NextStageBlock {
 }
 
 type NextStageTaskShort struct {
-	TaskId      string `json:"taskId"`
+	TaskId      string `json:"id"`
 	Name        string `json:"name"`
 	Type        int64  `json:"type"`
 	Time        int64  `json:"time"`
 	IsCompleted bool   `json:"isCompleted"`
-	Description string `json:"description"`
+	// Description string `json:"description"`
 }
 
 func NextStageTaskShortsFromDto(in []*dto.NextStageTaskShort) []NextStageTaskShort {
@@ -575,7 +575,7 @@ func NextStageTaskShortsFromDto(in []*dto.NextStageTaskShort) []NextStageTaskSho
 			Time:        task.Time,
 			IsCompleted: task.IsCompleted,
 			Type:        task.Type,
-			Description: task.Description,
+			// Description: task.Description,
 		}
 	}
 	return ret
