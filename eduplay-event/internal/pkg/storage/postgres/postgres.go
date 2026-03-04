@@ -366,9 +366,9 @@ func (s *Storage) PostEventBlock(ctx context.Context, in *dto.PostEventBlockIn) 
 func (s *Storage) PutEventBlock(ctx context.Context, in *dto.PostEventBlockIn) (string, error) {
 	const op = "storage.postgres.PutEventBlock"
 
-	state := `UPDATE blocks SET isParallel = $2, blockOrder = $3, showPoints = $4, showAnswers = $5, partialPoints = $6 WHERE blockId = $1;`
+	state := `UPDATE blocks SET isParallel = $2, showPoints = $3, showAnswers = $4, partialPoints = $6 WHERE blockId = $1;`
 
-	_, err := s.db.Exec(ctx, state, in.BlockId, in.IsParallel, in.Order, in.ShowPoints, in.ShowAnswers, in.PartialPoints)
+	_, err := s.db.Exec(ctx, state, in.BlockId, in.IsParallel, in.ShowPoints, in.ShowAnswers, in.PartialPoints)
 
 	if err != nil {
 		return "", fmt.Errorf("%s: %w", op, err)
