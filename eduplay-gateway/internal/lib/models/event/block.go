@@ -16,7 +16,7 @@ type PostEventBlockIn struct {
 	Order         int    `json:"order" validate:"required"`
 	IsParallel    bool   `json:"isParallel"`
 	Points        bool   `json:"points"`
-	Answers       bool   `json:"answers"`
+	Answers       bool   `json:"rightAnswers"`
 	PartialPoints bool   `json:"partialPoints"`
 }
 
@@ -27,7 +27,7 @@ type PutEventBlockIn struct {
 	Order         int    `json:"order"`
 	IsParallel    bool   `json:"isParallel"`
 	Points        bool   `json:"points"`
-	Answers       bool   `json:"answers"`
+	Answers       bool   `json:"rightAnswers"`
 	PartialPoints bool   `json:"partialPoints"`
 }
 
