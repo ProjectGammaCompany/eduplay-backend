@@ -127,6 +127,7 @@ type Answer struct {
 	Points      int64    `json:"points"`
 	Status      string   `json:"status"`
 	RightAnswer []string `json:"rightAnswer"`
+	EventId     string   `json:"eventId"`
 }
 
 func AnswerFromDto(answer *dto.Answer) *Answer {
@@ -137,6 +138,7 @@ func AnswerFromDto(answer *dto.Answer) *Answer {
 		Points:      answer.Points,
 		Status:      answer.Status,
 		RightAnswer: answer.RightAnswer,
+		EventId:     answer.EventId,
 	}
 }
 
@@ -148,6 +150,7 @@ func AnswerToDto(answer *Answer) *dto.Answer {
 		Points:      answer.Points,
 		Status:      answer.Status,
 		RightAnswer: answer.RightAnswer,
+		EventId:     answer.EventId,
 	}
 }
 

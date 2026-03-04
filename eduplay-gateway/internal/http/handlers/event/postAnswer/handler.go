@@ -65,21 +65,21 @@ func New(log *slog.Logger, uc UseCase) http.HandlerFunc {
 			return
 		}
 
-		// eventId := chi.URLParam(request, "eventId")
-		// if eventId == "" {
-		// 	log.Error("no event Id provided")
-		// 	writer.WriteHeader(http.StatusBadRequest)
-		// 	render.JSON(writer, request, lib.Error("no Id provided"))
-		// 	return
-		// }
+		eventId := chi.URLParam(request, "eventId")
+		if eventId == "" {
+			log.Error("no event Id provided")
+			writer.WriteHeader(http.StatusBadRequest)
+			render.JSON(writer, request, lib.Error("no Id provided"))
+			return
+		}
 
-		// isUUID := tokens.ValidateUUID(eventId)
-		// if !isUUID {
-		// 	log.Error("invalid event id provided")
-		// 	writer.WriteHeader(http.StatusBadRequest)
-		// 	render.JSON(writer, request, lib.Error("invalid event id provided"))
-		// 	return
-		// }
+		isUUID := tokens.ValidateUUID(eventId)
+		if !isUUID {
+			log.Error("invalid event id provided")
+			writer.WriteHeader(http.StatusBadRequest)
+			render.JSON(writer, request, lib.Error("invalid event id provided"))
+			return
+		}
 
 		taskId := chi.URLParam(request, "taskId")
 		if taskId == "" {
@@ -89,7 +89,7 @@ func New(log *slog.Logger, uc UseCase) http.HandlerFunc {
 			return
 		}
 
-		isUUID := tokens.ValidateUUID(taskId)
+		isUUID = tokens.ValidateUUID(taskId)
 		if !isUUID {
 			log.Error("invalid task id provided")
 			writer.WriteHeader(http.StatusBadRequest)
@@ -134,6 +134,7 @@ func New(log *slog.Logger, uc UseCase) http.HandlerFunc {
 		}
 
 		req.TaskId = taskId
+		req.EventId = eventId
 		req.UserId = accessClaims.ID
 
 		ret, err := uc.PostAnswer(request.Context(), &req)

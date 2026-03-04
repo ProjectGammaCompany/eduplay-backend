@@ -2,6 +2,7 @@ package event
 
 import (
 	"context"
+	"fmt"
 	"log/slog"
 
 	dto "eduplay-event/internal/generated"
@@ -23,6 +24,12 @@ func (a *UseCase) PostAnswer(ctx context.Context, in *dto.Answer) (*dto.Answer, 
 	}
 
 	corrAnswers := GetCorrectAnswers(task)
+
+	// TODO: put empty timestamp
+	_, err = a.storage.PutTimestamp(ctx, in.UserId, in.EventId, nil)
+	if err != nil {
+		return nil, err
+	}
 
 	log.Info("checking answer")
 
@@ -94,6 +101,7 @@ func (a *UseCase) PostAnswer(ctx context.Context, in *dto.Answer) (*dto.Answer, 
 		}
 
 		ans.Points = int64(count) * task.Points / int64(len(task.Options))
+		fmt.Println(count)
 
 		if count == len(corrAnswers) {
 			ans.Status = "correct"

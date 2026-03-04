@@ -96,16 +96,16 @@ func (a *UseCase) GetNextStage(ctx context.Context, in *dto.UserEventIds) (*dto.
 		}
 		nextStageInfo.Task = nextStageTask
 
-		_, err = a.storage.PutNextStage(ctx, &dto.EventBlockTaskUserIds{
-			UserId:  in.UserId,
-			EventId: in.EventId,
-			BlockId: currBlockId,
-			TaskId:  currTaskId,
-		})
-		if err != nil {
-			log.Error("failed to put next stage", err.Error(), slog.String("event", in.EventId), slog.String("user", in.UserId))
-			return nil, err
-		}
+		// _, err = a.storage.PutNextStage(ctx, &dto.EventBlockTaskUserIds{
+		// 	UserId:  in.UserId,
+		// 	EventId: in.EventId,
+		// 	BlockId: currBlockId,
+		// 	TaskId:  currTaskId,
+		// })
+		// if err != nil {
+		// 	log.Error("failed to put next stage", err.Error(), slog.String("event", in.EventId), slog.String("user", in.UserId))
+		// 	return nil, err
+		// }
 
 		return nextStageInfo, nil
 	}
@@ -134,18 +134,31 @@ func (a *UseCase) GetNextStage(ctx context.Context, in *dto.UserEventIds) (*dto.
 			log.Error("failed to get block tasks short", err.Error(), slog.String("block", currBlockId))
 			return nil, err
 		}
-		nextStageBlock.Tasks = currBlockTasks
 
-		nextStageInfo.Block = nextStageBlock
+		for _, task := range currBlockTasks {
+			if !task.IsCompleted {
+				nextStageBlock.Tasks = currBlockTasks
 
-		_, err = a.storage.PutNextStage(ctx, &dto.EventBlockTaskUserIds{
-			UserId:  in.UserId,
-			EventId: in.EventId,
-			BlockId: nextBlockId,
-			TaskId:  "",
-		})
+				nextStageInfo.Block = nextStageBlock
+
+				_, err = a.storage.PutNextStage(ctx, &dto.EventBlockTaskUserIds{
+					UserId:  in.UserId,
+					EventId: in.EventId,
+					BlockId: nextBlockId,
+					TaskId:  "",
+				})
+				if err != nil {
+					log.Error("failed to put next stage", err.Error(), slog.String("event", in.EventId), slog.String("user", in.UserId))
+					return nil, err
+				}
+
+				return nextStageInfo, nil
+			}
+		}
+
+		nextStageInfo, err = a.GetNextBlock(ctx, currBlock.Order, in)
 		if err != nil {
-			log.Error("failed to put next stage", err.Error(), slog.String("event", in.EventId), slog.String("user", in.UserId))
+			log.Error("failed to get next block", err.Error(), slog.String("event", in.EventId), slog.String("user", in.UserId))
 			return nil, err
 		}
 
@@ -317,9 +330,10 @@ func (a *UseCase) GetNextBlockById(ctx context.Context, nextBlockId string, in *
 		fmt.Println("=========== ", nextBlock.IsParallel)
 		nextStageInfo.Type = "block"
 		nextStageBlock := &dto.NextStageBlock{
-			BlockId: nextBlockId,
-			Name:    nextBlock.Name,
-			Tasks:   nextBlockTasks,
+			BlockId:    nextBlockId,
+			Name:       nextBlock.Name,
+			Tasks:      nextBlockTasks,
+			IsParallel: true,
 		}
 		nextStageInfo.Block = nextStageBlock
 
