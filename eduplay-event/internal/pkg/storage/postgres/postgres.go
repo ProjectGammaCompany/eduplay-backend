@@ -812,8 +812,7 @@ func (s *Storage) GetHistory(ctx context.Context, in *dto.EventBaseFilters) (*dt
         SELECT 1 
         FROM userFavorites 
         WHERE userId = $3 AND eventId = e.eventId
-    ) as favorite,
-    ul.finished as is_finished
+    ) as favorite
 FROM events AS e
 INNER JOIN userLinks ul ON e.eventId = ul.eventId 
     AND ul.userId = $3 

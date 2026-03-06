@@ -101,6 +101,7 @@ CREATE TABLE answers (
     answerId uuid PRIMARY KEY DEFAULT gen_random_uuid(),
     userId uuid NOT NULL,
     taskId uuid NOT NULL,
+    optionIds uuid[] NOT NULL DEFAULT '{}',
     values text[] NOT NULL DEFAULT '{}',
     points INTEGER NOT NULL DEFAULT 0,
     FOREIGN KEY (userId) REFERENCES users(userid) ON DELETE CASCADE,
