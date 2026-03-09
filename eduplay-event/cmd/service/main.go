@@ -6,6 +6,7 @@ import (
 	"eduplay-event/internal/config"
 	db "eduplay-event/internal/pkg/storage/postgres"
 	events "eduplay-event/internal/pkg/usecase/events"
+	rabbit "eduplay-event/internal/pkg/usecase/rabbitmq"
 	"log/slog"
 	"os"
 	"os/signal"
@@ -27,7 +28,17 @@ func main() {
 
 	log := setupLogger(cfg.Env)
 
-	storage, _ := db.New(context.Background(), cfg.StoragePath)
+	storage, err := db.New(context.Background(), cfg.StoragePath)
+	if err != nil {
+		log.Error("failed to create storage", slog.String("error", err.Error()))
+		os.Exit(1)
+	}
+
+	rabbitMQ, err := rabbit.NewRabbitMQ(cfg.RabbitMQ, log, storage)
+	if err != nil {
+		log.Error("failed to create rabbitmq", slog.String("error", err.Error()))
+		os.Exit(1)
+	}
 
 	eventsService := events.New(log, storage, cfg.SecretKey)
 
@@ -41,12 +52,20 @@ func main() {
 		app.GRPCServer.MustRun()
 	}()
 
+	go func() {
+		rabbitMQ.ReceiveUserDeletedMessage()
+	}()
+
 	// Graceful shutdown
 
 	stop := make(chan os.Signal, 1)
 	signal.Notify(stop, syscall.SIGTERM, syscall.SIGINT)
 
 	<-stop
+
+	if err := rabbitMQ.Close(); err != nil {
+		log.Error("failed to close rabbitmq", slog.String("error", err.Error()))
+	}
 
 	app.GRPCServer.Stop()
 	log.Info("Gracefully stopped")

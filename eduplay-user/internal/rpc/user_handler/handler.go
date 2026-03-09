@@ -183,6 +183,7 @@ func (h *Handler) ChangePassword(ctx context.Context, in *dto.ChangePasswordIn) 
 func (h *Handler) DeleteAccount(ctx context.Context, in *dto.DeleteAccountIn) (*dto.Empty, error) {
 	op := "ChangePassword.Handler"
 
+	fmt.Println("handler", in)
 	err := h.uc.DeleteUserAccount(ctx, in.AccessToken)
 	if err != nil {
 		return nil, fmt.Errorf("%s: %w", op, err)

@@ -12,6 +12,7 @@ type Config struct {
 	Env         string     `yaml:"env" env-default:"local"`
 	StoragePath string     `yaml:"storage_path" env-required:"true"`
 	SecretKey   string     `yaml:"secret_key" env-required:"true"`
+	RabbitMQ    string     `yaml:"rabbitmq" env-required:"true"`
 	GRPC        GRPCConfig `yaml:"grpc"`
 }
 

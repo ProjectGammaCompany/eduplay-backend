@@ -27,20 +27,27 @@ type storage interface {
 	GetProfile(ctx context.Context, userId string) (*dto.Profile, error)
 }
 
+type rabbitmq interface {
+	SendDeleteAccountMessage(ctx context.Context, userID string) (string, error)
+}
+
 type UseCase struct {
-	log     *slog.Logger
-	storage storage
-	secret  string
+	log      *slog.Logger
+	storage  storage
+	rabbitmq rabbitmq
+	secret   string
 }
 
 func New(
 	log *slog.Logger,
 	st storage,
+	rabbitmq rabbitmq,
 	secret string,
 ) *UseCase {
 	return &UseCase{
-		log:     log,
-		storage: st,
-		secret:  secret,
+		log:      log,
+		storage:  st,
+		rabbitmq: rabbitmq,
+		secret:   secret,
 	}
 }

@@ -56,7 +56,7 @@ func New(log *slog.Logger, uc UseCase) http.HandlerFunc {
 		credentials, err := uc.SignUp(context.Background(), &req)
 		if err != nil {
 			if errors.Is(err, storage.ErrUserAlreadyExists) {
-				writer.WriteHeader(http.StatusConflict)
+				writer.WriteHeader(http.StatusForbidden)
 				render.JSON(writer, request, storage.ErrUserAlreadyExists.Error())
 				return
 			}
