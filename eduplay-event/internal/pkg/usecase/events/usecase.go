@@ -55,6 +55,7 @@ type storage interface {
 	GetCollaboratorIds(ctx context.Context, emails []string) ([]string, error)
 	UpdateEventCollaborators(ctx context.Context, eventId string, collaboratorIds []string) error
 	UpdateEventGroups(ctx context.Context, eventId string, groups []*dto.Group) error
+	GetTaskAnswer(ctx context.Context, taskId string, userId string) (*dto.Answer, error)
 }
 
 type UseCase struct {

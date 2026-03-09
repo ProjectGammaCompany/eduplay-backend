@@ -1550,3 +1550,22 @@ func (s *Storage) UpdateEventGroups(ctx context.Context, eventId string, groups 
 
 	return nil
 }
+
+func (s *Storage) GetTaskAnswer(ctx context.Context, taskId string, userId string) (*dto.Answer, error) {
+	const op = "storage.postgres.GetTaskAnswer"
+
+	state := `SELECT values, points FROM answers WHERE taskId = $1 AND userId = $2;`
+
+	res := s.db.QueryRow(ctx, state, taskId, userId)
+
+	var answer dto.Answer
+	err := res.Scan(&answer.Answer, &answer.Points)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, nil
+		}
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return &answer, nil
+}

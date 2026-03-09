@@ -74,7 +74,13 @@ func (a *UseCase) GetNextStage(ctx context.Context, in *dto.UserEventIds) (*dto.
 		return nextStageInfo, nil
 	}
 
-	if startTime.AsTime().Format("02.01.2006 15:04:05.000") != "01.01.1970 00:00:00.000" {
+	taskAnswer, err := a.storage.GetTaskAnswer(ctx, currTaskId, in.UserId)
+	if err != nil {
+		log.Error("failed to get user task answer", err.Error(), slog.String("event", in.EventId), slog.String("user", in.UserId))
+		return nil, err
+	}
+
+	if startTime.AsTime().Format("02.01.2006 15:04:05.000") != "01.01.1970 00:00:00.000" || taskAnswer == nil {
 		fmt.Println("startTime ", startTime.AsTime().Format("02.01.2006 15:04:05.000"))
 		nextStageInfo.Type = "task"
 		currTask, err := a.storage.GetTaskById(ctx, currTaskId)
