@@ -100,7 +100,7 @@ func (a *UseCase) PostAnswer(ctx context.Context, in *dto.Answer) (*dto.Answer, 
 			}
 		}
 
-		ans.Points = int64(count) * task.Points / int64(len(task.Options))
+		ans.Points = int64(count) * task.Points / int64(len(corrAnswers))
 		fmt.Println(count)
 
 		if count == len(corrAnswers) {
