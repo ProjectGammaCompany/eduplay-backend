@@ -3,6 +3,7 @@ env: "local"
 storage_path: "postgresql://eduplay:sanAnas_918694@eduplay-postgres-postgresql:5432/eduplay-data"
 secret_key: "EduplaySecretkey"
 # rabbitmq: "amqp://guest:guest@localhost:5672/"
+# rabbitmq: "amqp://eduplay_data:eduplay0987654321@rabbitmq.eduplay.svc.cluster.local:5672/"
 grpc:
   port: 35003
   timeout: 5s
