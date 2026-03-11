@@ -1,6 +1,6 @@
 env: "local"
 # storage_path: "postgresql://postgres:postgres@localhost:5432/eduplay-data"
-storage_path: "postgresql://eduplay:sanAnas_918694@eduplay-postgres-postgresql:5432/eduplay-user"
+storage_path: "postgresql://eduplay:sanAnas_918694@eduplay-postgres-postgresql:5432/eduplay-data"
 secret_key: "EduplaySecretkey"
 # rabbitmq: "amqp://guest:guest@localhost:5672/"
 grpc:
