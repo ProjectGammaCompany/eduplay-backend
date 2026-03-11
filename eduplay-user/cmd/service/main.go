@@ -5,6 +5,7 @@ import (
 	"eduplay-user/internal/application"
 	"eduplay-user/internal/config"
 	db "eduplay-user/internal/pkg/storage/postgres"
+	rabbit "eduplay-user/internal/pkg/usecase/rabbitmq"
 	users "eduplay-user/internal/pkg/usecase/user"
 	"log/slog"
 	"os"
@@ -29,7 +30,9 @@ func main() {
 
 	storage, _ := db.New(context.Background(), cfg.StoragePath)
 
-	usersService := users.New(log, storage, cfg.SecretKey)
+	rabbit, _ := rabbit.NewRabbitMQ(cfg.RabbitMQ)
+
+	usersService := users.New(log, storage, rabbit, cfg.SecretKey)
 
 	grpcApp := application.New(log, usersService, cfg.GRPC.Port)
 

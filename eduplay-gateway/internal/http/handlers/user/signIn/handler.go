@@ -61,7 +61,7 @@ func New(log *slog.Logger, uc UseCase) http.HandlerFunc {
 			}
 			if errors.Is(err, storage.ErrIncorrectPassword) {
 				log.Error("invalid password")
-				writer.WriteHeader(http.StatusUnauthorized)
+				writer.WriteHeader(http.StatusForbidden)
 				render.JSON(writer, request, storage.ErrIncorrectPassword.Error())
 				return
 			}

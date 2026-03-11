@@ -12,8 +12,8 @@ CREATE TABLE events (
     lastEditionDate TIMESTAMP DEFAULT now(), 
     showRating BOOLEAN NOT NULL DEFAULT false,
     allowDownloading BOOLEAN NOT NULL DEFAULT false,
-    groupEvent BOOLEAN NOT NULL DEFAULT false,
-    FOREIGN KEY (ownerId) REFERENCES users(userid) ON DELETE CASCADE
+    groupEvent BOOLEAN NOT NULL DEFAULT false
+    -- FOREIGN KEY (ownerId) REFERENCES users(userid) ON DELETE CASCADE
 );
 
 CREATE TABLE blocks (
@@ -85,7 +85,7 @@ CREATE TABLE ratings (
     userId uuid NOT NULL,
     eventId uuid NOT NULL,
     rating INTEGER NOT NULL DEFAULT 0,
-    FOREIGN KEY (userId) REFERENCES users(userid) ON DELETE CASCADE,
+    -- FOREIGN KEY (userId) REFERENCES users(userid) ON DELETE CASCADE,
     FOREIGN KEY (eventId) REFERENCES events(eventId) ON DELETE CASCADE
 );
 
@@ -93,7 +93,7 @@ CREATE TABLE userFavorites (
     favoriteId uuid PRIMARY KEY DEFAULT gen_random_uuid(),
     userId uuid NOT NULL,
     eventId uuid NOT NULL,
-    FOREIGN KEY (userId) REFERENCES users(userid) ON DELETE CASCADE,
+    -- FOREIGN KEY (userId) REFERENCES users(userid) ON DELETE CASCADE,
     FOREIGN KEY (eventId) REFERENCES events(eventId) ON DELETE CASCADE
 );
 
@@ -104,6 +104,20 @@ CREATE TABLE answers (
     optionIds uuid[] NOT NULL DEFAULT '{}',
     values text[] NOT NULL DEFAULT '{}',
     points INTEGER NOT NULL DEFAULT 0,
-    FOREIGN KEY (userId) REFERENCES users(userid) ON DELETE CASCADE,
+    -- FOREIGN KEY (userId) REFERENCES users(userid) ON DELETE CASCADE,
     FOREIGN KEY (taskId) REFERENCES tasks(taskId) ON DELETE CASCADE
+);
+
+CREATE TABLE userLinks (
+    linkId uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    userId uuid NOT NULL,
+    eventId uuid NOT NULL,
+    isParticipant BOOLEAN DEFAULT true,
+    currTaskId uuid DEFAULT NULL, 
+    currBlockId uuid DEFAULT NULL,
+    currTaskStartTime TIMESTAMP NOT NULL DEFAULT '1970-01-01 00:00:00',
+    finished BOOLEAN DEFAULT false,
+    FOREIGN KEY (eventId) REFERENCES events(eventId) ON DELETE CASCADE,
+    -- FOREIGN KEY (userId) REFERENCES users(userid) ON DELETE CASCADE,
+    FOREIGN KEY (currTaskId) REFERENCES tasks(taskId) ON DELETE CASCADE
 );

@@ -29,6 +29,7 @@ type Client struct {
 type ClientsConfig struct {
 	Users  Client `yaml:"users"`
 	Events Client `yaml:"events"`
+	Data   Client `yaml:"data"`
 }
 
 func MustLoad() *Config {

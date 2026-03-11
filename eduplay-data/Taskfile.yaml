@@ -1,0 +1,11 @@
+version: "3"
+
+tasks:
+  generate:
+    aliases:
+      - gen
+    desc: "Gen code from proto files"
+    cmds:
+      - protoc -I proto proto/*.proto --go_out=internal/generated --go_opt=paths=source_relative  --go-grpc_out=internal/generated proto/service_data.proto --go-grpc_opt=paths=source_relative
+      # - golangci-lint run 
+      # - go run ./cmd/service/main.go -config config.yaml
