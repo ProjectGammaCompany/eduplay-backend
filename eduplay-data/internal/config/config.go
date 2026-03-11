@@ -9,15 +9,17 @@ import (
 )
 
 type Config struct {
-	Env     string        `yaml:"env" env-default:"local"`
-	Server  ServerConfig  `yaml:"server"`
-	Clients ClientsConfig `yaml:"clients"`
+	Env         string `yaml:"env" env-default:"local"`
+	StoragePath string `yaml:"storage_path" env-required:"true"`
+	// RabbitMQ    string     `yaml:"rabbitmq" env-required:"true"`
+	SecretKey string     `yaml:"secret_key" env-required:"true"`
+	GRPC      GRPCConfig `yaml:"grpc"`
+	Clients   ClientsConfig
 }
 
-type ServerConfig struct {
-	Address     string        `yaml:"address"`
-	Timeout     time.Duration `yaml:"timeout"`
-	IdleTimeout time.Duration `yaml:"idle_timeout"`
+type GRPCConfig struct {
+	Port    int           `yaml:"port"`
+	Timeout time.Duration `yaml:"timeout"`
 }
 
 type Client struct {
@@ -27,9 +29,7 @@ type Client struct {
 }
 
 type ClientsConfig struct {
-	Users  Client `yaml:"users"`
 	Events Client `yaml:"events"`
-	Data   Client `yaml:"data"`
 }
 
 func MustLoad() *Config {
@@ -43,13 +43,13 @@ func MustLoad() *Config {
 
 func MustLoadPath(configPath string) *Config {
 	if _, err := os.Stat(configPath); os.IsNotExist(err) {
-		panic("config file does not exist" + configPath)
+		panic("config file does not exist: " + configPath)
 	}
 
 	var cfg Config
 
 	if err := cleanenv.ReadConfig(configPath, &cfg); err != nil {
-		panic("cannot read config: " + error.Error(err))
+		panic("cannot read config: " + err.Error())
 	}
 
 	return &cfg
@@ -59,7 +59,6 @@ func fetchConfigPath() string {
 	var res string
 
 	flag.StringVar(&res, "config", "", "path to config file")
-
 	flag.Parse()
 
 	if res == "" {

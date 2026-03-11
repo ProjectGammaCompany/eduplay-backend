@@ -1,0 +1,62 @@
+syntax = "proto3";
+
+package event_data; 
+
+import "google/protobuf/timestamp.proto";
+
+option go_package = "eduplay-event.v1";
+
+service Events {
+    rpc SaveFile (SaveFileIn) returns (MessageOut);
+    rpc GetPublicEvents (EventBaseFilters) returns (GetPublicEventsOut);
+}
+
+message Empty {}
+
+message Id {
+    string id = 1;
+}
+
+message MessageOut {
+    string message = 1;
+}
+
+message SaveFileIn {
+    string filename = 1;
+    string fileUUID = 2;
+    string fileKey = 3;
+}
+
+message Tag {
+    string id = 1; 
+    string name = 2; 
+}
+
+message EventBaseFilters {
+    int64 page = 1;
+    int64 maxOnPage = 2;
+    string userId = 3;
+    bool decliningRating = 4;
+    bool territorialized = 5;
+    bool active = 6;
+    bool favorites = 7;
+    repeated string tags = 8;
+    string title = 9;
+}
+
+message GetPublicEvent {
+    string eventId = 1;
+    string title = 2;
+    string description = 3;
+    repeated Tag tags = 4;
+    string cover = 5;
+    optional google.protobuf.Timestamp lastEditionDate = 6;
+    int64 rate = 7;
+    bool favorite = 8;
+    string status = 9;
+}
+
+message GetPublicEventsOut {
+    repeated GetPublicEvent events = 1;
+}
+

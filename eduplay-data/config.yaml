@@ -1,0 +1,14 @@
+env: "local"
+# storage_path: "postgresql://postgres:postgres@localhost:5432/eduplay-data"
+storage_path: "postgresql://eduplay:sanAnas_918694@eduplay-postgres-postgresql:5432/eduplay-user"
+secret_key: "EduplaySecretkey"
+# rabbitmq: "amqp://guest:guest@localhost:5672/"
+grpc:
+  port: 35003
+  timeout: 5s
+clients: 
+  events:
+    address: "0.0.0.0:35002"
+    # address: "eduplay-event:35002"
+    timeout: 5s
+    retries: 5

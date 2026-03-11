@@ -2,7 +2,6 @@ package rabbitmq
 
 import (
 	"encoding/json"
-	"fmt"
 	"log/slog"
 
 	amqp "github.com/rabbitmq/amqp091-go"
@@ -32,7 +31,10 @@ func NewRabbitMQ(connectionUrl string, log *slog.Logger, st storage) (*RabbitMQ,
 
 	rabbit_ch, err := rabbit_conn.Channel()
 	if err != nil {
-		rabbit_conn.Close()
+		err := rabbit_conn.Close()
+		if err != nil {
+			return nil, err
+		}
 		return nil, err
 	}
 	// defer rabbit_ch.Close()
@@ -109,7 +111,11 @@ func (r *RabbitMQ) ReceiveUserDeletedMessage() {
 		var event UserDeletedEvent
 		if err := json.Unmarshal(d.Body, &event); err != nil {
 			r.log.Error("Ошибка парсинга JSON", "error", err)
-			d.Ack(false) // или d.Nack(false, false) – решай сам
+			err = d.Ack(false) // или d.Nack(false, false)
+			if err != nil {
+				r.log.Error("Ошибка подтверждения", "error", err)
+				return
+			}
 			continue
 		}
 
@@ -117,9 +123,14 @@ func (r *RabbitMQ) ReceiveUserDeletedMessage() {
 
 		// TODO: вызвать метод storage для удаления данных пользователя
 		// Например: r.storage.DeleteUserData(event.UserID)
-		fmt.Println("OAAAAAAAAAAAAAAAAAAA USER DELETED")
+		// fmt.Println("OAAAAAAAAAAAAAAAAAAA USER DELETED")
+		r.log.Info("User deleted", "userID", event.UserID)
 
-		d.Ack(false)
+		err = d.Ack(false)
+		if err != nil {
+			r.log.Error("Ошибка подтверждения", "error", err)
+			return
+		}
 	}
 
 	// Если цикл завершился (канал закрыт), логируем

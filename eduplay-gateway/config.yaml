@@ -5,10 +5,17 @@ server:
   idle_timeout: 5s
 clients: 
   users: 
-    address: "eduplay-user:35001"
+    address: "0.0.0.0:35001"
+    # address: "eduplay-user:35001"
     timeout: 5s
     retries: 5
   events:
-    address: "eduplay-event:35002"
+    address: "0.0.0.0:35002"
+    # address: "eduplay-event:35002"
+    timeout: 5s
+    retries: 5
+  data: 
+    address: "0.0.0.0:35003"
+    # address: "eduplay-data:35003"
     timeout: 5s
     retries: 5

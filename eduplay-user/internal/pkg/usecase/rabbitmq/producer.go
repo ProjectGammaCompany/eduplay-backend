@@ -27,7 +27,10 @@ func NewRabbitMQ(connectionUrl string) (*RabbitMQ, error) {
 
 	rabbit_ch, err := rabbit_conn.Channel()
 	if err != nil {
-		rabbit_conn.Close()
+		err := rabbit_conn.Close()
+		if err != nil {
+			return nil, err
+		}
 		return nil, err
 	}
 	// defer rabbit_ch.Close()
