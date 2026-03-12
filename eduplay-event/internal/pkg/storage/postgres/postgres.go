@@ -103,7 +103,7 @@ func (s *Storage) PostEvent(ctx context.Context, in *dto.PostEventIn) (string, e
 	)
 
 	state := `INSERT INTO events (title, description, tags, cover, startDate, endDate, private, password, ownerId, lastEditionDate, allowDownloading, groupEvent) 
-	VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING eventId;`
+	VALUES ($1, $2, COALESCE($3, '{}'::text[]), $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING eventId;`
 
 	if in.StartDate != nil {
 		startDate = in.StartDate
@@ -112,8 +112,6 @@ func (s *Storage) PostEvent(ctx context.Context, in *dto.PostEventIn) (string, e
 	if in.EndDate != nil {
 		endDate = in.EndDate
 	}
-
-	fmt.Println(endDate)
 
 	res := s.db.QueryRow(ctx, state, in.Title, in.Description, in.Tags, in.Cover, startDate.AsTime(), endDate.AsTime(), in.Private, in.Password, in.OwnerId, time.Now(), in.AllowDownloading, in.GroupEvent)
 
