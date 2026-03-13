@@ -121,3 +121,11 @@ CREATE TABLE userLinks (
     -- FOREIGN KEY (userId) REFERENCES users(userid) ON DELETE CASCADE,
     FOREIGN KEY (currTaskId) REFERENCES tasks(taskId) ON DELETE CASCADE
 );
+
+CREATE TABLE joinCodes (
+    code       VARCHAR(6) PRIMARY KEY,   -- or use a serial ID + unique constraint
+    eventId   uuid NOT NULL REFERENCES events(eventId) ON DELETE CASCADE,
+    expiresAt TIMESTAMP NOT NULL
+);
+
+CREATE INDEX idx_join_codes_expires_at ON join_codes(expiresAt);

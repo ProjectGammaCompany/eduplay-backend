@@ -11,6 +11,8 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+
+	"github.com/robfig/cron/v3"
 )
 
 const (
@@ -40,6 +42,16 @@ func main() {
 		os.Exit(1)
 	}
 
+	c := cron.New()
+	_, err = c.AddFunc("@hourly", func() {
+		if err := storage.DeleteExpiredJoinCodes(context.Background()); err != nil {
+			log.Error("failed to delete expired join codes", slog.String("error", err.Error()))
+		}
+	})
+	if err != nil {
+		log.Error("failed to add cron job", slog.String("error", err.Error()))
+	}
+
 	eventsService := events.New(log, storage, cfg.SecretKey)
 
 	grpcApp := application.New(log, eventsService, cfg.GRPC.Port)
@@ -56,6 +68,8 @@ func main() {
 		rabbitMQ.ReceiveUserDeletedMessage()
 	}()
 
+	c.Start()
+
 	// Graceful shutdown
 
 	stop := make(chan os.Signal, 1)
@@ -63,11 +77,13 @@ func main() {
 
 	<-stop
 
+	c.Stop()
+
+	app.GRPCServer.Stop()
+
 	if err := rabbitMQ.Close(); err != nil {
 		log.Error("failed to close rabbitmq", slog.String("error", err.Error()))
 	}
-
-	app.GRPCServer.Stop()
 	log.Info("Gracefully stopped")
 }
 

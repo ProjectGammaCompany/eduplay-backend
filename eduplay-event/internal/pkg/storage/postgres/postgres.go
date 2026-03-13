@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	dto "eduplay-event/internal/generated"
+	errs "eduplay-event/internal/storage"
 	"strings"
 	"time"
 
@@ -11,6 +12,7 @@ import (
 	"fmt"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
@@ -319,7 +321,8 @@ func (s *Storage) PutBlockList(ctx context.Context, in *dto.PutListIn) (string, 
 func (s *Storage) GetCollaborators(ctx context.Context, eventId string) (*dto.GetCollaboratorsOut, error) {
 	const op = "storage.postgres.GetCollaborators"
 
-	state := `SELECT u.userId, u.email, u.avatar FROM users AS u LEFT JOIN userLinks AS ul ON u.userId = ul.userId WHERE ul.eventId = $1 AND ul.isParticipant = false;`
+	// state := `SELECT u.userId, u.email, u.avatar FROM users AS u LEFT JOIN userLinks AS ul ON u.userId = ul.userId WHERE ul.eventId = $1 AND ul.isParticipant = false;`
+	state := `SELECT userId FROM userLinks WHERE eventId = $1 AND isParticipant = false;`
 
 	res, err := s.db.Query(ctx, state, eventId)
 
@@ -334,7 +337,8 @@ func (s *Storage) GetCollaborators(ctx context.Context, eventId string) (*dto.Ge
 
 	for res.Next() {
 		var collaborator dto.User
-		err = res.Scan(&collaborator.Id, &collaborator.Email, &collaborator.Avatar)
+		// err = res.Scan(&collaborator.Id, &collaborator.Email, &collaborator.Avatar)
+		err = res.Scan(&collaborator.Id)
 		if err != nil {
 			return nil, fmt.Errorf("%s: %w", op, err)
 		}
@@ -648,7 +652,7 @@ func (s *Storage) GetPublicEvents(ctx context.Context, in *dto.EventBaseFilters)
             EXISTS (SELECT 1 FROM userFavorites WHERE userId = $%d AND eventId = e.eventId) AS favorite
         FROM events e
         LEFT JOIN ratings r ON e.eventId = r.eventId
-        WHERE %s
+        WHERE e.groupEvent = false AND %s
         GROUP BY e.eventId
         ORDER BY %s
         LIMIT $1 OFFSET $2
@@ -1566,4 +1570,74 @@ func (s *Storage) GetTaskAnswer(ctx context.Context, taskId string, userId strin
 	}
 
 	return &answer, nil
+}
+
+func (s *Storage) InsertJoinCode(ctx context.Context, eventId string, joinCode string) (*time.Time, error) {
+	const op = "storage.postgres.InsertJoinCode"
+
+	// TODO: make more configurable
+	expiresAt := time.Now().Add(3 * time.Hour)
+	state := `INSERT INTO joinCodes (code, eventId, expiresAt) VALUES ($1, $2, $3)
+	ON CONFLICT (eventId) DO UPDATE SET code = $1, expiresAt = $3;`
+
+	_, err := s.db.Exec(ctx, state, joinCode, eventId, expiresAt)
+	if err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) && pgErr.Code == "23505" {
+			return nil, errs.ErrJoinCodeNotUnique
+		}
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return &expiresAt, nil
+}
+
+func (s *Storage) GetJoinCode(ctx context.Context, eventId string) (*dto.JoinCode, error) {
+	const op = "storage.postgres.GetJoinCode"
+
+	state := `SELECT code, expiresAt FROM joinCodes WHERE eventId = $1;`
+
+	res := s.db.QueryRow(ctx, state, eventId)
+
+	code := ""
+	expiresAt := time.Time{}
+
+	err := res.Scan(&code, &expiresAt)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, errs.ErrJoinCodeExpired
+		}
+		return nil, err
+	}
+
+	if expiresAt.Before(time.Now()) {
+		state := `DELETE FROM joinCodes WHERE eventId = $1 AND expiresAt = $2;`
+
+		_, err := s.db.Exec(ctx, state, eventId, expiresAt)
+		if err != nil {
+			return nil, fmt.Errorf("%s: %w", op, err)
+		}
+		return nil, errs.ErrJoinCodeExpired
+	}
+
+	return &dto.JoinCode{
+		JoinCode:  code,
+		ExpiresAt: timestamppb.New(expiresAt),
+	}, nil
+}
+
+func (s *Storage) DeleteExpiredJoinCodes(ctx context.Context) error {
+	const op = "storage.postgres.DeleteExpiredJoinCodes"
+
+	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
+	defer cancel()
+
+	state := `DELETE FROM joinCodes WHERE expiresAt < NOW();`
+
+	_, err := s.db.Exec(ctx, state)
+	if err != nil {
+		return fmt.Errorf("%s: %w", op, err)
+	}
+
+	return nil
 }

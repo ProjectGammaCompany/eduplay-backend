@@ -32,6 +32,17 @@ func (s *UseCase) GetEventSettings(ctx context.Context, req *eventModel.Id) (*ev
 		return nil, err
 	}
 
+	for _, collaborator := range collaborators.Users {
+		userInfo, err := s.userClient.GetProfile(ctx, collaborator.Id)
+		if err != nil {
+			s.log.With(slog.String("op", op)).Error("failed to get user profile", slog.String("error", err.Error()))
+			return nil, err
+		}
+
+		collaborator.Avatar = userInfo.Avatar
+		collaborator.Email = userInfo.Email
+	}
+
 	ret := eventModel.GetEventSettingsFromDto(eventInfo, groups, collaborators)
 
 	s.log.With(slog.String("op", op)).Info("got event", slog.Any("event", ret))

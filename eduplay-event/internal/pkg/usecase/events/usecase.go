@@ -3,6 +3,7 @@ package event
 import (
 	"context"
 	"log/slog"
+	"time"
 
 	// "eduplay-event/internal/model"
 	dto "eduplay-event/internal/generated"
@@ -56,6 +57,8 @@ type storage interface {
 	UpdateEventCollaborators(ctx context.Context, eventId string, collaboratorIds []string) error
 	UpdateEventGroups(ctx context.Context, eventId string, groups []*dto.Group) error
 	GetTaskAnswer(ctx context.Context, taskId string, userId string) (*dto.Answer, error)
+	InsertJoinCode(ctx context.Context, eventId string, joinCode string) (*time.Time, error)
+	GetJoinCode(ctx context.Context, eventId string) (*dto.JoinCode, error)
 }
 
 type UseCase struct {

@@ -315,3 +315,9 @@ message PutTimestampIn {
     string eventId = 2; 
     google.protobuf.Timestamp timestamp = 3;
 }
+
+message JoinCode {
+    string eventId = 1;
+    string joinCode = 2;
+    google.protobuf.Timestamp expiresAt = 3;
+}

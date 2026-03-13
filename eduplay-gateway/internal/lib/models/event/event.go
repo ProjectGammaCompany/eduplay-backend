@@ -240,22 +240,23 @@ type Collaborator struct {
 }
 
 type GetEventSettings struct {
-	EventId          string         `json:"id"`
-	Title            string         `json:"title" validate:"required"`
-	Description      string         `json:"description"`
-	Tags             []string       `json:"tags"`
-	Cover            string         `json:"cover"`
-	StartDate        string         `json:"startDate"`
-	EndDate          string         `json:"endDate"`
-	Private          bool           `json:"private"`
-	Password         string         `json:"password"`
-	LastEditionDate  string         `json:"lastEditionDate"`
-	Groups           []Group        `json:"groups"`
-	Rating           bool           `json:"rating"`
-	Collaborators    []Collaborator `json:"collaborators"`
-	AllowDownloading bool           `json:"allowDownloading"`
-	OwnerId          string         `json:"ownerId"`
-	GroupEvent       bool           `json:"groupEvent"`
+	EventId         string   `json:"id"`
+	Title           string   `json:"title" validate:"required"`
+	Description     string   `json:"description"`
+	Tags            []string `json:"tags"`
+	Cover           string   `json:"cover"`
+	StartDate       string   `json:"startDate"`
+	EndDate         string   `json:"endDate"`
+	Private         bool     `json:"private"`
+	Password        string   `json:"password"`
+	LastEditionDate string   `json:"lastEditionDate"`
+	Groups          []Group  `json:"groups"`
+	Rating          bool     `json:"rating"`
+	// Collaborators    []Collaborator `json:"collaborators"`
+	Collaborators    []string `json:"collaborators"`
+	AllowDownloading bool     `json:"allowDownloading"`
+	OwnerId          string   `json:"ownerId"`
+	GroupEvent       bool     `json:"groupEvent"`
 }
 
 func GetEventSettingsFromDto(event *dto.PostEventIn, groups *dto.GetGroupsOut, collaborators *dto.GetCollaboratorsOut) *GetEventSettings {
@@ -268,7 +269,7 @@ func GetEventSettingsFromDto(event *dto.PostEventIn, groups *dto.GetGroupsOut, c
 		}
 	}
 
-	collabs := CollaboratorsFromDto(collaborators)
+	collabs := CollaboratorsToString(collaborators)
 
 	eventOut := &GetEventSettings{
 		EventId:          event.EventId,
@@ -312,6 +313,14 @@ func CollaboratorsFromDto(collaborators *dto.GetCollaboratorsOut) []Collaborator
 			Email:  user.Email,
 			Avatar: user.Avatar,
 		}
+	}
+	return collabs
+}
+
+func CollaboratorsToString(collaborators *dto.GetCollaboratorsOut) []string {
+	collabs := make([]string, len(collaborators.Users))
+	for i, user := range collaborators.Users {
+		collabs[i] = user.Id
 	}
 	return collabs
 }
