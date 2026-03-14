@@ -130,7 +130,7 @@ func (s *Storage) PostEvent(ctx context.Context, in *dto.PostEventIn) (string, e
 func (s *Storage) GetEvent(ctx context.Context, id string) (*dto.PostEventIn, error) {
 	const op = "storage.postgres.GetEvent"
 
-	state := `SELECT title, description, tags, cover, startDate, endDate, private, password, ownerId, lastEditionDate, allowDownloading, groupEvent FROM events WHERE eventId = $1;`
+	state := `SELECT title, description, tags, cover, startDate, endDate, private, password, ownerId, lastEditionDate, allowDownloading, groupEvent, showRating FROM events WHERE eventId = $1;`
 
 	res := s.db.QueryRow(ctx, state, id)
 
@@ -147,9 +147,10 @@ func (s *Storage) GetEvent(ctx context.Context, id string) (*dto.PostEventIn, er
 		lastEditionDate  time.Time
 		allowDownloading bool
 		groupEvent       bool
+		showRating       bool
 	)
 
-	err := res.Scan(&title, &description, &tags, &cover, &startDate, &endDate, &private, &password, &ownerId, &lastEditionDate, &allowDownloading, &groupEvent)
+	err := res.Scan(&title, &description, &tags, &cover, &startDate, &endDate, &private, &password, &ownerId, &lastEditionDate, &allowDownloading, &groupEvent, &showRating)
 
 	if err != nil {
 		return nil, fmt.Errorf("%s: %w", op, err)
@@ -169,6 +170,7 @@ func (s *Storage) GetEvent(ctx context.Context, id string) (*dto.PostEventIn, er
 		LastEditionDate:  timestamppb.New(lastEditionDate),
 		AllowDownloading: allowDownloading,
 		GroupEvent:       groupEvent,
+		Rating:           showRating,
 	}, nil
 }
 
@@ -596,26 +598,18 @@ func (s *Storage) GetEventProgress(ctx context.Context, userId string, eventId s
 func (s *Storage) GetPublicEvents(ctx context.Context, in *dto.EventBaseFilters) (*dto.GetPublicEventsOut, error) {
 	const op = "storage.postgres.GetPublicEvents"
 
-	var args = []interface{}{}
-
-	limit := in.MaxOnPage
-	offset := (in.Page - 1) * in.MaxOnPage
-
-	args = append(args, limit, offset, in.UserId)
-	userParamIdx := 3
-
-	tagsParamIdx := 4
-	if len(in.Tags) > 0 {
-		args = append(args, in.Tags)
+	args := []interface{}{
+		in.MaxOnPage,
+		(in.Page - 1) * in.MaxOnPage,
 	}
 
-	titleParamIdx := 5
-	if in.Title != "" {
-		args = append(args, in.Title)
-	}
+	nextParamIdx := 3
 
-	var where []string
-	where = append(where, "e.private = false")
+	args = append(args, in.UserId)
+	userParamIdx := nextParamIdx
+	nextParamIdx++
+
+	where := []string{"e.private = false", "e.groupEvent = false"}
 
 	if in.Active {
 		where = append(where, "e.startDate < now() AND e.endDate > now()")
@@ -625,12 +619,20 @@ func (s *Storage) GetPublicEvents(ctx context.Context, in *dto.EventBaseFilters)
 		where = append(where, fmt.Sprintf("EXISTS (SELECT 1 FROM userFavorites WHERE userId = $%d AND eventId = e.eventId)", userParamIdx))
 	}
 
+	var tagsParamIdx int
 	if len(in.Tags) > 0 {
+		tagsParamIdx = nextParamIdx
+		args = append(args, in.Tags)
 		where = append(where, fmt.Sprintf("e.tags && $%d", tagsParamIdx))
+		nextParamIdx++
 	}
 
+	var titleParamIdx int
 	if in.Title != "" {
+		titleParamIdx = nextParamIdx
+		args = append(args, "%"+in.Title+"%") // для ILIKE добавляем проценты
 		where = append(where, fmt.Sprintf("e.title ILIKE $%d", titleParamIdx))
+		// nextParamIdx++
 	}
 
 	whereClause := strings.Join(where, " AND ")
@@ -652,7 +654,7 @@ func (s *Storage) GetPublicEvents(ctx context.Context, in *dto.EventBaseFilters)
             EXISTS (SELECT 1 FROM userFavorites WHERE userId = $%d AND eventId = e.eventId) AS favorite
         FROM events e
         LEFT JOIN ratings r ON e.eventId = r.eventId
-        WHERE e.groupEvent = false AND %s
+        WHERE %s
         GROUP BY e.eventId
         ORDER BY %s
         LIMIT $1 OFFSET $2
@@ -670,8 +672,8 @@ func (s *Storage) GetPublicEvents(ctx context.Context, in *dto.EventBaseFilters)
 	events := &dto.GetPublicEventsOut{}
 
 	for res.Next() {
-		tags := make([]string, 0)
 		var event dto.GetPublicEvent
+		var tags []string
 		var lastEditionDate time.Time
 		err = res.Scan(&event.EventId, &event.Title, &event.Description, &event.Cover, &lastEditionDate, &tags, &event.Rate, &event.Favorite)
 		if err != nil {
@@ -1429,31 +1431,6 @@ func (s *Storage) GetUserStatus(ctx context.Context, userId string, eventId stri
 	return &dto.MessageOut{Message: "in progress"}, nil
 }
 
-func (s *Storage) GetCollaboratorIds(ctx context.Context, emails []string) ([]string, error) {
-	const op = "storage.postgres.GetCollaboratorIds"
-
-	state := `SELECT userId FROM users WHERE email = ANY($1);`
-
-	res, err := s.db.Query(ctx, state, emails)
-	if err != nil {
-		return nil, fmt.Errorf("%s: %w", op, err)
-	}
-
-	defer res.Close()
-
-	ids := make([]string, 0)
-	for res.Next() {
-		var id string
-		err = res.Scan(&id)
-		if err != nil {
-			return nil, fmt.Errorf("%s: %w", op, err)
-		}
-		ids = append(ids, id)
-	}
-
-	return ids, nil
-}
-
 func (s *Storage) UpdateEventCollaborators(ctx context.Context, eventId string, collaboratorIds []string) error {
 	const op = "storage.postgres.UpdateEventCollaborators"
 
@@ -1486,7 +1463,7 @@ func (s *Storage) PutEvent(ctx context.Context, in *dto.PutEventIn) (string, err
 SET 
     title = $1, 
     description = $2, 
-    tags = $3, 
+    tags = COALESCE($3, '{}'::text[]), 
     cover = $4, 
     startDate = $5, 
     endDate = $6, 
@@ -1494,8 +1471,9 @@ SET
     password = $8, 
     lastEditionDate = $9, 
     allowDownloading = $10,
-    groupEvent = $11
-WHERE eventId = $12 
+    groupEvent = $11, 
+	showRating = $12
+WHERE eventId = $13 
 RETURNING eventId;`
 
 	fmt.Println(state)
@@ -1509,10 +1487,10 @@ RETURNING eventId;`
 	}
 
 	res := s.db.QueryRow(ctx, state, in.Title, in.Description, in.Tags, in.Cover, startDate.AsTime(), endDate.AsTime(),
-		in.Private, in.Password, time.Now(), in.AllowDownloading, in.GroupEvent, in.EventId)
+		in.Private, in.Password, time.Now(), in.AllowDownloading, in.GroupEvent, in.Rating, in.EventId)
 
 	fmt.Println(in.Title, in.Description, in.Tags, in.Cover, startDate.AsTime(), endDate.AsTime(),
-		in.Private, in.Password, time.Now(), in.AllowDownloading, in.GroupEvent, in.EventId)
+		in.Private, in.Password, time.Now(), in.AllowDownloading, in.GroupEvent, in.Rating, in.EventId)
 
 	var id string
 	err := res.Scan(&id)

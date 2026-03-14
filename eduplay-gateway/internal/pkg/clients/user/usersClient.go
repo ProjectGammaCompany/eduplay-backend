@@ -162,6 +162,16 @@ func (cl *Client) GetProfile(ctx context.Context, userId string) (*users.Profile
 	return out, nil
 }
 
+func (cl *Client) GetProfileByLogin(ctx context.Context, login string) (*users.Profile, error) {
+	op := "GetProfileByLogin.Client"
+	out, err := cl.api.GetProfileByLogin(ctx, &users.Id{Id: login})
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return out, nil
+}
+
 func InterceptorLogger(l *slog.Logger) interlog.Logger {
 	return interlog.LoggerFunc(func(ctx context.Context, lvl interlog.Level, msg string, fields ...any) {
 		l.Log(ctx, slog.Level(lvl), msg, fields...)

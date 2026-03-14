@@ -25,6 +25,7 @@ type storage interface {
 	GetUserPasswordById(ctx context.Context, userId string) (string, error)
 	SignOutUser(ctx context.Context, userId string) error
 	GetProfile(ctx context.Context, userId string) (*dto.Profile, error)
+	GetProfileByLogin(ctx context.Context, login string) (*dto.Profile, error)
 }
 
 type rabbitmq interface {

@@ -95,6 +95,7 @@ type PostEventIn struct {
 	LastEditionDate  string   `json:"lastEditionDate"`
 	AllowDownloading bool     `json:"allowDownloading"`
 	GroupEvent       bool     `json:"groupEvent"`
+	Rating           bool     `json:"rating"`
 }
 
 func PostEventInToDto(in *PostEventIn) (*dto.PostEventIn, error) {
@@ -109,6 +110,7 @@ func PostEventInToDto(in *PostEventIn) (*dto.PostEventIn, error) {
 		OwnerId:          in.OwnerId,
 		AllowDownloading: in.AllowDownloading,
 		GroupEvent:       in.GroupEvent,
+		Rating:           in.Rating,
 	}
 
 	if in.StartDate != "" {
@@ -152,6 +154,8 @@ func PostEventInFromDto(in *dto.PostEventIn) *PostEventIn {
 		EndDate:          in.EndDate.AsTime().Format("02.01.2006 15:04:05.000"),
 		LastEditionDate:  in.LastEditionDate.AsTime().Format("02.01.2006 15:04:05.000"),
 		AllowDownloading: in.AllowDownloading,
+		GroupEvent:       in.GroupEvent,
+		Rating:           in.Rating,
 	}
 
 	if event.StartDate == "01.01.1970 00:00:00.000" {
@@ -283,7 +287,7 @@ func GetEventSettingsFromDto(event *dto.PostEventIn, groups *dto.GetGroupsOut, c
 		Password:         event.Password,
 		LastEditionDate:  event.LastEditionDate.AsTime().Format("02.01.2006 15:04:05.000"),
 		Groups:           gps,
-		Rating:           true,
+		Rating:           event.Rating,
 		Collaborators:    collabs,
 		AllowDownloading: event.AllowDownloading,
 		OwnerId:          event.OwnerId,
@@ -433,6 +437,7 @@ type EventPlayerInfo struct {
 	Status          string         `json:"status"`
 	CanBeDownloaded bool           `json:"canBeDownloaded"`
 	IsPrivate       bool           `json:"isPrivate"`
+	NeedGroup       bool           `json:"needGroup"`
 }
 
 type EventBlockTaskUserIds struct {

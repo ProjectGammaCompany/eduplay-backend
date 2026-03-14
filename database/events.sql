@@ -124,8 +124,15 @@ CREATE TABLE userLinks (
 
 CREATE TABLE joinCodes (
     code       VARCHAR(6) PRIMARY KEY,   -- or use a serial ID + unique constraint
-    eventId   uuid NOT NULL REFERENCES events(eventId) ON DELETE CASCADE,
+    eventId   uuid UNIQUE NOT NULL REFERENCES events(eventId) ON DELETE CASCADE,
     expiresAt TIMESTAMP NOT NULL
 );
 
-CREATE INDEX idx_join_codes_expires_at ON join_codes(expiresAt);
+-- CREATE INDEX idx_join_codes_expires_at ON join_codes(expiresAt);
+
+CREATE TABLE userGroups (
+    userGroupId uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    userId uuid NOT NULL,
+    groupId uuid NOT NULL,
+    FOREIGN KEY (groupId) REFERENCES groups(groupId) ON DELETE CASCADE
+)

@@ -16,6 +16,7 @@ service Users {
     rpc DeleteAccount(DeleteAccountIn) returns (Empty);
     rpc SignOut(DeleteAccountIn) returns (Empty);
     rpc GetProfile(Id) returns (Profile);
+    rpc GetProfileByLogin(Id) returns (Profile);
 }
 
 message Empty{}
@@ -118,4 +119,5 @@ message DeleteAccountIn {
 message Profile {
     string email = 1;
     string avatar = 2;
+    string userId = 3;
 }

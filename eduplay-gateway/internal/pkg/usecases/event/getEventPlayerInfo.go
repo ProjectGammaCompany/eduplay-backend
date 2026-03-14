@@ -57,6 +57,7 @@ func (s *UseCase) GetEventPlayerInfo(ctx context.Context, userId string, eventId
 	playerInfo.CanBeDownloaded = event.AllowDownloading
 	playerInfo.Status = userStatus.Message
 	playerInfo.IsPrivate = event.Private
+	// playerInfo.NeedGroup = event.GroupEvent
 	playerInfo.LastEditionDate = event.LastEditionDate.AsTime().Format("02.01.2006 15:04:05.000")
 	if playerInfo.LastEditionDate == "01.01.1970 00:00:00.000" {
 		playerInfo.LastEditionDate = ""

@@ -50,6 +50,7 @@ type EventClient interface {
 
 type UserClient interface {
 	GetProfile(ctx context.Context, userId string) (*userDto.Profile, error)
+	GetProfileByLogin(ctx context.Context, login string) (*userDto.Profile, error)
 }
 
 type UseCase struct {

@@ -104,6 +104,7 @@ message PostEventIn {
     optional google.protobuf.Timestamp lastEditionDate = 11;
     bool allowDownloading = 12;
     bool groupEvent = 13; 
+    bool rating = 14;
 }
 
 message PutEventIn {

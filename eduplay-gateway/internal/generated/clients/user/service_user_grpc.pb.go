@@ -19,14 +19,15 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	Users_SignUp_FullMethodName         = "/user_data.Users/SignUp"
-	Users_SignIn_FullMethodName         = "/user_data.Users/SignIn"
-	Users_Refresh_FullMethodName        = "/user_data.Users/Refresh"
-	Users_PutAvatar_FullMethodName      = "/user_data.Users/PutAvatar"
-	Users_ChangePassword_FullMethodName = "/user_data.Users/ChangePassword"
-	Users_DeleteAccount_FullMethodName  = "/user_data.Users/DeleteAccount"
-	Users_SignOut_FullMethodName        = "/user_data.Users/SignOut"
-	Users_GetProfile_FullMethodName     = "/user_data.Users/GetProfile"
+	Users_SignUp_FullMethodName            = "/user_data.Users/SignUp"
+	Users_SignIn_FullMethodName            = "/user_data.Users/SignIn"
+	Users_Refresh_FullMethodName           = "/user_data.Users/Refresh"
+	Users_PutAvatar_FullMethodName         = "/user_data.Users/PutAvatar"
+	Users_ChangePassword_FullMethodName    = "/user_data.Users/ChangePassword"
+	Users_DeleteAccount_FullMethodName     = "/user_data.Users/DeleteAccount"
+	Users_SignOut_FullMethodName           = "/user_data.Users/SignOut"
+	Users_GetProfile_FullMethodName        = "/user_data.Users/GetProfile"
+	Users_GetProfileByLogin_FullMethodName = "/user_data.Users/GetProfileByLogin"
 )
 
 // UsersClient is the client API for Users service.
@@ -44,6 +45,7 @@ type UsersClient interface {
 	DeleteAccount(ctx context.Context, in *DeleteAccountIn, opts ...grpc.CallOption) (*Empty, error)
 	SignOut(ctx context.Context, in *DeleteAccountIn, opts ...grpc.CallOption) (*Empty, error)
 	GetProfile(ctx context.Context, in *Id, opts ...grpc.CallOption) (*Profile, error)
+	GetProfileByLogin(ctx context.Context, in *Id, opts ...grpc.CallOption) (*Profile, error)
 }
 
 type usersClient struct {
@@ -134,6 +136,16 @@ func (c *usersClient) GetProfile(ctx context.Context, in *Id, opts ...grpc.CallO
 	return out, nil
 }
 
+func (c *usersClient) GetProfileByLogin(ctx context.Context, in *Id, opts ...grpc.CallOption) (*Profile, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(Profile)
+	err := c.cc.Invoke(ctx, Users_GetProfileByLogin_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // UsersServer is the server API for Users service.
 // All implementations must embed UnimplementedUsersServer
 // for forward compatibility.
@@ -149,6 +161,7 @@ type UsersServer interface {
 	DeleteAccount(context.Context, *DeleteAccountIn) (*Empty, error)
 	SignOut(context.Context, *DeleteAccountIn) (*Empty, error)
 	GetProfile(context.Context, *Id) (*Profile, error)
+	GetProfileByLogin(context.Context, *Id) (*Profile, error)
 	mustEmbedUnimplementedUsersServer()
 }
 
@@ -182,6 +195,9 @@ func (UnimplementedUsersServer) SignOut(context.Context, *DeleteAccountIn) (*Emp
 }
 func (UnimplementedUsersServer) GetProfile(context.Context, *Id) (*Profile, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetProfile not implemented")
+}
+func (UnimplementedUsersServer) GetProfileByLogin(context.Context, *Id) (*Profile, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetProfileByLogin not implemented")
 }
 func (UnimplementedUsersServer) mustEmbedUnimplementedUsersServer() {}
 func (UnimplementedUsersServer) testEmbeddedByValue()               {}
@@ -348,6 +364,24 @@ func _Users_GetProfile_Handler(srv interface{}, ctx context.Context, dec func(in
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Users_GetProfileByLogin_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Id)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UsersServer).GetProfileByLogin(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Users_GetProfileByLogin_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UsersServer).GetProfileByLogin(ctx, req.(*Id))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Users_ServiceDesc is the grpc.ServiceDesc for Users service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -386,6 +420,10 @@ var Users_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetProfile",
 			Handler:    _Users_GetProfile_Handler,
+		},
+		{
+			MethodName: "GetProfileByLogin",
+			Handler:    _Users_GetProfileByLogin_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

@@ -119,6 +119,36 @@ func (_m *Storage) GetProfile(ctx context.Context, userId string) (*eduplay_user
 	return r0, r1
 }
 
+// GetProfile provides a mock function with given fields: ctx, userId
+func (_m *Storage) GetProfileByLogin(ctx context.Context, login string) (*eduplay_user_v1.Profile, error) {
+	ret := _m.Called(ctx, login)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetProfileByLogin")
+	}
+
+	var r0 *eduplay_user_v1.Profile
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, string) (*eduplay_user_v1.Profile, error)); ok {
+		return rf(ctx, login)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, string) *eduplay_user_v1.Profile); ok {
+		r0 = rf(ctx, login)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*eduplay_user_v1.Profile)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
+		r1 = rf(ctx, login)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // GetSessionByUserId provides a mock function with given fields: ctx, userId
 func (_m *Storage) GetSessionByUserId(ctx context.Context, userId string) (*model.Session, error) {
 	ret := _m.Called(ctx, userId)

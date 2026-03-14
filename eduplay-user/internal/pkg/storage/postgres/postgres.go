@@ -356,10 +356,27 @@ func (s *Storage) GetProfile(ctx context.Context, userId string) (*dto.Profile, 
 	res := s.db.QueryRow(ctx, state, userId)
 	user := &dto.Profile{}
 	err := res.Scan(&user.Avatar, &user.Email)
-
 	if err != nil {
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
+
+	user.UserId = userId
+
+	return user, nil
+}
+
+func (s *Storage) GetProfileByLogin(ctx context.Context, login string) (*dto.Profile, error) {
+	const op = "storage.postgres.GetUserByLogin"
+
+	state := `SELECT userId, avatar FROM users WHERE email = $1`
+	res := s.db.QueryRow(ctx, state, login)
+	user := &dto.Profile{}
+	err := res.Scan(&user.UserId, &user.Avatar)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	user.Email = login
 
 	return user, nil
 }

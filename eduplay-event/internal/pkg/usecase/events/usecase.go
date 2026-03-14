@@ -53,7 +53,6 @@ type storage interface {
 	GetUserBlockPointsSum(ctx context.Context, userId string, blockId string) (int64, error)
 	GetUserBlockTasksShort(ctx context.Context, blockId string, userId string) ([]*dto.NextStageTaskShort, error)
 	GetUserStatus(ctx context.Context, userId string, eventId string) (*dto.MessageOut, error)
-	GetCollaboratorIds(ctx context.Context, emails []string) ([]string, error)
 	UpdateEventCollaborators(ctx context.Context, eventId string, collaboratorIds []string) error
 	UpdateEventGroups(ctx context.Context, eventId string, groups []*dto.Group) error
 	GetTaskAnswer(ctx context.Context, taskId string, userId string) (*dto.Answer, error)
