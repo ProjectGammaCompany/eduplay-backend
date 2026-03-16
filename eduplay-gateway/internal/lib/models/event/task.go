@@ -121,36 +121,39 @@ func BlockTasksListFromDto(blockTasksList *dto.Tasks) *BlockTasksList {
 // }
 
 type Answer struct {
-	TaskId      string   `json:"id"`
-	UserId      string   `json:"userId"`
-	Answer      []string `json:"answer"`
-	Points      int64    `json:"points"`
-	Status      string   `json:"status"`
-	RightAnswer []string `json:"rightAnswer"`
-	EventId     string   `json:"eventId"`
+	TaskId        string   `json:"id"`
+	UserId        string   `json:"userId"`
+	Answer        []string `json:"answer"`
+	Points        int64    `json:"points"`
+	Status        string   `json:"status"`
+	RightAnswer   []string `json:"rightAnswer"`
+	RightAnswerId []string `json:"rightAnswerId"`
+	EventId       string   `json:"eventId"`
 }
 
 func AnswerFromDto(answer *dto.Answer) *Answer {
 	return &Answer{
-		TaskId:      answer.TaskId,
-		UserId:      answer.UserId,
-		Answer:      answer.Answer,
-		Points:      answer.Points,
-		Status:      answer.Status,
-		RightAnswer: answer.RightAnswer,
-		EventId:     answer.EventId,
+		TaskId:        answer.TaskId,
+		UserId:        answer.UserId,
+		Answer:        answer.Answer,
+		Points:        answer.Points,
+		Status:        answer.Status,
+		RightAnswer:   answer.RightAnswer,
+		RightAnswerId: answer.RightAnswerId,
+		EventId:       answer.EventId,
 	}
 }
 
 func AnswerToDto(answer *Answer) *dto.Answer {
 	return &dto.Answer{
-		TaskId:      answer.TaskId,
-		UserId:      answer.UserId,
-		Answer:      answer.Answer,
-		Points:      answer.Points,
-		Status:      answer.Status,
-		RightAnswer: answer.RightAnswer,
-		EventId:     answer.EventId,
+		TaskId:        answer.TaskId,
+		UserId:        answer.UserId,
+		Answer:        answer.Answer,
+		Points:        answer.Points,
+		Status:        answer.Status,
+		RightAnswer:   answer.RightAnswer,
+		RightAnswerId: answer.RightAnswerId,
+		EventId:       answer.EventId,
 	}
 }
 

@@ -1226,11 +1226,11 @@ func (s *Storage) DeleteTaskById(ctx context.Context, taskId string) (string, er
         WHERE taskId = $1
         RETURNING blockId, taskOrder
     )
-    UPDATE tasks t
-    SET t.taskOrder = t.taskOrder - 1
+    UPDATE tasks 
+    SET taskOrder = tasks.taskOrder - 1
     FROM deleted_task d
-    WHERE t.blockId = d.blockId 
-      AND t.taskOrder > d.taskOrder;`
+    WHERE tasks.blockId = d.blockId 
+      AND tasks.taskOrder > d.taskOrder;`
 
 	_, err := s.db.Exec(ctx, state, taskId)
 	if err != nil {

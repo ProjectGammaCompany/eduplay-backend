@@ -35,13 +35,14 @@ func (a *UseCase) PostAnswer(ctx context.Context, in *dto.Answer) (*dto.Answer, 
 	switch task.Type {
 	case 0:
 		ans := &dto.Answer{
-			TaskId:      in.TaskId,
-			UserId:      in.UserId,
-			Answer:      in.Answer,
-			AnswerIds:   in.Answer,
-			Points:      task.Points,
-			Status:      "correct",
-			RightAnswer: corrAnswers,
+			TaskId:        in.TaskId,
+			UserId:        in.UserId,
+			Answer:        in.Answer,
+			AnswerIds:     make([]string, 0),
+			Points:        task.Points,
+			Status:        "correct",
+			RightAnswer:   corrAnswers,
+			RightAnswerId: corrAnswerIds,
 		}
 
 		_, err := a.storage.PostAnswer(ctx, ans)
@@ -52,13 +53,14 @@ func (a *UseCase) PostAnswer(ctx context.Context, in *dto.Answer) (*dto.Answer, 
 		return ans, nil
 	case 1:
 		ans := &dto.Answer{
-			TaskId:      in.TaskId,
-			UserId:      in.UserId,
-			Answer:      make([]string, 0),
-			AnswerIds:   in.Answer,
-			Points:      0,
-			Status:      "",
-			RightAnswer: corrAnswers,
+			TaskId:        in.TaskId,
+			UserId:        in.UserId,
+			Answer:        make([]string, 0),
+			AnswerIds:     in.Answer,
+			Points:        0,
+			Status:        "",
+			RightAnswer:   corrAnswers,
+			RightAnswerId: corrAnswerIds,
 		}
 		for i, answer := range corrAnswerIds {
 			if in.Answer[0] == answer {
@@ -84,13 +86,14 @@ func (a *UseCase) PostAnswer(ctx context.Context, in *dto.Answer) (*dto.Answer, 
 		return ans, nil
 	case 2:
 		ans := &dto.Answer{
-			TaskId:      in.TaskId,
-			UserId:      in.UserId,
-			Answer:      make([]string, 0),
-			AnswerIds:   in.Answer,
-			Points:      0,
-			Status:      "",
-			RightAnswer: corrAnswers,
+			TaskId:        in.TaskId,
+			UserId:        in.UserId,
+			Answer:        make([]string, 0),
+			AnswerIds:     in.Answer,
+			Points:        0,
+			Status:        "",
+			RightAnswer:   corrAnswers,
+			RightAnswerId: corrAnswerIds,
 		}
 
 		count := 0
@@ -150,13 +153,14 @@ func (a *UseCase) PostAnswer(ctx context.Context, in *dto.Answer) (*dto.Answer, 
 
 	default:
 		ans := &dto.Answer{
-			TaskId:      in.TaskId,
-			UserId:      in.UserId,
-			Answer:      make([]string, 0),
-			AnswerIds:   in.Answer,
-			Points:      0,
-			Status:      "",
-			RightAnswer: corrAnswers,
+			TaskId:        in.TaskId,
+			UserId:        in.UserId,
+			Answer:        make([]string, 0),
+			AnswerIds:     in.Answer,
+			Points:        0,
+			Status:        "",
+			RightAnswer:   corrAnswers,
+			RightAnswerId: corrAnswerIds,
 		}
 		if in.Answer[0] == corrAnswers[0] {
 			ans.Points = task.Points
