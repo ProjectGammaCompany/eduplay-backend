@@ -201,6 +201,7 @@ func (a *UseCase) GetNextStage(ctx context.Context, in *dto.UserEventIds) (*dto.
 			BlockId:     nextTask.BlockId,
 			Name:        nextTask.Name,
 			Description: nextTask.Description,
+			Options:     nextTask.Options,
 			Type:        nextTask.Type,
 			Files:       nextTask.Files,
 			Time:        nextTask.Time,
