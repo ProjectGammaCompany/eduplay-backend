@@ -106,7 +106,7 @@ func (a *UseCase) PostAnswer(ctx context.Context, in *dto.Answer) (*dto.Answer, 
 
 		ans.Points = int64(count) * task.Points / int64(len(corrAnswers))
 
-		log.Info("count: ", count, "correct answers: ", len(corrAnswers), "points: ", ans.Points)
+		log.Info("checking answer", slog.Int("count", count), slog.Int("len", len(corrAnswers)), slog.Int64("points", ans.Points))
 
 		if count == len(corrAnswers) {
 			ans.Status = "correct"
