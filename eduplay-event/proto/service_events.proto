@@ -272,6 +272,7 @@ message Answer {
     string status = 5; 
     repeated string rightAnswer = 6;
     string eventId = 7;
+    repeated string answerIds = 8;
 }
 
 message NextStageInfo {

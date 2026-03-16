@@ -1243,10 +1243,10 @@ func (s *Storage) DeleteTaskById(ctx context.Context, taskId string) (string, er
 func (s *Storage) PostAnswer(ctx context.Context, answer *dto.Answer) (string, error) {
 	const op = "storage.postgres.PostAnswer"
 
-	state := `INSERT INTO answers (userId, taskId, values, points) VALUES ($1, $2, $3, $4) RETURNING answerId;`
+	state := `INSERT INTO answers (userId, taskId, values, optionIds, points) VALUES ($1, $2, COALESCE($3, '{}'::text[]), COALESCE($4, '{}'::uuid[]), $5) RETURNING answerId;`
 
 	var answerId string
-	err := s.db.QueryRow(ctx, state, answer.UserId, answer.TaskId, answer.Answer, answer.Points).Scan(&answerId)
+	err := s.db.QueryRow(ctx, state, answer.UserId, answer.TaskId, answer.Answer, answer.AnswerIds, answer.Points).Scan(&answerId)
 	if err != nil {
 		return "", fmt.Errorf("%s: %w", op, err)
 	}

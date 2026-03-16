@@ -2,7 +2,6 @@ package event
 
 import (
 	"context"
-	"fmt"
 	"log/slog"
 
 	dto "eduplay-event/internal/generated"
@@ -23,7 +22,7 @@ func (a *UseCase) PostAnswer(ctx context.Context, in *dto.Answer) (*dto.Answer, 
 		return nil, err
 	}
 
-	corrAnswers := GetCorrectAnswers(task)
+	corrAnswerIds, corrAnswers, allOptions := GetCorrectAnswers(task)
 
 	// TODO: put empty timestamp
 	_, err = a.storage.PutTimestamp(ctx, in.UserId, in.EventId, nil)
@@ -39,6 +38,7 @@ func (a *UseCase) PostAnswer(ctx context.Context, in *dto.Answer) (*dto.Answer, 
 			TaskId:      in.TaskId,
 			UserId:      in.UserId,
 			Answer:      in.Answer,
+			AnswerIds:   in.Answer,
 			Points:      task.Points,
 			Status:      "correct",
 			RightAnswer: corrAnswers,
@@ -54,15 +54,17 @@ func (a *UseCase) PostAnswer(ctx context.Context, in *dto.Answer) (*dto.Answer, 
 		ans := &dto.Answer{
 			TaskId:      in.TaskId,
 			UserId:      in.UserId,
-			Answer:      in.Answer,
+			Answer:      make([]string, 0),
+			AnswerIds:   in.Answer,
 			Points:      0,
 			Status:      "",
 			RightAnswer: corrAnswers,
 		}
-		for _, answer := range corrAnswers {
+		for i, answer := range corrAnswerIds {
 			if in.Answer[0] == answer {
 				ans.Points = task.Points
 				ans.Status = "correct"
+				ans.Answer = append(ans.Answer, corrAnswers[i])
 
 				_, err := a.storage.PostAnswer(ctx, ans)
 				if err != nil {
@@ -84,7 +86,8 @@ func (a *UseCase) PostAnswer(ctx context.Context, in *dto.Answer) (*dto.Answer, 
 		ans := &dto.Answer{
 			TaskId:      in.TaskId,
 			UserId:      in.UserId,
-			Answer:      in.Answer,
+			Answer:      make([]string, 0),
+			AnswerIds:   in.Answer,
 			Points:      0,
 			Status:      "",
 			RightAnswer: corrAnswers,
@@ -93,15 +96,17 @@ func (a *UseCase) PostAnswer(ctx context.Context, in *dto.Answer) (*dto.Answer, 
 		count := 0
 
 		for _, userAnswer := range in.Answer {
-			for _, correctAnswer := range corrAnswers {
-				if userAnswer == correctAnswer {
+			ans.Answer = append(ans.Answer, allOptions[userAnswer])
+			for _, correctAnswerId := range corrAnswerIds {
+				if userAnswer == correctAnswerId {
 					count++
 				}
 			}
 		}
 
 		ans.Points = int64(count) * task.Points / int64(len(corrAnswers))
-		fmt.Println(count)
+
+		log.Info("count: ", count, "correct answers: ", len(corrAnswers), "points: ", ans.Points)
 
 		if count == len(corrAnswers) {
 			ans.Status = "correct"
@@ -117,11 +122,38 @@ func (a *UseCase) PostAnswer(ctx context.Context, in *dto.Answer) (*dto.Answer, 
 		}
 
 		return ans, nil
-	default:
+	case 3:
 		ans := &dto.Answer{
 			TaskId:      in.TaskId,
 			UserId:      in.UserId,
 			Answer:      in.Answer,
+			AnswerIds:   make([]string, 0),
+			Points:      0,
+			Status:      "",
+			RightAnswer: corrAnswers,
+		}
+
+		if in.Answer[0] == corrAnswers[0] {
+			ans.Points = task.Points
+			ans.Status = "correct"
+		} else {
+			ans.Points = 0
+			ans.Status = "incorrect"
+		}
+
+		_, err := a.storage.PostAnswer(ctx, ans)
+		if err != nil {
+			return nil, err
+		}
+
+		return ans, nil
+
+	default:
+		ans := &dto.Answer{
+			TaskId:      in.TaskId,
+			UserId:      in.UserId,
+			Answer:      make([]string, 0),
+			AnswerIds:   in.Answer,
 			Points:      0,
 			Status:      "",
 			RightAnswer: corrAnswers,
@@ -139,33 +171,22 @@ func (a *UseCase) PostAnswer(ctx context.Context, in *dto.Answer) (*dto.Answer, 
 			return nil, err
 		}
 
-		block, err := a.storage.GetBlockInfo(ctx, task.BlockId)
-		if err != nil {
-			return nil, err
-		}
-
-		event, err := a.storage.GetEvent(ctx, block.EventId)
-		if err != nil {
-			return nil, err
-		}
-
-		_, err = a.storage.PutTimestamp(ctx, in.UserId, event.EventId, nil)
-		if err != nil {
-			return nil, err
-		}
-
 		return ans, nil
 	}
 }
 
-func GetCorrectAnswers(task *dto.Task) []string {
+func GetCorrectAnswers(task *dto.Task) ([]string, []string, map[string]string) {
+	corrIds := make([]string, 0)
 	corr := make([]string, 0)
+	options := map[string]string{}
 
-	for i, option := range task.Options {
+	for _, option := range task.Options {
+		options[option.OptionId] = option.Value
 		if option.IsCorrect {
-			corr = append(corr, task.Options[i].Value)
+			corrIds = append(corrIds, option.OptionId)
+			corr = append(corr, option.Value)
 		}
 	}
 
-	return corr
+	return corrIds, corr, options
 }
