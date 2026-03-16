@@ -18,7 +18,7 @@ func (a *UseCase) GetNextStage(ctx context.Context, in *dto.UserEventIds) (*dto.
 
 	nextStageInfo := &dto.NextStageInfo{}
 	nextTaskId := ""
-	nextBlockId := ""
+	// nextBlockId := ""
 
 	log.Info("getting next stage")
 
@@ -131,7 +131,7 @@ func (a *UseCase) GetNextStage(ctx context.Context, in *dto.UserEventIds) (*dto.
 	if currBlock.IsParallel {
 		nextStageInfo.Type = "block"
 		nextStageBlock := &dto.NextStageBlock{
-			BlockId: nextBlockId,
+			BlockId: currBlockId,
 			Name:    currBlock.Name,
 		}
 
@@ -150,7 +150,7 @@ func (a *UseCase) GetNextStage(ctx context.Context, in *dto.UserEventIds) (*dto.
 				_, err = a.storage.PutNextStage(ctx, &dto.EventBlockTaskUserIds{
 					UserId:  in.UserId,
 					EventId: in.EventId,
-					BlockId: nextBlockId,
+					BlockId: currBlockId,
 					TaskId:  "",
 				})
 				if err != nil {
