@@ -435,6 +435,26 @@ func (cl *Client) GetUserStatus(ctx context.Context, in *events.UserEventIds) (*
 	return out, nil
 }
 
+func (cl *Client) GetGroupUsers(ctx context.Context, in *events.Id) (*events.GetGroupsUsersOut, error) {
+	op := "GetGroupUsers.Client"
+	out, err := cl.api.GetGroupUsers(ctx, in)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return out, nil
+}
+
+func (cl *Client) GetUserStats(ctx context.Context, in *events.UserEventIds) (*events.User, error) {
+	op := "GetUserStats.Client"
+	out, err := cl.api.GetUserStats(ctx, in)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return out, nil
+}
+
 func InterceptorLogger(l *slog.Logger) interlog.Logger {
 	return interlog.LoggerFunc(func(ctx context.Context, lvl interlog.Level, msg string, fields ...any) {
 		l.Log(ctx, slog.Level(lvl), msg, fields...)

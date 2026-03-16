@@ -58,6 +58,7 @@ type storage interface {
 	GetTaskAnswer(ctx context.Context, taskId string, userId string) (*dto.Answer, error)
 	InsertJoinCode(ctx context.Context, eventId string, joinCode string) (*time.Time, error)
 	GetJoinCode(ctx context.Context, eventId string) (*dto.JoinCode, error)
+	GetUserStats(ctx context.Context, userId string, eventId string) (*dto.User, error)
 }
 
 type UseCase struct {

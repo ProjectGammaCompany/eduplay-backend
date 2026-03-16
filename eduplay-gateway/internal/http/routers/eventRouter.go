@@ -21,6 +21,7 @@ import (
 	"eduplay-gateway/internal/http/handlers/event/getHistory"
 	"eduplay-gateway/internal/http/handlers/event/getNextStage"
 	"eduplay-gateway/internal/http/handlers/event/getOwnedEvents"
+	"eduplay-gateway/internal/http/handlers/event/getPlayerStats"
 	"eduplay-gateway/internal/http/handlers/event/getPublicEvents"
 	"eduplay-gateway/internal/http/handlers/event/getTaskById"
 	"eduplay-gateway/internal/http/handlers/event/getUserFavorites"
@@ -114,6 +115,7 @@ func EventRouter(router chi.Router, log *slog.Logger, cfg *config.Config) chi.Ro
 		r.Put("/{eventId}/blocks/{blockId}/tasks/{taskId}/timestamp", putTimestamp.New(log, events.New(log, eventClient, userClient)))
 		r.Put("/{eventId}/nextStage", putNextStage.New(log, events.New(log, eventClient, userClient)))
 		r.Get("/{eventId}/nextStage", getNextStage.New(log, events.New(log, eventClient, userClient)))
+		r.Get("/{eventId}/playerStats", getPlayerStats.New(log, events.New(log, eventClient, userClient)))
 	})
 
 	return router

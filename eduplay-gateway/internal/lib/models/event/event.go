@@ -594,3 +594,23 @@ func NextStageTaskShortsFromDto(in []*dto.NextStageTaskShort) []NextStageTaskSho
 	}
 	return ret
 }
+
+type PlayerStats struct {
+	FullStats  bool         `json:"fullStats"`
+	GroupEvent bool         `json:"groupEvent"`
+	Users      []UserStats  `json:"users"`
+	Groups     []GroupStats `json:"groups"`
+}
+
+type UserStats struct {
+	UserId   string `json:"id"`
+	Username string `json:"username"`
+	Avatar   string `json:"avatar"`
+	Points   int64  `json:"points"`
+}
+
+type GroupStats struct {
+	GroupId string      `json:"id"`
+	Name    string      `json:"name"`
+	Users   []UserStats `json:"users"`
+}

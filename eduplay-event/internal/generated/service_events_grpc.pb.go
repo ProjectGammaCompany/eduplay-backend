@@ -57,6 +57,8 @@ const (
 	Events_GetNextStage_FullMethodName         = "/event_data.Events/GetNextStage"
 	Events_PutTimestamp_FullMethodName         = "/event_data.Events/PutTimestamp"
 	Events_GetUserStatus_FullMethodName        = "/event_data.Events/GetUserStatus"
+	Events_GetGroupUsers_FullMethodName        = "/event_data.Events/GetGroupUsers"
+	Events_GetUserStats_FullMethodName         = "/event_data.Events/GetUserStats"
 )
 
 // EventsClient is the client API for Events service.
@@ -101,6 +103,8 @@ type EventsClient interface {
 	GetNextStage(ctx context.Context, in *UserEventIds, opts ...grpc.CallOption) (*NextStageInfo, error)
 	PutTimestamp(ctx context.Context, in *PutTimestampIn, opts ...grpc.CallOption) (*MessageOut, error)
 	GetUserStatus(ctx context.Context, in *UserEventIds, opts ...grpc.CallOption) (*MessageOut, error)
+	GetGroupUsers(ctx context.Context, in *Id, opts ...grpc.CallOption) (*GetGroupsUsersOut, error)
+	GetUserStats(ctx context.Context, in *UserEventIds, opts ...grpc.CallOption) (*User, error)
 }
 
 type eventsClient struct {
@@ -491,6 +495,26 @@ func (c *eventsClient) GetUserStatus(ctx context.Context, in *UserEventIds, opts
 	return out, nil
 }
 
+func (c *eventsClient) GetGroupUsers(ctx context.Context, in *Id, opts ...grpc.CallOption) (*GetGroupsUsersOut, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetGroupsUsersOut)
+	err := c.cc.Invoke(ctx, Events_GetGroupUsers_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *eventsClient) GetUserStats(ctx context.Context, in *UserEventIds, opts ...grpc.CallOption) (*User, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(User)
+	err := c.cc.Invoke(ctx, Events_GetUserStats_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // EventsServer is the server API for Events service.
 // All implementations must embed UnimplementedEventsServer
 // for forward compatibility.
@@ -533,6 +557,8 @@ type EventsServer interface {
 	GetNextStage(context.Context, *UserEventIds) (*NextStageInfo, error)
 	PutTimestamp(context.Context, *PutTimestampIn) (*MessageOut, error)
 	GetUserStatus(context.Context, *UserEventIds) (*MessageOut, error)
+	GetGroupUsers(context.Context, *Id) (*GetGroupsUsersOut, error)
+	GetUserStats(context.Context, *UserEventIds) (*User, error)
 	mustEmbedUnimplementedEventsServer()
 }
 
@@ -656,6 +682,12 @@ func (UnimplementedEventsServer) PutTimestamp(context.Context, *PutTimestampIn) 
 }
 func (UnimplementedEventsServer) GetUserStatus(context.Context, *UserEventIds) (*MessageOut, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetUserStatus not implemented")
+}
+func (UnimplementedEventsServer) GetGroupUsers(context.Context, *Id) (*GetGroupsUsersOut, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetGroupUsers not implemented")
+}
+func (UnimplementedEventsServer) GetUserStats(context.Context, *UserEventIds) (*User, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetUserStats not implemented")
 }
 func (UnimplementedEventsServer) mustEmbedUnimplementedEventsServer() {}
 func (UnimplementedEventsServer) testEmbeddedByValue()                {}
@@ -1362,6 +1394,42 @@ func _Events_GetUserStatus_Handler(srv interface{}, ctx context.Context, dec fun
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Events_GetGroupUsers_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Id)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(EventsServer).GetGroupUsers(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Events_GetGroupUsers_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(EventsServer).GetGroupUsers(ctx, req.(*Id))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Events_GetUserStats_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UserEventIds)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(EventsServer).GetUserStats(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Events_GetUserStats_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(EventsServer).GetUserStats(ctx, req.(*UserEventIds))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Events_ServiceDesc is the grpc.ServiceDesc for Events service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -1520,6 +1588,14 @@ var Events_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetUserStatus",
 			Handler:    _Events_GetUserStatus_Handler,
+		},
+		{
+			MethodName: "GetGroupUsers",
+			Handler:    _Events_GetGroupUsers_Handler,
+		},
+		{
+			MethodName: "GetUserStats",
+			Handler:    _Events_GetUserStats_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

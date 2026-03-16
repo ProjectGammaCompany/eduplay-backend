@@ -1619,3 +1619,21 @@ func (s *Storage) DeleteExpiredJoinCodes(ctx context.Context) error {
 
 	return nil
 }
+
+func (s *Storage) GetUserStats(ctx context.Context, userId string, eventId string) (*dto.User, error) {
+	const op = "storage.postgres.GetUserStats"
+
+	state := `SELECT SUM(points) AS total_points FROM answers WHERE userId = $1 AND taskId = ANY 
+	(SELECT taskId FROM tasks WHERE blockId = ANY (SELECT blockId FROM blocks WHERE eventId = $2));`
+
+	var totalPoints int64
+	err := s.db.QueryRow(ctx, state, userId, eventId).Scan(&totalPoints)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return &dto.User{
+		Id:     userId,
+		Points: totalPoints,
+	}, nil
+}

@@ -49,6 +49,7 @@ type UseCase interface {
 	GetNextStage(ctx context.Context, in *dto.UserEventIds) (*dto.NextStageInfo, error)
 	PutTimestamp(ctx context.Context, in *dto.PutTimestampIn) (string, error)
 	GetUserStatus(ctx context.Context, in *dto.UserEventIds) (*dto.MessageOut, error)
+	GetUserStats(ctx context.Context, in *dto.UserEventIds) (*dto.User, error)
 }
 
 type Handler struct {
@@ -476,4 +477,14 @@ func (h *Handler) GetUserStatus(ctx context.Context, in *dto.UserEventIds) (*dto
 	}
 
 	return ret, nil
+}
+
+func (h *Handler) GetUserStats(ctx context.Context, in *dto.UserEventIds) (*dto.User, error) {
+	op := "GetUserStats.Handler"
+	out, err := h.uc.GetUserStats(ctx, in)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return out, nil
 }
