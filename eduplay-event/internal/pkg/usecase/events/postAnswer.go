@@ -150,7 +150,31 @@ func (a *UseCase) PostAnswer(ctx context.Context, in *dto.Answer) (*dto.Answer, 
 		}
 
 		return ans, nil
+	case 4:
+		ans := &dto.Answer{
+			TaskId:      in.TaskId,
+			UserId:      in.UserId,
+			Answer:      in.Answer,
+			AnswerIds:   make([]string, 0),
+			Points:      0,
+			Status:      "",
+			RightAnswer: corrAnswers,
+		}
 
+		if in.Answer[0] == corrAnswers[0] {
+			ans.Points = task.Points
+			ans.Status = "correct"
+		} else {
+			ans.Points = 0
+			ans.Status = "incorrect"
+		}
+
+		_, err := a.storage.PostAnswer(ctx, ans)
+		if err != nil {
+			return nil, err
+		}
+
+		return ans, nil
 	default:
 		ans := &dto.Answer{
 			TaskId:        in.TaskId,
