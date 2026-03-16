@@ -3,6 +3,7 @@ package event
 import (
 	"context"
 	"log/slog"
+	"strings"
 
 	dto "eduplay-event/internal/generated"
 )
@@ -136,7 +137,7 @@ func (a *UseCase) PostAnswer(ctx context.Context, in *dto.Answer) (*dto.Answer, 
 			RightAnswer: corrAnswers,
 		}
 
-		if in.Answer[0] == corrAnswers[0] {
+		if strings.EqualFold(in.Answer[0], corrAnswers[0]) {
 			ans.Points = task.Points
 			ans.Status = "correct"
 		} else {
@@ -161,7 +162,7 @@ func (a *UseCase) PostAnswer(ctx context.Context, in *dto.Answer) (*dto.Answer, 
 			RightAnswer: corrAnswers,
 		}
 
-		if in.Answer[0] == corrAnswers[0] {
+		if strings.EqualFold(in.Answer[0], corrAnswers[0]) {
 			ans.Points = task.Points
 			ans.Status = "correct"
 		} else {
