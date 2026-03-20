@@ -5,7 +5,7 @@ metadata:
   namespace: eduplay
   annotations: 
     cert-manager.io/cluster-issuer: letsencrypt-prod
-    traefik.ingress.kubernetes.io/router.middlewares: eduplay-redirect-https@kubernetescrd
+    traefik.ingress.kubernetes.io/redirect-entry-point: websecure
 spec:
   ingressClassName: traefik
   tls:
