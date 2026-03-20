@@ -3,8 +3,15 @@ kind: Ingress
 metadata:
   name: eduplay
   namespace: eduplay
+  annotations: 
+    cert-manager.io/cluster-issuer: letsencrypt-prod
 spec:
-  # ingressClassName: nginx
+  ingressClassName: traefik
+  tls:
+  - hosts:
+    - hse-eduplay.ru
+    - api.hse-eduplay.ru
+    secretName: eduplay-tls
   rules:
   - host: hse-eduplay.ru
     http:
