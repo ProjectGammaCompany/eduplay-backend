@@ -10,8 +10,8 @@ resources:
 
 images:
   - name: notocactus/eduplay-gateway
-    newTag: sha-c7d1cf0
+    newTag: sha-4402a56
   - name: notocactus/eduplay-user
-    newTag: sha-c7d1cf0
+    newTag: sha-4402a56
   - name: notocactus/eduplay-event
-    newTag: sha-c7d1cf0
+    newTag: sha-4402a56
