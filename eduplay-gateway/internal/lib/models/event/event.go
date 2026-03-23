@@ -96,6 +96,7 @@ type PostEventIn struct {
 	AllowDownloading bool     `json:"allowDownloading"`
 	GroupEvent       bool     `json:"groupEvent"`
 	Rating           bool     `json:"rating"`
+	EventRating      int64    `json:"eventRating"`
 }
 
 func PostEventInToDto(in *PostEventIn) (*dto.PostEventIn, error) {
@@ -256,6 +257,7 @@ type GetEventSettings struct {
 	LastEditionDate string   `json:"lastEditionDate"`
 	Groups          []Group  `json:"groups"`
 	Rating          bool     `json:"rating"`
+	EventRating     int64    `json:"eventRating"`
 	// Collaborators    []Collaborator `json:"collaborators"`
 	Collaborators    []string `json:"collaborators"`
 	AllowDownloading bool     `json:"allowDownloading"`
@@ -292,6 +294,7 @@ func GetEventSettingsFromDto(event *dto.PostEventIn, groups *dto.GetGroupsOut, c
 		AllowDownloading: event.AllowDownloading,
 		OwnerId:          event.OwnerId,
 		GroupEvent:       event.GroupEvent,
+		EventRating:      event.EventRating,
 	}
 
 	if eventOut.StartDate == "01.01.1970 00:00:00.000" {
@@ -324,7 +327,7 @@ func CollaboratorsFromDto(collaborators *dto.GetCollaboratorsOut) []Collaborator
 func CollaboratorsToString(collaborators *dto.GetCollaboratorsOut) []string {
 	collabs := make([]string, len(collaborators.Users))
 	for i, user := range collaborators.Users {
-		collabs[i] = user.Id
+		collabs[i] = user.Email
 	}
 	return collabs
 }

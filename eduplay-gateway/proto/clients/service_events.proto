@@ -108,6 +108,7 @@ message PostEventIn {
     bool allowDownloading = 12;
     bool groupEvent = 13; 
     bool rating = 14;
+    int64 eventRating = 15;
 }
 
 message PutEventIn {

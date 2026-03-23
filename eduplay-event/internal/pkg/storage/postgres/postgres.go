@@ -130,7 +130,25 @@ func (s *Storage) PostEvent(ctx context.Context, in *dto.PostEventIn) (string, e
 func (s *Storage) GetEvent(ctx context.Context, id string) (*dto.PostEventIn, error) {
 	const op = "storage.postgres.GetEvent"
 
-	state := `SELECT title, description, tags, cover, startDate, endDate, private, password, ownerId, lastEditionDate, allowDownloading, groupEvent, showRating FROM events WHERE eventId = $1;`
+	state := `SELECT 
+	e.title, 
+	e.description, 
+	e.tags, 
+	e.cover, 
+	e.startDate, 
+	e.endDate, 
+	e.private, 
+	e.password, 
+	e.ownerId, 
+	e.lastEditionDate, 
+	e.allowDownloading, 
+	e.groupEvent, 
+	e.showRating, 
+	COALESCE(AVG(r.rating), 0) AS rate
+	FROM events e 
+	LEFT JOIN ratings r ON e.eventId = r.eventId 
+	WHERE e.eventId = $1
+	GROUP BY e.eventId;`
 
 	res := s.db.QueryRow(ctx, state, id)
 
@@ -148,9 +166,12 @@ func (s *Storage) GetEvent(ctx context.Context, id string) (*dto.PostEventIn, er
 		allowDownloading bool
 		groupEvent       bool
 		showRating       bool
+		eventRating      int64
 	)
 
-	err := res.Scan(&title, &description, &tags, &cover, &startDate, &endDate, &private, &password, &ownerId, &lastEditionDate, &allowDownloading, &groupEvent, &showRating)
+	err := res.Scan(&title, &description, &tags, &cover, &startDate, &endDate,
+		&private, &password, &ownerId, &lastEditionDate, &allowDownloading,
+		&groupEvent, &showRating, &eventRating)
 
 	if err != nil {
 		return nil, fmt.Errorf("%s: %w", op, err)
@@ -171,6 +192,7 @@ func (s *Storage) GetEvent(ctx context.Context, id string) (*dto.PostEventIn, er
 		AllowDownloading: allowDownloading,
 		GroupEvent:       groupEvent,
 		Rating:           showRating,
+		EventRating:      eventRating,
 	}, nil
 }
 

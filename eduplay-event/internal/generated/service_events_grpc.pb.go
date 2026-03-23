@@ -59,6 +59,7 @@ const (
 	Events_GetUserStatus_FullMethodName        = "/event_data.Events/GetUserStatus"
 	Events_GetGroupUsers_FullMethodName        = "/event_data.Events/GetGroupUsers"
 	Events_GetUserStats_FullMethodName         = "/event_data.Events/GetUserStats"
+	Events_GetEventUsers_FullMethodName        = "/event_data.Events/GetEventUsers"
 )
 
 // EventsClient is the client API for Events service.
@@ -105,6 +106,7 @@ type EventsClient interface {
 	GetUserStatus(ctx context.Context, in *UserEventIds, opts ...grpc.CallOption) (*MessageOut, error)
 	GetGroupUsers(ctx context.Context, in *Id, opts ...grpc.CallOption) (*GetGroupsUsersOut, error)
 	GetUserStats(ctx context.Context, in *UserEventIds, opts ...grpc.CallOption) (*User, error)
+	GetEventUsers(ctx context.Context, in *Id, opts ...grpc.CallOption) (*GetCollaboratorsOut, error)
 }
 
 type eventsClient struct {
@@ -515,6 +517,16 @@ func (c *eventsClient) GetUserStats(ctx context.Context, in *UserEventIds, opts 
 	return out, nil
 }
 
+func (c *eventsClient) GetEventUsers(ctx context.Context, in *Id, opts ...grpc.CallOption) (*GetCollaboratorsOut, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetCollaboratorsOut)
+	err := c.cc.Invoke(ctx, Events_GetEventUsers_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // EventsServer is the server API for Events service.
 // All implementations must embed UnimplementedEventsServer
 // for forward compatibility.
@@ -559,6 +571,7 @@ type EventsServer interface {
 	GetUserStatus(context.Context, *UserEventIds) (*MessageOut, error)
 	GetGroupUsers(context.Context, *Id) (*GetGroupsUsersOut, error)
 	GetUserStats(context.Context, *UserEventIds) (*User, error)
+	GetEventUsers(context.Context, *Id) (*GetCollaboratorsOut, error)
 	mustEmbedUnimplementedEventsServer()
 }
 
@@ -688,6 +701,9 @@ func (UnimplementedEventsServer) GetGroupUsers(context.Context, *Id) (*GetGroups
 }
 func (UnimplementedEventsServer) GetUserStats(context.Context, *UserEventIds) (*User, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetUserStats not implemented")
+}
+func (UnimplementedEventsServer) GetEventUsers(context.Context, *Id) (*GetCollaboratorsOut, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetEventUsers not implemented")
 }
 func (UnimplementedEventsServer) mustEmbedUnimplementedEventsServer() {}
 func (UnimplementedEventsServer) testEmbeddedByValue()                {}
@@ -1430,6 +1446,24 @@ func _Events_GetUserStats_Handler(srv interface{}, ctx context.Context, dec func
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Events_GetEventUsers_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Id)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(EventsServer).GetEventUsers(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Events_GetEventUsers_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(EventsServer).GetEventUsers(ctx, req.(*Id))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Events_ServiceDesc is the grpc.ServiceDesc for Events service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -1596,6 +1630,10 @@ var Events_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetUserStats",
 			Handler:    _Events_GetUserStats_Handler,
+		},
+		{
+			MethodName: "GetEventUsers",
+			Handler:    _Events_GetEventUsers_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
