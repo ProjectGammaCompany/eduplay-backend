@@ -12,9 +12,12 @@ func (s *UseCase) PutTask(ctx context.Context, req *eventModel.Task) (*eventMode
 
 	s.log.With(slog.String("op", op)).Info("attempting to put task")
 
-	taskDto := eventModel.TaskToDto(req)
+	corr, err := s.CheckTaskOptions(ctx, op, req)
+	if !corr {
+		return nil, err
+	}
 
-	fmt.Println("Helloooooooo ehhhhhh?")
+	taskDto := eventModel.TaskToDto(req)
 
 	ret, err := s.eventClient.PutTask(ctx, taskDto)
 	if err != nil {

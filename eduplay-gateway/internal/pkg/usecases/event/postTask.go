@@ -11,6 +11,11 @@ func (s *UseCase) PostTask(ctx context.Context, req *eventModel.Task) (string, e
 
 	s.log.With(slog.String("op", op)).Info("attempting to post task")
 
+	corr, err := s.CheckTaskOptions(ctx, op, req)
+	if !corr {
+		return "", err
+	}
+
 	taskDto := eventModel.TaskToDto(req)
 
 	ret, err := s.eventClient.PostTask(ctx, taskDto)

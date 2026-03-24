@@ -4,6 +4,8 @@ import (
 	"context"
 	dto "eduplay-gateway/internal/generated/clients/event"
 	userDto "eduplay-gateway/internal/generated/clients/user"
+	eventModel "eduplay-gateway/internal/lib/models/event"
+	errs "eduplay-gateway/internal/storage"
 	"log/slog"
 )
 
@@ -63,4 +65,52 @@ type UseCase struct {
 
 func New(log *slog.Logger, eventClient EventClient, userClient UserClient) *UseCase {
 	return &UseCase{log: log, eventClient: eventClient, userClient: userClient}
+}
+
+func (s *UseCase) CheckTaskOptions(ctx context.Context, op string, req *eventModel.Task) (bool, error) {
+	switch req.TaskType {
+	case 0:
+		if len(req.Options) > 0 {
+			s.log.With(slog.String("op", op)).Error("task type does not support options",
+				slog.String("error", "task type does not support options"))
+			return false, errs.ErrInfoSegmentAnswerIncorrect
+		}
+	case 1:
+		count := 0
+		for _, option := range req.Options {
+			if option.IsCorrect {
+				count++
+			}
+		}
+		if count != 1 {
+			s.log.With(slog.String("op", op)).Error("single choice tasks do not support such options",
+				slog.String("error", "single choice tasks do not support such options"))
+			return false, errs.ErrSingleChoiceAnswerIncorrect
+		}
+	case 2:
+		count := 0
+		for _, option := range req.Options {
+			if option.IsCorrect {
+				count++
+			}
+		}
+		if count < 1 {
+			s.log.With(slog.String("op", op)).Error("multiple choice tasks do not support such options",
+				slog.String("error", "multiple choice tasks do not support such options"))
+			return false, errs.ErrMultipleChoiceAnswerIncorrect
+		}
+	case 3:
+		if len(req.Options) != 1 {
+			s.log.With(slog.String("op", op)).Error("text tasks do not support such options",
+				slog.String("error", "text tasks do not support such options"))
+			return false, errs.ErrTextAnswerIncorrect
+		}
+	case 4:
+		if len(req.Options) != 1 {
+			s.log.With(slog.String("op", op)).Error("text tasks do not support such options",
+				slog.String("error", "text tasks do not support such options"))
+			return false, errs.ErrTextAnswerIncorrect
+		}
+	}
+	return true, nil
 }

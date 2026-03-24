@@ -154,6 +154,14 @@ func New(log *slog.Logger, uc UseCase) http.HandlerFunc {
 
 		ret, err := uc.PutTask(request.Context(), &req)
 		if err != nil {
+			if errors.Is(err, storage.ErrInfoSegmentAnswerIncorrect) ||
+				errors.Is(err, storage.ErrSingleChoiceAnswerIncorrect) ||
+				errors.Is(err, storage.ErrMultipleChoiceAnswerIncorrect) ||
+				errors.Is(err, storage.ErrTextAnswerIncorrect) {
+				writer.WriteHeader(http.StatusBadRequest)
+				render.JSON(writer, request, err.Error())
+				return
+			}
 			log.Error(err.Error(), slog.String("error", err.Error()))
 			writer.WriteHeader(http.StatusInternalServerError)
 			render.JSON(writer, request, err)

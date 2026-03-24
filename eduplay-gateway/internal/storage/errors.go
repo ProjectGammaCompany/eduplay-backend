@@ -19,4 +19,9 @@ var (
 	ErrAccessTokenExpired   = errors.New("access token expired")
 	ErrUserIsNotOperator    = errors.New("user is not operator")
 	ErrIsActive             = errors.New("user is already active")
+
+	ErrInfoSegmentAnswerIncorrect    = errors.New("info segment answer is incorrect")
+	ErrSingleChoiceAnswerIncorrect   = errors.New("single choice answer is incorrect")
+	ErrMultipleChoiceAnswerIncorrect = errors.New("multiple choice answer is incorrect")
+	ErrTextAnswerIncorrect           = errors.New("text answer is incorrect")
 )
