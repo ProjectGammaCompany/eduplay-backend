@@ -48,6 +48,7 @@ service Events {
     rpc GetGroupUsers(Id) returns (GetGroupsUsersOut);
     rpc GetUserStats(UserEventIds) returns (User);
     rpc GetEventUsers(Id) returns (GetCollaboratorsOut);
+    rpc GetUserGroup(UserEventIds) returns (GetUserGroupOut);
 }
 
 message Empty {}
@@ -338,4 +339,9 @@ message GetGroupUsersOut {
 
 message GetGroupsUsersOut {
     repeated GetGroupUsersOut groups = 1;
+}
+
+message GetUserGroupOut {
+    string groupId = 1;
+    string name = 2;
 }

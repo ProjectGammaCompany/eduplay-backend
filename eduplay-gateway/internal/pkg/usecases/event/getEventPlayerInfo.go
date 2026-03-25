@@ -44,6 +44,18 @@ func (s *UseCase) GetEventPlayerInfo(ctx context.Context, userId string, eventId
 		return nil, err
 	}
 
+	if event.GroupEvent {
+		userGroup, err := s.eventClient.GetUserGroup(ctx, &eventDto.UserEventIds{UserId: userId, EventId: eventId})
+		if err != nil {
+			s.log.With(slog.String("op", op)).Error("failed to get user group", slog.String("error", err.Error()))
+			return nil, err
+		}
+
+		if userGroup != nil || userGroup.GroupId != "" {
+			playerInfo.NeedGroup = true
+		}
+	}
+
 	playerInfo.EventId = event.EventId
 	playerInfo.Title = event.Title
 	playerInfo.Description = event.Description
@@ -57,7 +69,7 @@ func (s *UseCase) GetEventPlayerInfo(ctx context.Context, userId string, eventId
 	playerInfo.CanBeDownloaded = event.AllowDownloading
 	playerInfo.Status = userStatus.Message
 	playerInfo.IsPrivate = event.Private
-	// playerInfo.NeedGroup = event.GroupEvent
+
 	playerInfo.LastEditionDate = event.LastEditionDate.AsTime().Format("02.01.2006 15:04:05.000")
 	if playerInfo.LastEditionDate == "01.01.1970 00:00:00.000" {
 		playerInfo.LastEditionDate = ""

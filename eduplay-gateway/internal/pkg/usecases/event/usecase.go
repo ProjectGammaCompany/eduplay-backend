@@ -50,6 +50,7 @@ type EventClient interface {
 	GetUserStatus(ctx context.Context, in *dto.UserEventIds) (*dto.MessageOut, error)
 	GetGroupUsers(ctx context.Context, in *dto.Id) (*dto.GetGroupsUsersOut, error)
 	GetUserStats(ctx context.Context, in *dto.UserEventIds) (*dto.User, error)
+	GetUserGroup(ctx context.Context, in *dto.UserEventIds) (*dto.GetUserGroupOut, error)
 }
 
 type UserClient interface {

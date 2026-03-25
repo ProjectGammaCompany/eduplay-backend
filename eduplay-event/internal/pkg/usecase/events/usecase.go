@@ -59,6 +59,7 @@ type storage interface {
 	InsertJoinCode(ctx context.Context, eventId string, joinCode string) (*time.Time, error)
 	GetJoinCode(ctx context.Context, eventId string) (*dto.JoinCode, error)
 	GetUserStats(ctx context.Context, userId string, eventId string) (*dto.User, error)
+	GetUserGroup(ctx context.Context, userId string, eventId string) (*dto.GetUserGroupOut, error)
 }
 
 type UseCase struct {

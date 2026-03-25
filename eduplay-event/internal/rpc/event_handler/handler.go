@@ -50,6 +50,8 @@ type UseCase interface {
 	PutTimestamp(ctx context.Context, in *dto.PutTimestampIn) (string, error)
 	GetUserStatus(ctx context.Context, in *dto.UserEventIds) (*dto.MessageOut, error)
 	GetUserStats(ctx context.Context, in *dto.UserEventIds) (*dto.User, error)
+	// GetGroupUsers(ctx context.Context, in *dto.Id) (*dto.GetGroupsUsersOut, error)
+	GetUserGroup(ctx context.Context, in *dto.UserEventIds) (*dto.GetUserGroupOut, error)
 }
 
 type Handler struct {
@@ -482,6 +484,26 @@ func (h *Handler) GetUserStatus(ctx context.Context, in *dto.UserEventIds) (*dto
 func (h *Handler) GetUserStats(ctx context.Context, in *dto.UserEventIds) (*dto.User, error) {
 	op := "GetUserStats.Handler"
 	out, err := h.uc.GetUserStats(ctx, in)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return out, nil
+}
+
+// func (h *Handler) GetGroupUsers(ctx context.Context, in *dto.Id) (*dto.GetGroupsUsersOut, error) {
+// 	op := "GetGroupUsers.Handler"
+// 	out, err := h.uc.GetGroupUsers(ctx, in)
+// 	if err != nil {
+// 		return nil, fmt.Errorf("%s: %w", op, err)
+// 	}
+
+// 	return out, nil
+// }
+
+func (h *Handler) GetUserGroup(ctx context.Context, in *dto.UserEventIds) (*dto.GetUserGroupOut, error) {
+	op := "GetUserGroup.Handler"
+	out, err := h.uc.GetUserGroup(ctx, in)
 	if err != nil {
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}

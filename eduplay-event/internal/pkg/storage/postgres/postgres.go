@@ -1659,3 +1659,21 @@ func (s *Storage) GetUserStats(ctx context.Context, userId string, eventId strin
 		Points: totalPoints,
 	}, nil
 }
+
+func (s *Storage) GetUserGroup(ctx context.Context, userId string, eventId string) (*dto.GetUserGroupOut, error) {
+	const op = "storage.postgres.GetUserGroup"
+
+	state := `SELECT ug.groupId, g.login FROM userGroups ug JOIN groups g ON g.groupId = ug.groupId WHERE ug.userId = $1 AND g.eventId = $2;`
+
+	groups := &dto.GetUserGroupOut{}
+
+	err := s.db.QueryRow(ctx, state, userId, eventId).Scan(&groups.GroupId, &groups.Name)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, nil
+		}
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return groups, nil
+}
