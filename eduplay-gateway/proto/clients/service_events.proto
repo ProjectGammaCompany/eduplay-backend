@@ -45,7 +45,7 @@ service Events {
     rpc GetNextStage(UserEventIds) returns (NextStageInfo);
     rpc PutTimestamp(PutTimestampIn) returns (MessageOut);
     rpc GetUserStatus(UserEventIds) returns (MessageOut);
-    rpc GetGroupUsers(Id) returns (GetGroupsUsersOut);
+    rpc GetGroupUsers(Id) returns (GetGroupUsersOut);
     rpc GetUserStats(UserEventIds) returns (User);
     rpc GetEventUsers(Id) returns (GetCollaboratorsOut);
     rpc GetUserGroup(UserEventIds) returns (GetUserGroupOut);
@@ -163,6 +163,7 @@ message User {
     string email = 2;
     string avatar = 3;
     int64 points = 4;
+    bool current = 5; 
 }
 
 message PostEventBlockIn {
@@ -337,9 +338,9 @@ message GetGroupUsersOut {
     repeated User users = 3;
 }
 
-message GetGroupsUsersOut {
-    repeated GetGroupUsersOut groups = 1;
-}
+// message GetGroupsUsersOut {
+//     repeated GetGroupUsersOut groups = 1;
+// }
 
 message GetUserGroupOut {
     string groupId = 1;

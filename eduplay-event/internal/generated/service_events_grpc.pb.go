@@ -105,7 +105,7 @@ type EventsClient interface {
 	GetNextStage(ctx context.Context, in *UserEventIds, opts ...grpc.CallOption) (*NextStageInfo, error)
 	PutTimestamp(ctx context.Context, in *PutTimestampIn, opts ...grpc.CallOption) (*MessageOut, error)
 	GetUserStatus(ctx context.Context, in *UserEventIds, opts ...grpc.CallOption) (*MessageOut, error)
-	GetGroupUsers(ctx context.Context, in *Id, opts ...grpc.CallOption) (*GetGroupsUsersOut, error)
+	GetGroupUsers(ctx context.Context, in *Id, opts ...grpc.CallOption) (*GetGroupUsersOut, error)
 	GetUserStats(ctx context.Context, in *UserEventIds, opts ...grpc.CallOption) (*User, error)
 	GetEventUsers(ctx context.Context, in *Id, opts ...grpc.CallOption) (*GetCollaboratorsOut, error)
 	GetUserGroup(ctx context.Context, in *UserEventIds, opts ...grpc.CallOption) (*GetUserGroupOut, error)
@@ -499,9 +499,9 @@ func (c *eventsClient) GetUserStatus(ctx context.Context, in *UserEventIds, opts
 	return out, nil
 }
 
-func (c *eventsClient) GetGroupUsers(ctx context.Context, in *Id, opts ...grpc.CallOption) (*GetGroupsUsersOut, error) {
+func (c *eventsClient) GetGroupUsers(ctx context.Context, in *Id, opts ...grpc.CallOption) (*GetGroupUsersOut, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(GetGroupsUsersOut)
+	out := new(GetGroupUsersOut)
 	err := c.cc.Invoke(ctx, Events_GetGroupUsers_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -581,7 +581,7 @@ type EventsServer interface {
 	GetNextStage(context.Context, *UserEventIds) (*NextStageInfo, error)
 	PutTimestamp(context.Context, *PutTimestampIn) (*MessageOut, error)
 	GetUserStatus(context.Context, *UserEventIds) (*MessageOut, error)
-	GetGroupUsers(context.Context, *Id) (*GetGroupsUsersOut, error)
+	GetGroupUsers(context.Context, *Id) (*GetGroupUsersOut, error)
 	GetUserStats(context.Context, *UserEventIds) (*User, error)
 	GetEventUsers(context.Context, *Id) (*GetCollaboratorsOut, error)
 	GetUserGroup(context.Context, *UserEventIds) (*GetUserGroupOut, error)
@@ -709,7 +709,7 @@ func (UnimplementedEventsServer) PutTimestamp(context.Context, *PutTimestampIn) 
 func (UnimplementedEventsServer) GetUserStatus(context.Context, *UserEventIds) (*MessageOut, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetUserStatus not implemented")
 }
-func (UnimplementedEventsServer) GetGroupUsers(context.Context, *Id) (*GetGroupsUsersOut, error) {
+func (UnimplementedEventsServer) GetGroupUsers(context.Context, *Id) (*GetGroupUsersOut, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetGroupUsers not implemented")
 }
 func (UnimplementedEventsServer) GetUserStats(context.Context, *UserEventIds) (*User, error) {

@@ -1677,3 +1677,55 @@ func (s *Storage) GetUserGroup(ctx context.Context, userId string, eventId strin
 
 	return groups, nil
 }
+
+func (s *Storage) GetGroupUsers(ctx context.Context, groupId string) (*dto.GetGroupUsersOut, error) {
+	const op = "storage.postgres.GetGroupUsers"
+
+	state := `SELECT ug.userId, g.login FROM userGroups ug JOIN groups g ON g.groupId = ug.groupId WHERE g.groupId = $1;`
+
+	users := &dto.GetGroupUsersOut{}
+	var groupName string
+
+	res, err := s.db.Query(ctx, state, groupId)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	for res.Next() {
+		var user dto.User
+		err := res.Scan(&user.Id, groupName)
+		if err != nil {
+			return nil, fmt.Errorf("%s: %w", op, err)
+		}
+		users.Users = append(users.Users, &user)
+	}
+
+	users.GroupId = groupId
+	users.Name = groupName
+
+	return users, nil
+}
+
+func (s *Storage) GetEventUsers(ctx context.Context, eventId string) (*dto.GetCollaboratorsOut, error) {
+	const op = "storage.postgres.GetEventUsers"
+
+	state := `SELECT userId FROM userLinks WHERE eventId = $1 AND isParticipant = true;`
+
+	users := &dto.GetCollaboratorsOut{}
+
+	res, err := s.db.Query(ctx, state, eventId)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	for res.Next() {
+		var user dto.User
+		err := res.Scan(&user.Id)
+		if err != nil {
+			return nil, fmt.Errorf("%s: %w", op, err)
+		}
+		users.Users = append(users.Users, &user)
+	}
+
+	return users, nil
+}

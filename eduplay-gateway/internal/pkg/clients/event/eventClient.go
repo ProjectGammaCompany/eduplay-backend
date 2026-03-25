@@ -435,7 +435,7 @@ func (cl *Client) GetUserStatus(ctx context.Context, in *events.UserEventIds) (*
 	return out, nil
 }
 
-func (cl *Client) GetGroupUsers(ctx context.Context, in *events.Id) (*events.GetGroupsUsersOut, error) {
+func (cl *Client) GetGroupUsers(ctx context.Context, in *events.Id) (*events.GetGroupUsersOut, error) {
 	op := "GetGroupUsers.Client"
 	out, err := cl.api.GetGroupUsers(ctx, in)
 	if err != nil {
@@ -458,6 +458,16 @@ func (cl *Client) GetUserStats(ctx context.Context, in *events.UserEventIds) (*e
 func (cl *Client) GetUserGroup(ctx context.Context, in *events.UserEventIds) (*events.GetUserGroupOut, error) {
 	op := "GetUserGroup.Client"
 	out, err := cl.api.GetUserGroup(ctx, in)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return out, nil
+}
+
+func (cl *Client) GetEventUsers(ctx context.Context, in *events.Id) (*events.GetCollaboratorsOut, error) {
+	op := "GetEventUsers.Client"
+	out, err := cl.api.GetEventUsers(ctx, in)
 	if err != nil {
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}

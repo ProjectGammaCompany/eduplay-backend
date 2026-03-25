@@ -610,10 +610,33 @@ type UserStats struct {
 	Username string `json:"username"`
 	Avatar   string `json:"avatar"`
 	Points   int64  `json:"points"`
+	Current  bool   `json:"current"`
 }
 
 type GroupStats struct {
 	GroupId string      `json:"id"`
 	Name    string      `json:"name"`
 	Users   []UserStats `json:"users"`
+}
+
+func GroupStatsFromDto(in *dto.GetGroupUsersOut) GroupStats {
+	return GroupStats{
+		GroupId: in.GroupId,
+		Name:    in.Name,
+		Users:   UserStatsFromDto(in.Users),
+	}
+}
+
+func UserStatsFromDto(in []*dto.User) []UserStats {
+	ret := make([]UserStats, len(in))
+	for i, user := range in {
+		ret[i] = UserStats{
+			UserId:   user.Id,
+			Username: user.Email,
+			Avatar:   user.Avatar,
+			Points:   user.Points,
+			Current:  user.Current,
+		}
+	}
+	return ret
 }
