@@ -53,6 +53,7 @@ type UseCase interface {
 	GetGroupUsers(ctx context.Context, in *dto.Id) (*dto.GetGroupUsersOut, error)
 	GetUserGroup(ctx context.Context, in *dto.UserEventIds) (*dto.GetUserGroupOut, error)
 	GetEventUsers(ctx context.Context, in *dto.Id) (*dto.GetCollaboratorsOut, error)
+	PostComplaint(ctx context.Context, in *dto.PostComplaintIn) (string, error)
 }
 
 type Handler struct {
@@ -512,7 +513,7 @@ func (h *Handler) GetUserGroup(ctx context.Context, in *dto.UserEventIds) (*dto.
 	return out, nil
 }
 
-func (h *Handler) GetEventusers(ctx context.Context, in *dto.Id) (*dto.GetCollaboratorsOut, error) {
+func (h *Handler) GetEventUsers(ctx context.Context, in *dto.Id) (*dto.GetCollaboratorsOut, error) {
 	op := "GetEventUsers.Handler"
 	out, err := h.uc.GetEventUsers(ctx, in)
 	if err != nil {
@@ -520,4 +521,15 @@ func (h *Handler) GetEventusers(ctx context.Context, in *dto.Id) (*dto.GetCollab
 	}
 
 	return out, nil
+}
+
+func (h *Handler) PostComplaint(ctx context.Context, in *dto.PostComplaintIn) (*dto.MessageOut, error) {
+	op := "PostComplaint.Handler"
+
+	message, err := h.uc.PostComplaint(ctx, in)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return &dto.MessageOut{Message: message}, nil
 }

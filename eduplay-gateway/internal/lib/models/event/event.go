@@ -640,3 +640,10 @@ func UserStatsFromDto(in []*dto.User) []UserStats {
 	}
 	return ret
 }
+
+type Complaint struct {
+	ComplaintId string `json:"id"`
+	Reason      string `json:"reason"`
+	EventId     string `json:"eventId"`
+	UserId      string `json:"userId"`
+}

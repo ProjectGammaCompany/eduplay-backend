@@ -49,6 +49,7 @@ service Events {
     rpc GetUserStats(UserEventIds) returns (User);
     rpc GetEventUsers(Id) returns (GetCollaboratorsOut);
     rpc GetUserGroup(UserEventIds) returns (GetUserGroupOut);
+    rpc PostComplaint(PostComplaintIn) returns (MessageOut);
 }
 
 message Empty {}
@@ -338,11 +339,13 @@ message GetGroupUsersOut {
     repeated User users = 3;
 }
 
-// message GetGroupsUsersOut {
-//     repeated GetGroupUsersOut groups = 1;
-// }
-
 message GetUserGroupOut {
     string groupId = 1;
     string name = 2;
+}
+
+message PostComplaintIn {
+    string userId = 1;
+    string eventId = 2;
+    string reason = 3;
 }

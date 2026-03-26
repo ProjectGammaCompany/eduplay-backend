@@ -475,6 +475,16 @@ func (cl *Client) GetEventUsers(ctx context.Context, in *events.Id) (*events.Get
 	return out, nil
 }
 
+func (cl *Client) PostComplaint(ctx context.Context, in *events.PostComplaintIn) (*events.MessageOut, error) {
+	op := "PostComplaint.Client"
+	out, err := cl.api.PostComplaint(ctx, in)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return out, nil
+}
+
 func InterceptorLogger(l *slog.Logger) interlog.Logger {
 	return interlog.LoggerFunc(func(ctx context.Context, lvl interlog.Level, msg string, fields ...any) {
 		l.Log(ctx, slog.Level(lvl), msg, fields...)

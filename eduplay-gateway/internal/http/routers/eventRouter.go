@@ -27,6 +27,7 @@ import (
 	"eduplay-gateway/internal/http/handlers/event/getUserFavorites"
 	"eduplay-gateway/internal/http/handlers/event/postAnswer"
 	"eduplay-gateway/internal/http/handlers/event/postBlockCondition"
+	"eduplay-gateway/internal/http/handlers/event/postComplaint"
 	"eduplay-gateway/internal/http/handlers/event/postEvent"
 	"eduplay-gateway/internal/http/handlers/event/postEventBlock"
 	"eduplay-gateway/internal/http/handlers/event/postTask"
@@ -116,6 +117,7 @@ func EventRouter(router chi.Router, log *slog.Logger, cfg *config.Config) chi.Ro
 		r.Put("/{eventId}/nextStage", putNextStage.New(log, events.New(log, eventClient, userClient)))
 		r.Get("/{eventId}/nextStage", getNextStage.New(log, events.New(log, eventClient, userClient)))
 		r.Get("/{eventId}/playerStats", getPlayerStats.New(log, events.New(log, eventClient, userClient)))
+		r.Post("/{eventId}/complaint", postComplaint.New(log, events.New(log, eventClient, userClient)))
 	})
 
 	return router

@@ -24,4 +24,6 @@ var (
 	ErrSingleChoiceAnswerIncorrect   = errors.New("single choice answer is incorrect")
 	ErrMultipleChoiceAnswerIncorrect = errors.New("multiple choice answer is incorrect")
 	ErrTextAnswerIncorrect           = errors.New("text answer is incorrect")
+
+	ErrNoRows = errors.New("no rows were found")
 )

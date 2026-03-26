@@ -1729,3 +1729,23 @@ func (s *Storage) GetEventUsers(ctx context.Context, eventId string) (*dto.GetCo
 
 	return users, nil
 }
+
+func (s *Storage) PostComplaint(ctx context.Context, in *dto.PostComplaintIn) (string, error) {
+	const op = "storage.postgres.PostComplaint"
+
+	state := `INSERT INTO complaints (userId, eventId, reason) VALUES ($1, $2, $3) RETURNING complaintId;`
+
+	res := s.db.QueryRow(ctx, state, in.UserId, in.EventId, in.Reason)
+
+	var id string
+
+	err := res.Scan(&id)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return "", nil
+		}
+		return "", fmt.Errorf("%s: %w", op, err)
+	}
+
+	return id, nil
+}

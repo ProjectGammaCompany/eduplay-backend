@@ -135,4 +135,12 @@ CREATE TABLE userGroups (
     userId uuid NOT NULL,
     groupId uuid NOT NULL,
     FOREIGN KEY (groupId) REFERENCES groups(groupId) ON DELETE CASCADE
-)
+);
+
+CREATE TABLE complaints (
+    complaintId uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    userId uuid NOT NULL,
+    eventId uuid NOT NULL,
+    reason text NOT NULL DEFAULT '',
+    FOREIGN KEY (eventId) REFERENCES events(eventId) ON DELETE CASCADE
+);
