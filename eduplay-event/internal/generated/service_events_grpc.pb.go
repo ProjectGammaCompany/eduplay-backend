@@ -61,6 +61,7 @@ const (
 	Events_GetUserStats_FullMethodName         = "/event_data.Events/GetUserStats"
 	Events_GetEventUsers_FullMethodName        = "/event_data.Events/GetEventUsers"
 	Events_GetUserGroup_FullMethodName         = "/event_data.Events/GetUserGroup"
+	Events_PostComplaint_FullMethodName        = "/event_data.Events/PostComplaint"
 )
 
 // EventsClient is the client API for Events service.
@@ -109,6 +110,7 @@ type EventsClient interface {
 	GetUserStats(ctx context.Context, in *UserEventIds, opts ...grpc.CallOption) (*User, error)
 	GetEventUsers(ctx context.Context, in *Id, opts ...grpc.CallOption) (*GetCollaboratorsOut, error)
 	GetUserGroup(ctx context.Context, in *UserEventIds, opts ...grpc.CallOption) (*GetUserGroupOut, error)
+	PostComplaint(ctx context.Context, in *PostComplaintIn, opts ...grpc.CallOption) (*MessageOut, error)
 }
 
 type eventsClient struct {
@@ -539,6 +541,16 @@ func (c *eventsClient) GetUserGroup(ctx context.Context, in *UserEventIds, opts 
 	return out, nil
 }
 
+func (c *eventsClient) PostComplaint(ctx context.Context, in *PostComplaintIn, opts ...grpc.CallOption) (*MessageOut, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(MessageOut)
+	err := c.cc.Invoke(ctx, Events_PostComplaint_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // EventsServer is the server API for Events service.
 // All implementations must embed UnimplementedEventsServer
 // for forward compatibility.
@@ -585,6 +597,7 @@ type EventsServer interface {
 	GetUserStats(context.Context, *UserEventIds) (*User, error)
 	GetEventUsers(context.Context, *Id) (*GetCollaboratorsOut, error)
 	GetUserGroup(context.Context, *UserEventIds) (*GetUserGroupOut, error)
+	PostComplaint(context.Context, *PostComplaintIn) (*MessageOut, error)
 	mustEmbedUnimplementedEventsServer()
 }
 
@@ -720,6 +733,9 @@ func (UnimplementedEventsServer) GetEventUsers(context.Context, *Id) (*GetCollab
 }
 func (UnimplementedEventsServer) GetUserGroup(context.Context, *UserEventIds) (*GetUserGroupOut, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetUserGroup not implemented")
+}
+func (UnimplementedEventsServer) PostComplaint(context.Context, *PostComplaintIn) (*MessageOut, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method PostComplaint not implemented")
 }
 func (UnimplementedEventsServer) mustEmbedUnimplementedEventsServer() {}
 func (UnimplementedEventsServer) testEmbeddedByValue()                {}
@@ -1498,6 +1514,24 @@ func _Events_GetUserGroup_Handler(srv interface{}, ctx context.Context, dec func
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Events_PostComplaint_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(PostComplaintIn)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(EventsServer).PostComplaint(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Events_PostComplaint_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(EventsServer).PostComplaint(ctx, req.(*PostComplaintIn))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Events_ServiceDesc is the grpc.ServiceDesc for Events service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -1672,6 +1706,10 @@ var Events_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetUserGroup",
 			Handler:    _Events_GetUserGroup_Handler,
+		},
+		{
+			MethodName: "PostComplaint",
+			Handler:    _Events_PostComplaint_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

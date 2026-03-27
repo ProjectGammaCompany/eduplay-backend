@@ -136,6 +136,6 @@ func New(log *slog.Logger, uc UseCase) http.HandlerFunc {
 		}
 
 		writer.WriteHeader(http.StatusOK)
-		render.JSON(writer, request, map[string]string{"taskId": id})
+		render.JSON(writer, request, map[string]string{"complaintId": id})
 	}
 }

@@ -526,6 +526,8 @@ func (h *Handler) GetEventUsers(ctx context.Context, in *dto.Id) (*dto.GetCollab
 func (h *Handler) PostComplaint(ctx context.Context, in *dto.PostComplaintIn) (*dto.MessageOut, error) {
 	op := "PostComplaint.Handler"
 
+	fmt.Println(op)
+
 	message, err := h.uc.PostComplaint(ctx, in)
 	if err != nil {
 		return nil, fmt.Errorf("%s: %w", op, err)
