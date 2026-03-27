@@ -50,6 +50,7 @@ service Events {
     rpc GetEventUsers(Id) returns (GetCollaboratorsOut);
     rpc GetUserGroup(UserEventIds) returns (GetUserGroupOut);
     rpc PostComplaint(PostComplaintIn) returns (MessageOut);
+    rpc GetJoinCode(Id) returns (JoinCode);
 }
 
 message Empty {}

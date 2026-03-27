@@ -18,6 +18,7 @@ import (
 
 type Storage struct {
 	db *pgxpool.Pool
+	// loc *time.Location
 }
 
 func New(ctx context.Context, storagePath string) (*Storage, error) {
@@ -36,6 +37,11 @@ func New(ctx context.Context, storagePath string) (*Storage, error) {
 	if err != nil {
 		return nil, fmt.Errorf("%s - %s", op, err)
 	}
+
+	// loc, err := time.LoadLocation("Europe/Moscow")
+	// if err != nil {
+	// 	return nil, fmt.Errorf("%s: %w", op, err)
+	// }
 
 	return &Storage{db: db}, nil
 }

@@ -26,4 +26,6 @@ var (
 	ErrTextAnswerIncorrect           = errors.New("text answer is incorrect")
 
 	ErrNoRows = errors.New("no rows were found")
+
+	ErrJoinCodeRetryFailed = errors.New("failed to generate and save join code")
 )

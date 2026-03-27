@@ -47,7 +47,7 @@ func (a *UseCase) PostJoinCode(ctx context.Context, in *dto.Id) (*dto.JoinCode, 
 			return nil, err
 		}
 
-		return &dto.JoinCode{JoinCode: joinCode, ExpiresAt: timestamppb.New(*time)}, nil
+		return &dto.JoinCode{EventId: in.Id, JoinCode: joinCode, ExpiresAt: timestamppb.New(*time)}, nil
 	}
 	return nil, errs.ErrJoinCodeRetryFailed
 }

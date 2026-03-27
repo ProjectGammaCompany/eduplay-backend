@@ -23,6 +23,7 @@ import (
 
 type Storage struct {
 	db *pgxpool.Pool
+	// loc *time.Location
 }
 
 func New(ctx context.Context, storagePath string) (*Storage, error) {
@@ -41,6 +42,11 @@ func New(ctx context.Context, storagePath string) (*Storage, error) {
 	if err != nil {
 		return nil, fmt.Errorf("%s - %s", op, err)
 	}
+
+	// loc, err := time.LoadLocation("Europe/Moscow")
+	// if err != nil {
+	// 	return nil, fmt.Errorf("%s: %w", op, err)
+	// }
 
 	return &Storage{db: db}, nil
 }
@@ -115,7 +121,7 @@ func (s *Storage) PostEvent(ctx context.Context, in *dto.PostEventIn) (string, e
 		endDate = in.EndDate
 	}
 
-	res := s.db.QueryRow(ctx, state, in.Title, in.Description, in.Tags, in.Cover, startDate.AsTime(), endDate.AsTime(), in.Private, in.Password, in.OwnerId, time.Now(), in.AllowDownloading, in.GroupEvent)
+	res := s.db.QueryRow(ctx, state, in.Title, in.Description, in.Tags, in.Cover, startDate.AsTime(), endDate.AsTime(), in.Private, in.Password, in.OwnerId, time.Now().UTC().Add(3*time.Hour), in.AllowDownloading, in.GroupEvent)
 
 	var id string
 	err := res.Scan(&id)
@@ -1509,10 +1515,10 @@ RETURNING eventId;`
 	}
 
 	res := s.db.QueryRow(ctx, state, in.Title, in.Description, in.Tags, in.Cover, startDate.AsTime(), endDate.AsTime(),
-		in.Private, in.Password, time.Now(), in.AllowDownloading, in.GroupEvent, in.Rating, in.EventId)
+		in.Private, in.Password, time.Now().UTC().Add(3*time.Hour), in.AllowDownloading, in.GroupEvent, in.Rating, in.EventId)
 
 	fmt.Println(in.Title, in.Description, in.Tags, in.Cover, startDate.AsTime(), endDate.AsTime(),
-		in.Private, in.Password, time.Now(), in.AllowDownloading, in.GroupEvent, in.Rating, in.EventId)
+		in.Private, in.Password, time.Now().UTC().Add(3*time.Hour), in.AllowDownloading, in.GroupEvent, in.Rating, in.EventId)
 
 	var id string
 	err := res.Scan(&id)
@@ -1576,7 +1582,7 @@ func (s *Storage) InsertJoinCode(ctx context.Context, eventId string, joinCode s
 	const op = "storage.postgres.InsertJoinCode"
 
 	// TODO: make more configurable
-	expiresAt := time.Now().Add(3 * time.Hour)
+	expiresAt := time.Now().UTC().Add(3 * time.Hour).Add(time.Hour)
 	state := `INSERT INTO joinCodes (code, eventId, expiresAt) VALUES ($1, $2, $3)
 	ON CONFLICT (eventId) DO UPDATE SET code = $1, expiresAt = $3;`
 
@@ -1610,7 +1616,7 @@ func (s *Storage) GetJoinCode(ctx context.Context, eventId string) (*dto.JoinCod
 		return nil, err
 	}
 
-	if expiresAt.Before(time.Now()) {
+	if expiresAt.Before(time.Now().UTC().Add(3 * time.Hour)) {
 		state := `DELETE FROM joinCodes WHERE eventId = $1 AND expiresAt = $2;`
 
 		_, err := s.db.Exec(ctx, state, eventId, expiresAt)
@@ -1621,6 +1627,7 @@ func (s *Storage) GetJoinCode(ctx context.Context, eventId string) (*dto.JoinCod
 	}
 
 	return &dto.JoinCode{
+		EventId:   eventId,
 		JoinCode:  code,
 		ExpiresAt: timestamppb.New(expiresAt),
 	}, nil

@@ -54,6 +54,7 @@ type UseCase interface {
 	GetUserGroup(ctx context.Context, in *dto.UserEventIds) (*dto.GetUserGroupOut, error)
 	GetEventUsers(ctx context.Context, in *dto.Id) (*dto.GetCollaboratorsOut, error)
 	PostComplaint(ctx context.Context, in *dto.PostComplaintIn) (string, error)
+	GetJoinCode(ctx context.Context, in *dto.Id) (*dto.JoinCode, error)
 }
 
 type Handler struct {
@@ -534,4 +535,14 @@ func (h *Handler) PostComplaint(ctx context.Context, in *dto.PostComplaintIn) (*
 	}
 
 	return &dto.MessageOut{Message: message}, nil
+}
+
+func (h *Handler) GetJoinCode(ctx context.Context, in *dto.Id) (*dto.JoinCode, error) {
+	op := "GetJoinCode.Handler"
+	out, err := h.uc.GetJoinCode(ctx, in)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return out, nil
 }

@@ -19,6 +19,7 @@ import (
 	"eduplay-gateway/internal/http/handlers/event/getEventSettings"
 	"eduplay-gateway/internal/http/handlers/event/getGroups"
 	"eduplay-gateway/internal/http/handlers/event/getHistory"
+	"eduplay-gateway/internal/http/handlers/event/getJoinCode"
 	"eduplay-gateway/internal/http/handlers/event/getNextStage"
 	"eduplay-gateway/internal/http/handlers/event/getOwnedEvents"
 	"eduplay-gateway/internal/http/handlers/event/getPlayerStats"
@@ -118,6 +119,7 @@ func EventRouter(router chi.Router, log *slog.Logger, cfg *config.Config) chi.Ro
 		r.Get("/{eventId}/nextStage", getNextStage.New(log, events.New(log, eventClient, userClient)))
 		r.Get("/{eventId}/playerStats", getPlayerStats.New(log, events.New(log, eventClient, userClient)))
 		r.Post("/{eventId}/complaint", postComplaint.New(log, events.New(log, eventClient, userClient)))
+		r.Get("/{eventId}/joinCode", getJoinCode.New(log, events.New(log, eventClient, userClient)))
 	})
 
 	return router

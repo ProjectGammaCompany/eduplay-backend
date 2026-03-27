@@ -647,3 +647,9 @@ type Complaint struct {
 	EventId     string `json:"eventId"`
 	UserId      string `json:"userId"`
 }
+
+type JoinCode struct {
+	EventId   string `json:"eventId"`
+	JoinCode  string `json:"joinCode"`
+	ExpiresAt string `json:"expiresAt"`
+}
