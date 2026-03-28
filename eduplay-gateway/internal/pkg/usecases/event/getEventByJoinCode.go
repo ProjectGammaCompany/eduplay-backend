@@ -8,7 +8,7 @@ import (
 	"log/slog"
 )
 
-func (s *UseCase) GetEventByJoinCode(ctx context.Context, joinCode string, username string) (bool, error) {
+func (s *UseCase) GetEventByJoinCode(ctx context.Context, joinCode string, userId string) (bool, error) {
 	const op = "event.UseCase.GetEventByJoinCode"
 
 	s.log.With(slog.String("op", op)).Info("attempting to get event by join code")
@@ -29,16 +29,14 @@ func (s *UseCase) GetEventByJoinCode(ctx context.Context, joinCode string, usern
 		return false, err
 	}
 
-	collaborators, err := s.eventClient.GetCollaborators(ctx, &eventDto.Id{Id: ret.Id})
+	role, err := s.GetRole(ctx, userId, event.EventId)
 	if err != nil {
-		s.log.With(slog.String("op", op)).Error("failed to get collaborators", slog.String("error", err.Error()))
+		s.log.With(slog.String("op", op)).Error("failed to get role", slog.String("error", err.Error()))
 		return false, err
 	}
 
-	for _, collaborator := range collaborators.Users {
-		if collaborator.Email == username {
-			return false, errs.ErrUserIsNotPlayer
-		}
+	if role == 1 {
+		return false, errs.ErrUserIsNotPlayer
 	}
 
 	s.log.With(slog.String("op", op)).Info("get event by join code", slog.Any("event", ret))

@@ -17,7 +17,7 @@ import (
 
 type UseCase interface {
 	GetRole(ctx context.Context, userId string, eventId string) (int64, error)
-	GetEventByJoinCode(ctx context.Context, joinCode string, username string) (bool, error)
+	GetEventByJoinCode(ctx context.Context, joinCode string, userId string) (bool, error)
 }
 
 func New(log *slog.Logger, uc UseCase) http.HandlerFunc {
@@ -78,7 +78,7 @@ func New(log *slog.Logger, uc UseCase) http.HandlerFunc {
 			return
 		}
 
-		ret, err := uc.GetEventByJoinCode(request.Context(), joinCode, accessClaims.Email)
+		ret, err := uc.GetEventByJoinCode(request.Context(), joinCode, accessClaims.ID)
 
 		if err != nil {
 			if errors.Is(err, storage.ErrNotFound) {
