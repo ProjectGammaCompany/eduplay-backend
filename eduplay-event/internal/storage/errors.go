@@ -9,6 +9,8 @@ var (
 	ErrJoinCodeRetryFailed = errors.New("failed to generate and save join code")
 	ErrJoinCodeExpired     = errors.New("join code expired")
 
+	ErrNotFound = errors.New("not found")
+
 // ErrUserAlreadyExists = errors.New("user already exists")
 // ErrUserNotFound      = errors.New("user not found")
 // ErrIncorrectPassword = errors.New("incorrect password")

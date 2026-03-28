@@ -63,6 +63,7 @@ type storage interface {
 	GetGroupUsers(ctx context.Context, groupId string) (*dto.GetGroupUsersOut, error)
 	GetEventUsers(ctx context.Context, eventId string) (*dto.GetCollaboratorsOut, error)
 	PostComplaint(ctx context.Context, in *dto.PostComplaintIn) (string, error)
+	GetEventByJoinCode(ctx context.Context, joinCode string) (string, error)
 }
 
 type UseCase struct {

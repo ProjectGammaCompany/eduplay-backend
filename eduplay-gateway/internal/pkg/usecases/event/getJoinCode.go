@@ -19,7 +19,7 @@ func (s *UseCase) GetJoinCode(ctx context.Context, eventId string) (*eventModel.
 		return nil, err
 	}
 
-	s.log.With(slog.String("op", op)).Info("complaint posted", slog.Any("event", ret))
+	s.log.With(slog.String("op", op)).Info("got join code", slog.Any("event", ret))
 
 	return &eventModel.JoinCode{
 		EventId:   ret.EventId,

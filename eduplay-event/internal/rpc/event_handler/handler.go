@@ -55,6 +55,7 @@ type UseCase interface {
 	GetEventUsers(ctx context.Context, in *dto.Id) (*dto.GetCollaboratorsOut, error)
 	PostComplaint(ctx context.Context, in *dto.PostComplaintIn) (string, error)
 	GetJoinCode(ctx context.Context, in *dto.Id) (*dto.JoinCode, error)
+	GetEventByJoinCode(ctx context.Context, in *dto.Id) (*dto.Id, error)
 }
 
 type Handler struct {
@@ -540,6 +541,17 @@ func (h *Handler) PostComplaint(ctx context.Context, in *dto.PostComplaintIn) (*
 func (h *Handler) GetJoinCode(ctx context.Context, in *dto.Id) (*dto.JoinCode, error) {
 	op := "GetJoinCode.Handler"
 	out, err := h.uc.GetJoinCode(ctx, in)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return out, nil
+}
+
+func (h *Handler) GetEventByJoinCode(ctx context.Context, in *dto.Id) (*dto.Id, error) {
+	op := "GetEventByJoinCode.Handler"
+
+	out, err := h.uc.GetEventByJoinCode(ctx, in)
 	if err != nil {
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}

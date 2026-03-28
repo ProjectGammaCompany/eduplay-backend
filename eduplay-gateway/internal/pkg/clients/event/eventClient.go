@@ -495,6 +495,16 @@ func (cl *Client) GetJoinCode(ctx context.Context, in *events.Id) (*events.JoinC
 	return out, nil
 }
 
+func (cl *Client) GetEventByJoinCode(ctx context.Context, in *events.Id) (*events.Id, error) {
+	op := "GetEventByJoinCode.Client"
+	out, err := cl.api.GetEventByJoinCode(ctx, in)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return out, nil
+}
+
 func InterceptorLogger(l *slog.Logger) interlog.Logger {
 	return interlog.LoggerFunc(func(ctx context.Context, lvl interlog.Level, msg string, fields ...any) {
 		l.Log(ctx, slog.Level(lvl), msg, fields...)

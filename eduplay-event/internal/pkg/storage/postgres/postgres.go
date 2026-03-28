@@ -1756,3 +1756,21 @@ func (s *Storage) PostComplaint(ctx context.Context, in *dto.PostComplaintIn) (s
 
 	return id, nil
 }
+
+func (s *Storage) GetEventByJoinCode(ctx context.Context, joinCode string) (string, error) {
+	const op = "storage.postgres.GetEventByJoinCode"
+
+	state := `SELECT eventId FROM joinCodes WHERE code = $1;`
+
+	var eventId string
+
+	err := s.db.QueryRow(ctx, state, joinCode).Scan(&eventId)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return "", errs.ErrNotFound
+		}
+		return "", fmt.Errorf("%s: %w", op, err)
+	}
+
+	return eventId, nil
+}

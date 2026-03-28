@@ -54,6 +54,7 @@ type EventClient interface {
 	GetEventUsers(ctx context.Context, in *dto.Id) (*dto.GetCollaboratorsOut, error)
 	PostComplaint(ctx context.Context, in *dto.PostComplaintIn) (*dto.MessageOut, error)
 	GetJoinCode(ctx context.Context, in *dto.Id) (*dto.JoinCode, error)
+	GetEventByJoinCode(ctx context.Context, in *dto.Id) (*dto.Id, error)
 }
 
 type UserClient interface {

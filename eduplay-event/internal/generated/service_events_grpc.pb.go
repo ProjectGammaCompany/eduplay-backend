@@ -63,6 +63,7 @@ const (
 	Events_GetUserGroup_FullMethodName         = "/event_data.Events/GetUserGroup"
 	Events_PostComplaint_FullMethodName        = "/event_data.Events/PostComplaint"
 	Events_GetJoinCode_FullMethodName          = "/event_data.Events/GetJoinCode"
+	Events_GetEventByJoinCode_FullMethodName   = "/event_data.Events/GetEventByJoinCode"
 )
 
 // EventsClient is the client API for Events service.
@@ -113,6 +114,7 @@ type EventsClient interface {
 	GetUserGroup(ctx context.Context, in *UserEventIds, opts ...grpc.CallOption) (*GetUserGroupOut, error)
 	PostComplaint(ctx context.Context, in *PostComplaintIn, opts ...grpc.CallOption) (*MessageOut, error)
 	GetJoinCode(ctx context.Context, in *Id, opts ...grpc.CallOption) (*JoinCode, error)
+	GetEventByJoinCode(ctx context.Context, in *Id, opts ...grpc.CallOption) (*Id, error)
 }
 
 type eventsClient struct {
@@ -563,6 +565,16 @@ func (c *eventsClient) GetJoinCode(ctx context.Context, in *Id, opts ...grpc.Cal
 	return out, nil
 }
 
+func (c *eventsClient) GetEventByJoinCode(ctx context.Context, in *Id, opts ...grpc.CallOption) (*Id, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(Id)
+	err := c.cc.Invoke(ctx, Events_GetEventByJoinCode_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // EventsServer is the server API for Events service.
 // All implementations must embed UnimplementedEventsServer
 // for forward compatibility.
@@ -611,6 +623,7 @@ type EventsServer interface {
 	GetUserGroup(context.Context, *UserEventIds) (*GetUserGroupOut, error)
 	PostComplaint(context.Context, *PostComplaintIn) (*MessageOut, error)
 	GetJoinCode(context.Context, *Id) (*JoinCode, error)
+	GetEventByJoinCode(context.Context, *Id) (*Id, error)
 	mustEmbedUnimplementedEventsServer()
 }
 
@@ -752,6 +765,9 @@ func (UnimplementedEventsServer) PostComplaint(context.Context, *PostComplaintIn
 }
 func (UnimplementedEventsServer) GetJoinCode(context.Context, *Id) (*JoinCode, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetJoinCode not implemented")
+}
+func (UnimplementedEventsServer) GetEventByJoinCode(context.Context, *Id) (*Id, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetEventByJoinCode not implemented")
 }
 func (UnimplementedEventsServer) mustEmbedUnimplementedEventsServer() {}
 func (UnimplementedEventsServer) testEmbeddedByValue()                {}
@@ -1566,6 +1582,24 @@ func _Events_GetJoinCode_Handler(srv interface{}, ctx context.Context, dec func(
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Events_GetEventByJoinCode_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Id)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(EventsServer).GetEventByJoinCode(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Events_GetEventByJoinCode_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(EventsServer).GetEventByJoinCode(ctx, req.(*Id))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Events_ServiceDesc is the grpc.ServiceDesc for Events service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -1748,6 +1782,10 @@ var Events_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetJoinCode",
 			Handler:    _Events_GetJoinCode_Handler,
+		},
+		{
+			MethodName: "GetEventByJoinCode",
+			Handler:    _Events_GetEventByJoinCode_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
