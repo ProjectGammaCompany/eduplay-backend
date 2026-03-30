@@ -30,4 +30,6 @@ var (
 	ErrNotFound = errors.New("not found")
 
 	ErrJoinCodeRetryFailed = errors.New("failed to generate and save join code")
+	ErrEventIsPrivate      = errors.New("event is private")
+	ErrEventHasNoGroups    = errors.New("event has no groups")
 )

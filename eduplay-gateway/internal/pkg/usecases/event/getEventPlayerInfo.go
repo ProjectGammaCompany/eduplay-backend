@@ -4,6 +4,7 @@ import (
 	"context"
 	eventDto "eduplay-gateway/internal/generated/clients/event"
 	eventModel "eduplay-gateway/internal/lib/models/event"
+	errs "eduplay-gateway/internal/storage"
 	"log/slog"
 )
 
@@ -56,6 +57,17 @@ func (s *UseCase) GetEventPlayerInfo(ctx context.Context, userId string, eventId
 		}
 	}
 
+	rated := true
+	_, err = s.eventClient.GetEventUserRating(ctx, &eventDto.UserEventIds{UserId: userId, EventId: eventId})
+	if err != nil {
+		if err == errs.ErrNotFound {
+			rated = false
+		} else {
+			s.log.With(slog.String("op", op)).Error("failed to get event user rating", slog.String("error", err.Error()))
+			return nil, err
+		}
+	}
+
 	playerInfo.EventId = event.EventId
 	playerInfo.Title = event.Title
 	playerInfo.Description = event.Description
@@ -69,6 +81,7 @@ func (s *UseCase) GetEventPlayerInfo(ctx context.Context, userId string, eventId
 	playerInfo.CanBeDownloaded = event.AllowDownloading
 	playerInfo.Status = userStatus.Message
 	playerInfo.IsPrivate = event.Private
+	playerInfo.Rated = rated
 
 	playerInfo.LastEditionDate = event.LastEditionDate.AsTime().Format("02.01.2006 15:04:05.000")
 	if playerInfo.LastEditionDate == "01.01.1970 00:00:00.000" {

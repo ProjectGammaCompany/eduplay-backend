@@ -56,6 +56,8 @@ type UseCase interface {
 	PostComplaint(ctx context.Context, in *dto.PostComplaintIn) (string, error)
 	GetJoinCode(ctx context.Context, in *dto.Id) (*dto.JoinCode, error)
 	GetEventByJoinCode(ctx context.Context, in *dto.Id) (*dto.Id, error)
+	GetEventUserRating(ctx context.Context, in *dto.UserEventIds) (*dto.MessageOut, error)
+	PostParticipant(ctx context.Context, in *dto.PostParticipantIn) (*dto.MessageOut, error)
 }
 
 type Handler struct {
@@ -557,4 +559,26 @@ func (h *Handler) GetEventByJoinCode(ctx context.Context, in *dto.Id) (*dto.Id, 
 	}
 
 	return out, nil
+}
+
+func (h *Handler) GetEventUserRating(ctx context.Context, in *dto.UserEventIds) (*dto.MessageOut, error) {
+	op := "GetEventUserRating.Handler"
+
+	out, err := h.uc.GetEventUserRating(ctx, in)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return out, err
+}
+
+func (h *Handler) PostParticipant(ctx context.Context, in *dto.PostParticipantIn) (*dto.MessageOut, error) {
+	op := "PostParticipant.Handler"
+
+	message, err := h.uc.PostParticipant(ctx, in)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return message, nil
 }

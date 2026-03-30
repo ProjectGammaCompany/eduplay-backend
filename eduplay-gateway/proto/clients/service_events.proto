@@ -52,6 +52,8 @@ service Events {
     rpc PostComplaint(PostComplaintIn) returns (MessageOut);
     rpc GetJoinCode(Id) returns (JoinCode);
     rpc GetEventByJoinCode(Id) returns (Id);
+    rpc GetEventUserRating(UserEventIds) returns (MessageOut);
+    rpc PostParticipant(PostParticipantIn) returns (MessageOut);
 }
 
 message Empty {}
@@ -350,4 +352,10 @@ message PostComplaintIn {
     string userId = 1;
     string eventId = 2;
     string reason = 3;
+}
+
+message PostParticipantIn {
+    string userId = 1; 
+    string eventId = 2; 
+    string groupId = 3; 
 }

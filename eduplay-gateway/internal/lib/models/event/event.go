@@ -441,6 +441,7 @@ type EventPlayerInfo struct {
 	CanBeDownloaded bool           `json:"canBeDownloaded"`
 	IsPrivate       bool           `json:"isPrivate"`
 	NeedGroup       bool           `json:"needGroup"`
+	Rated           bool           `json:"rated"`
 }
 
 type EventBlockTaskUserIds struct {
@@ -652,4 +653,13 @@ type JoinCode struct {
 	EventId   string `json:"eventId"`
 	JoinCode  string `json:"joinCode"`
 	ExpiresAt string `json:"expiresAt"`
+}
+
+type ParticipationPasswords struct {
+	Password      string `json:"eventPassword"`
+	GroupName     string `json:"groupName"`
+	GroupPassword string `json:"groupPassword"`
+	UserId        string `json:"userId"`
+	JoinCode      string `json:"joinCode"`
+	EventId       string `json:"eventId"`
 }

@@ -4,7 +4,6 @@ import (
 	"context"
 	eventDto "eduplay-gateway/internal/generated/clients/event"
 	errs "eduplay-gateway/internal/storage"
-	"fmt"
 	"log/slog"
 )
 
@@ -40,8 +39,6 @@ func (s *UseCase) GetEventByJoinCode(ctx context.Context, joinCode string, userI
 	}
 
 	s.log.With(slog.String("op", op)).Info("get event by join code", slog.Any("event", ret))
-
-	fmt.Println(event.GroupEvent)
 
 	return event.GroupEvent, err
 }

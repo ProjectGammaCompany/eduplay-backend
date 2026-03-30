@@ -32,6 +32,8 @@ import (
 	"eduplay-gateway/internal/http/handlers/event/postComplaint"
 	"eduplay-gateway/internal/http/handlers/event/postEvent"
 	"eduplay-gateway/internal/http/handlers/event/postEventBlock"
+	"eduplay-gateway/internal/http/handlers/event/postEventByJoinCode"
+	"eduplay-gateway/internal/http/handlers/event/postGroupParticipant"
 	"eduplay-gateway/internal/http/handlers/event/postTask"
 	"eduplay-gateway/internal/http/handlers/event/putBlockCondition"
 	"eduplay-gateway/internal/http/handlers/event/putBlockList"
@@ -122,6 +124,8 @@ func EventRouter(router chi.Router, log *slog.Logger, cfg *config.Config) chi.Ro
 		r.Post("/{eventId}/complaint", postComplaint.New(log, events.New(log, eventClient, userClient)))
 		r.Get("/{eventId}/joinCode", getJoinCode.New(log, events.New(log, eventClient, userClient)))
 		r.Get("/joinRequiredFields/{joinCode}", getJoinRequiredFields.New(log, events.New(log, eventClient, userClient)))
+		r.Post("/join/{joinCode}", postEventByJoinCode.New(log, events.New(log, eventClient, userClient)))
+		r.Post("/{eventId}/join", postGroupParticipant.New(log, events.New(log, eventClient, userClient)))
 	})
 
 	return router

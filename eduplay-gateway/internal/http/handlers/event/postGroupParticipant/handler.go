@@ -1,4 +1,4 @@
-package postComplaint
+package postGroupParticipant
 
 import (
 	"context"
@@ -19,12 +19,12 @@ import (
 
 type UseCase interface {
 	GetRole(ctx context.Context, userId string, eventId string) (int64, error)
-	PostComplaint(ctx context.Context, pd *eventModel.Complaint) (string, error)
+	PostGroupParticipant(ctx context.Context, groupParticipant *eventModel.ParticipationPasswords) (string, error)
 }
 
 func New(log *slog.Logger, uc UseCase) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
-		const op = "handlers.event.postComplaint"
+		const op = "handlers.event.postgroupParticipant"
 
 		log = log.With(slog.String("op", op),
 			slog.String("request_id", middleware.GetReqID(request.Context())))
@@ -65,7 +65,23 @@ func New(log *slog.Logger, uc UseCase) http.HandlerFunc {
 			return
 		}
 
-		var req eventModel.Complaint
+		eventId := chi.URLParam(request, "eventId")
+		if eventId == "" {
+			log.Error("no Id provided")
+			writer.WriteHeader(http.StatusBadRequest)
+			render.JSON(writer, request, lib.Error("no Id provided"))
+			return
+		}
+
+		isUUID := tokens.ValidateUUID(eventId)
+		if !isUUID {
+			log.Error("invalid id provided")
+			writer.WriteHeader(http.StatusBadRequest)
+			render.JSON(writer, request, lib.Error("invalid id provided"))
+			return
+		}
+
+		var req *eventModel.ParticipationPasswords
 
 		err = render.DecodeJSON(request.Body, &req)
 		if err != nil {
@@ -86,47 +102,46 @@ func New(log *slog.Logger, uc UseCase) http.HandlerFunc {
 			return
 		}
 
-		eventId := chi.URLParam(request, "eventId")
-		if eventId == "" {
-			log.Error("no Id provided")
-			writer.WriteHeader(http.StatusBadRequest)
-			render.JSON(writer, request, lib.Error("no Id provided"))
-			return
-		}
-
-		isUUID := tokens.ValidateUUID(eventId)
-		if !isUUID {
-			log.Error("invalid id provided")
-			writer.WriteHeader(http.StatusBadRequest)
-			render.JSON(writer, request, lib.Error("invalid id provided"))
-			return
-		}
-
-		role, err := uc.GetRole(request.Context(), accessClaims.ID, eventId)
-		if err != nil {
-			log.Error(err.Error(), slog.String("error", err.Error()))
-			writer.WriteHeader(http.StatusInternalServerError)
-			render.JSON(writer, request, err)
-			return
-		}
-
-		if role == 1 {
-			log.Error("forbidden action")
-			writer.WriteHeader(http.StatusForbidden)
-			render.JSON(writer, request, lib.Error("user is forbidden to perform this action"))
-			return
-		}
-
-		req.EventId = eventId
 		req.UserId = accessClaims.ID
+		req.EventId = eventId
 
-		id, err := uc.PostComplaint(request.Context(), &req)
+		ret, err := uc.PostGroupParticipant(request.Context(), req)
 
 		if err != nil {
-			if errors.Is(err, storage.ErrNoRows) {
+			if errors.Is(err, storage.ErrNotFound) {
 				log.Error(err.Error(), slog.String("error", err.Error()))
 				writer.WriteHeader(http.StatusNotFound)
-				render.JSON(writer, request, err)
+				render.JSON(writer, request, err.Error())
+				return
+			}
+			if errors.Is(err, storage.ErrIncorrectPassword) {
+				log.Error(err.Error(), slog.String("error", err.Error()))
+				writer.WriteHeader(http.StatusForbidden)
+				render.JSON(writer, request, err.Error())
+				return
+			}
+			if errors.Is(err, storage.ErrUserIsNotPlayer) {
+				log.Error(err.Error(), slog.String("error", err.Error()))
+				writer.WriteHeader(http.StatusForbidden)
+				render.JSON(writer, request, err.Error())
+				return
+			}
+			if errors.Is(err, storage.ErrEventIsPrivate) {
+				log.Error(err.Error(), slog.String("error", err.Error()))
+				writer.WriteHeader(http.StatusForbidden)
+				render.JSON(writer, request, err.Error())
+				return
+			}
+			if errors.Is(err, storage.ErrEventHasNoGroups) {
+				log.Error(err.Error(), slog.String("error", err.Error()))
+				writer.WriteHeader(http.StatusNotFound)
+				render.JSON(writer, request, err.Error())
+				return
+			}
+			if errors.Is(err, storage.ErrUserAlreadyExists) {
+				log.Error(err.Error(), slog.String("error", err.Error()))
+				writer.WriteHeader(http.StatusNotFound)
+				render.JSON(writer, request, err.Error())
 				return
 			}
 			log.Error(err.Error(), slog.String("error", err.Error()))
@@ -136,6 +151,6 @@ func New(log *slog.Logger, uc UseCase) http.HandlerFunc {
 		}
 
 		writer.WriteHeader(http.StatusOK)
-		render.JSON(writer, request, map[string]string{"complaintId": id})
+		render.JSON(writer, request, map[string]string{"eventId": ret})
 	}
 }

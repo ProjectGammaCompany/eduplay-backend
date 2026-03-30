@@ -241,7 +241,7 @@ func (s *Storage) GetRole(ctx context.Context, userId string, eventId string) (i
 			if userId == ownerId {
 				return 1, nil
 			}
-			return 0, nil
+			return -1, nil
 		}
 		return 0, fmt.Errorf("%s: %w", op, err)
 	}
@@ -1342,7 +1342,6 @@ func (s *Storage) GetNextStage(ctx context.Context, stage *dto.UserEventIds) (li
 
 	state := `SELECT linkId, COALESCE(currTaskId::text, ''), COALESCE(currBlockId::text, ''), finished, currTaskStartTime FROM userLinks WHERE userId = $1 AND eventId = $2 AND isParticipant = true;`
 
-	fmt.Println("state", stage.EventId)
 	err = s.db.QueryRow(ctx, state, stage.UserId, stage.EventId).Scan(&linkId, &currTaskId, &currBlockId, &finished, &currTaskStartTime)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
@@ -1773,4 +1772,44 @@ func (s *Storage) GetEventByJoinCode(ctx context.Context, joinCode string) (stri
 	}
 
 	return eventId, nil
+}
+
+func (s *Storage) GetEventUserRating(ctx context.Context, userId string, eventId string) (int64, error) {
+	const op = "storage.postgres.GetEventUserRating"
+
+	state := `SELECT rating FROM userRatings WHERE userId = $1 AND eventId = $2;`
+
+	var rating int64
+
+	err := s.db.QueryRow(ctx, state, userId, eventId).Scan(&rating)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return 0, errs.ErrNotFound
+		}
+		return 0, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return rating, nil
+}
+
+func (s *Storage) PostParticipant(ctx context.Context, userId string, eventId string, groupId string) (string, error) {
+	const op = "storage.postgres.PostParticipant"
+
+	state := `INSERT INTO userLinks (userId, eventId, isParticipant) VALUES ($1, $2, true);`
+
+	_, err := s.db.Exec(ctx, state, userId, eventId)
+	if err != nil {
+		return "", fmt.Errorf("%s: %w", op, err)
+	}
+
+	if len(groupId) > 0 {
+		state = `INSERT INTO userGroups (userId, groupId) VALUES ($1, $2);`
+
+		_, err = s.db.Exec(ctx, state, userId, groupId)
+		if err != nil {
+			return "", fmt.Errorf("%s: %w", op, err)
+		}
+	}
+
+	return "participant added", nil
 }
