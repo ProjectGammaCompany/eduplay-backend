@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	dto "eduplay-event/internal/generated"
+	errs "eduplay-event/internal/storage"
 )
 
 func (a *UseCase) GetEventUserRating(ctx context.Context, in *dto.UserEventIds) (*dto.MessageOut, error) {
@@ -19,7 +20,10 @@ func (a *UseCase) GetEventUserRating(ctx context.Context, in *dto.UserEventIds) 
 
 	rating, err := a.storage.GetEventUserRating(ctx, in.UserId, in.EventId)
 	if err != nil {
-		log.Error("failed to get event by join code", err.Error(), slog.String("event", in.EventId), slog.String("user", in.UserId))
+		if err == errs.ErrNotFound {
+			return &dto.MessageOut{Message: "0"}, nil
+		}
+		log.Error("failed to get event user rating", err.Error(), slog.String("event", in.EventId), slog.String("user", in.UserId))
 		return nil, err
 	}
 

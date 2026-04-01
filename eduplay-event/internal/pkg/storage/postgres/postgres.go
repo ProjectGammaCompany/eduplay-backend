@@ -1777,7 +1777,7 @@ func (s *Storage) GetEventByJoinCode(ctx context.Context, joinCode string) (stri
 func (s *Storage) GetEventUserRating(ctx context.Context, userId string, eventId string) (int64, error) {
 	const op = "storage.postgres.GetEventUserRating"
 
-	state := `SELECT rating FROM userRatings WHERE userId = $1 AND eventId = $2;`
+	state := `SELECT rating FROM ratings WHERE userId = $1 AND eventId = $2;`
 
 	var rating int64
 

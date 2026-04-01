@@ -1,23 +1,23 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: eduplay-notification
+  name: eduplay-user
   namespace: eduplay
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: eduplay-notification
+      app: eduplay-user
   template:
     metadata:
       labels:
-        app: eduplay-notification
+        app: eduplay-user
     spec:
       containers:
-        - name: notification
-          image: notocactus/eduplay-notification
+        - name: user
+          image: notocactus/eduplay-user
           ports:
-            - containerPort: 35004
+            - containerPort: 35001
           env:
             - name: CONFIG_PATH
               value: "/config/config.yaml"

@@ -1,0 +1,41 @@
+syntax = "proto3";
+
+package notification_data;
+
+import "google/protobuf/timestamp.proto";
+
+option go_package = "eduplay-notification.v1";
+
+service Notifications {
+    rpc GetNotifications (Filters) returns (NotificationInfos);
+    rpc DeleteNotification (Ids) returns (Empty);
+}
+
+message Ids {
+    string userId = 1; 
+    string notificationId = 2;
+}
+
+message Empty {}
+
+message Filters {
+    string userId = 1;
+    int64 page = 2; 
+    int64 maxOnPage = 3;
+}
+
+message NotificationInfos {
+    repeated NotificationInfo notifications = 1;
+}
+
+message NotificationInfo {
+    string NotificationId = 1; 
+    string type = 2; 
+    google.protobuf.Timestamp date = 3;
+    string eventName = 4; 
+    string eventId = 5;
+    string timeLeft = 6;
+    bool NotStartedFavorite = 7;   
+    bool isRead = 8;
+    string userId = 9;
+}

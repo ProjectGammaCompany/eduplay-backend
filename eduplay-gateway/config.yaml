@@ -19,3 +19,8 @@ clients:
     address: "eduplay-data:35003"
     timeout: 5s
     retries: 5
+  notification: 
+    # address: "0.0.0.0:35004"
+    address: "eduplay-notification:35004"
+    timeout: 5s
+    retries: 5

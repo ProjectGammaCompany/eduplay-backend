@@ -12,7 +12,7 @@ jobs:
 
     strategy:
       matrix:
-        service: [ "eduplay-gateway", "eduplay-user", "eduplay-event" ]
+        service: [ "eduplay-gateway", "eduplay-user", "eduplay-event", "eduplay-notification" ]
 
     steps:
       - name: Checkout repo

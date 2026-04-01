@@ -6,6 +6,8 @@ resources:
   - eduplay-user/service.yaml
   - eduplay-event/deployment.yaml
   - eduplay-event/service.yaml
+  - eduplay-notification/deployment.yaml
+  - eduplay-notification/service.yaml
   - eduplay-gateway/ingress.yaml
 
 images:
@@ -14,4 +16,6 @@ images:
   - name: notocactus/eduplay-user
     newTag: sha-714a7ba
   - name: notocactus/eduplay-event
+    newTag: sha-714a7ba
+  - name: notocactus/eduplay-notification
     newTag: sha-714a7ba

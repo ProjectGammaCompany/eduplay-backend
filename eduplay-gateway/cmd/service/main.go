@@ -63,6 +63,7 @@ func main() {
 	routers.UserRouter(router, log, cfg)
 	routers.EventRouter(router, log, cfg)
 	routers.DataRouter(router, log, cfg)
+	routers.NotificationRouter(router, log, cfg)
 
 	server := application.New(log, cfg.Server.Address, cfg.Server.Timeout, router)
 

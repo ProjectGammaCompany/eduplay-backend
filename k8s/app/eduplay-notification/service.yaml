@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: eduplay-notification
+  namespace: eduplay
+spec:
+  selector:
+    app: eduplay-notification
+  ports:
+    - name: grpc
+      port: 35004
+      targetPort: 35004
+      protocol: TCP
+  type: ClusterIP
