@@ -12,7 +12,7 @@ jobs:
 
     strategy:
       matrix:
-        service: [ "eduplay-gateway", "eduplay-user", "eduplay-event", "eduplay-notification" ]
+        service: [ "eduplay-gateway", "eduplay-user", "eduplay-event" ]
 
     steps:
       - name: Checkout repo
@@ -21,7 +21,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
-          go-version: "1.25"
+          go-version: "1.24"
 
       # - name: Cache golangci-lint
       #   uses: actions/cache@v4
