@@ -50,7 +50,7 @@ func NotificationFromDto(notification *dto.NotificationInfo) *NotificationInfo {
 		return &NotificationInfo{
 			NotificationId: notification.NotificationId,
 			Type:           notification.Type,
-			Date:           notification.Date.String(),
+			Date:           notification.Date.AsTime().Format("02.01.2006 15:04:05.000"),
 			FavEventStart: FavoriteEventStart{
 				EventId:   notification.EventId,
 				EventName: notification.EventName,
@@ -60,7 +60,7 @@ func NotificationFromDto(notification *dto.NotificationInfo) *NotificationInfo {
 		return &NotificationInfo{
 			NotificationId: notification.NotificationId,
 			Type:           notification.Type,
-			Date:           notification.Date.String(),
+			Date:           notification.Date.AsTime().Format("02.01.2006 15:04:05.000"),
 			EvEnd: EventEnd{
 				EventId:            notification.EventId,
 				EventName:          notification.EventName,

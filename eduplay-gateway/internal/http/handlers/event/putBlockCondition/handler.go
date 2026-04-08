@@ -19,7 +19,7 @@ import (
 
 type UseCase interface {
 	GetRole(ctx context.Context, userId string, eventId string) (int64, error)
-	PutBlockCondition(ctx context.Context, pd *eventModel.Condition) (string, error)
+	PutBlockCondition(ctx context.Context, pd *eventModel.Condition) (int64, error)
 }
 
 func New(log *slog.Logger, uc UseCase) http.HandlerFunc {
@@ -162,6 +162,6 @@ func New(log *slog.Logger, uc UseCase) http.HandlerFunc {
 		}
 
 		writer.WriteHeader(http.StatusOK)
-		render.JSON(writer, request, ret)
+		render.JSON(writer, request, map[string]int64{"blockOrder": ret})
 	}
 }

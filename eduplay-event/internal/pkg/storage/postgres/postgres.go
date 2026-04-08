@@ -1102,7 +1102,7 @@ func (s *Storage) PutBlockCondition(ctx context.Context, in *dto.Condition) (str
 		return "", fmt.Errorf("%s: %w", op, err)
 	}
 
-	return "block condition " + in.ConditionId + " updated", nil
+	return in.ConditionId, nil
 }
 
 func (s *Storage) DeleteBlockCondition(ctx context.Context, conditionId string) (string, error) {

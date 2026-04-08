@@ -127,21 +127,34 @@ func (s *Storage) DeleteNotification(ctx context.Context, in *dto.Ids) error {
 func (s *Storage) AddNewNotification(ctx context.Context, in *dto.NotificationInfo) error {
 	const op = "storage.postgres.AddNewNotification"
 
-	state := `SELECT notifId FROM notifications WHERE userId = $2 AND eventId = $3;`
+	var exists bool
+	checkQuery := `SELECT EXISTS(SELECT 1 FROM notifications WHERE userId = $1 AND eventId = $2 AND notifType = $3)`
 
-	var notifId string
-	err := s.db.QueryRow(ctx, state, in.UserId, in.EventId).Scan(&notifId)
+	err := s.db.QueryRow(ctx, checkQuery, in.UserId, in.EventId, in.Type).Scan(&exists)
 	if err != nil {
-		if err != pgx.ErrNoRows {
-			state := `INSERT INTO notifications 
-			(notifType, notifDate, userId, eventId, timeLeft, eventName, notStartedFavorite, isRead) 
-			VALUES ($1, $2, $3, $4, $5, $6, $7, $8);`
+		return fmt.Errorf("%s: check failed: %w", op, err)
+	}
 
-			_, err := s.db.Exec(ctx, state, in.Type, in.Date.AsTime(), in.UserId, in.EventId, in.TimeLeft, in.EventName, in.NotStartedFavorite, in.IsRead)
-			if err != nil {
-				return fmt.Errorf("%s: %w", op, err)
-			}
-		}
+	if exists {
+		return nil
+	}
+
+	insertQuery := `INSERT INTO notifications 
+        (notifType, notifDate, userId, eventId, timeLeft, eventName, notStartedFavorite, isRead) 
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8);`
+
+	_, err = s.db.Exec(ctx, insertQuery,
+		in.Type,
+		in.Date.AsTime(),
+		in.UserId,
+		in.EventId,
+		in.TimeLeft,
+		in.EventName,
+		in.NotStartedFavorite,
+		in.IsRead)
+
+	if err != nil {
+		return fmt.Errorf("%s: insert failed: %w", op, err)
 	}
 
 	return nil
