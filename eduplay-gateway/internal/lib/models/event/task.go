@@ -2,6 +2,7 @@ package eventModel
 
 import (
 	dto "eduplay-gateway/internal/generated/clients/event"
+	fileModel "eduplay-gateway/internal/lib/models/file"
 )
 
 type TaskOption struct {
@@ -11,23 +12,28 @@ type TaskOption struct {
 }
 
 type Task struct {
-	TaskId        string       `json:"id"`
-	BlockId       string       `json:"blockId"`
-	Name          string       `json:"name"`
-	Description   string       `json:"description"`
-	TaskType      int64        `json:"type"`
-	Options       []TaskOption `json:"options"`
-	Files         []string     `json:"files"`
-	Points        int64        `json:"points"`
-	Time          int64        `json:"time"`
-	PartialPoints bool         `json:"partialPoints"`
+	TaskId        string           `json:"id"`
+	BlockId       string           `json:"blockId"`
+	Name          string           `json:"name"`
+	Description   string           `json:"description"`
+	TaskType      int64            `json:"type"`
+	Options       []TaskOption     `json:"options"`
+	Files         []fileModel.File `json:"files"`
+	Points        int64            `json:"points"`
+	Time          int64            `json:"time"`
+	PartialPoints bool             `json:"partialPoints"`
 }
 
 func TaskToDto(task *Task) *dto.Task {
-	files := make([]string, 0)
+	files := make([]*dto.File, 0)
 
 	if task.Files != nil || len(task.Files) > 0 {
-		files = task.Files
+		for _, file := range task.Files {
+			files = append(files, &dto.File{
+				Name: file.Name,
+				Url:  file.Url,
+			})
+		}
 	}
 
 	return &dto.Task{
@@ -45,10 +51,15 @@ func TaskToDto(task *Task) *dto.Task {
 }
 
 func TaskFromDto(task *dto.Task) *Task {
-	files := make([]string, 0)
+	files := make([]fileModel.File, 0)
 
 	if task.Files != nil || len(task.Files) > 0 {
-		files = task.Files
+		for _, file := range task.Files {
+			files = append(files, fileModel.File{
+				Name: file.Name,
+				Url:  file.Url,
+			})
+		}
 	}
 
 	return &Task{

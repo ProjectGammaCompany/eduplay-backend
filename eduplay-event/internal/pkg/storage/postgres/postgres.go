@@ -991,12 +991,20 @@ func (s *Storage) PostTask(ctx context.Context, in *dto.Task) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("%s: %w", op, err)
 	}
-	fmt.Println(order)
+	// fmt.Println(order)
 	order++
+
+	files := make([]string, 0)
+
+	if in.Files != nil || len(in.Files) > 0 {
+		for _, file := range in.Files {
+			files = append(files, file.Url)
+		}
+	}
 
 	state = `INSERT INTO tasks (blockId, name, description, type, files, time, points, partialPoint, taskOrder) VALUES ($1, $2, $3, $4, COALESCE($5, '{}'::text[]), $6, $7, $8, $9) RETURNING taskId;`
 
-	res = s.db.QueryRow(ctx, state, in.BlockId, in.Name, in.Description, in.Type, in.Files, in.Time, in.Points, in.PartialPoints, order)
+	res = s.db.QueryRow(ctx, state, in.BlockId, in.Name, in.Description, in.Type, files, in.Time, in.Points, in.PartialPoints, order)
 
 	err = res.Scan(&id)
 	if err != nil {
@@ -1019,7 +1027,15 @@ func (s *Storage) PutTask(ctx context.Context, in *dto.Task) (*dto.PutTaskOut, e
 
 	state := `UPDATE tasks SET name = $1, description = $2, type = $3, files = COALESCE($4, '{}'::text[]), time = $5, points = $6, partialPoint = $7 WHERE taskId = $8 RETURNING taskOrder;`
 
-	res := s.db.QueryRow(ctx, state, in.Name, in.Description, in.Type, in.Files, in.Time, in.Points, in.PartialPoints, in.TaskId)
+	files := make([]string, 0)
+
+	if in.Files != nil || len(in.Files) > 0 {
+		for _, file := range in.Files {
+			files = append(files, file.Url)
+		}
+	}
+
+	res := s.db.QueryRow(ctx, state, in.Name, in.Description, in.Type, files, in.Time, in.Points, in.PartialPoints, in.TaskId)
 
 	var order int64
 	err := res.Scan(&order)
@@ -1232,11 +1248,35 @@ func (s *Storage) GetTaskById(ctx context.Context, taskId string) (*dto.Task, er
 
 	res := s.db.QueryRow(ctx, state, taskId)
 
+	files := make([]string, 0)
+	fileDtos := make([]*dto.File, 0)
+
 	task := &dto.Task{}
-	err := res.Scan(&task.TaskId, &task.Name, &task.Description, &task.Type, &task.Files, &task.Time, &task.Points, &task.PartialPoints, &task.Order, &task.BlockId)
+	err := res.Scan(&task.TaskId, &task.Name, &task.Description, &task.Type, &files, &task.Time, &task.Points, &task.PartialPoints, &task.Order, &task.BlockId)
 	if err != nil {
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
+
+	fmt.Println("getting files")
+
+	if files != nil || len(files) > 0 {
+		for _, file := range files {
+			state := `SELECT fileKey, filename FROM files WHERE fileKey = $1;`
+			fmt.Println("getting file by key ", file)
+
+			fileRes := s.db.QueryRow(ctx, state, file)
+
+			fileDto := &dto.File{}
+			err = fileRes.Scan(&fileDto.Name, &fileDto.Url)
+			if err != nil {
+				return nil, fmt.Errorf("%s: %w", op, err)
+			}
+
+			fileDtos = append(fileDtos, fileDto)
+		}
+		task.Files = fileDtos
+	}
+
 	options, err := s.GetTaskOptions(ctx, task.TaskId)
 	if err != nil {
 		return nil, fmt.Errorf("%s: %w", op, err)

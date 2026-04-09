@@ -4,6 +4,8 @@ import (
 	dto "eduplay-gateway/internal/generated/clients/event"
 	"time"
 
+	fileModels "eduplay-gateway/internal/lib/models/file"
+
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -512,25 +514,30 @@ func NextStageInfoFromDto(in *dto.NextStageInfo) *NextStageInfo {
 }
 
 type NextStageTask struct {
-	TaskId      string       `json:"taskId"`
-	BlockId     string       `json:"blockId"`
-	Name        string       `json:"name"`
-	Description string       `json:"description"`
-	TaskType    int64        `json:"type"`
-	Options     []TaskOption `json:"options"`
-	Files       []string     `json:"files"`
-	Time        int64        `json:"time"`
-	Timestamp   string       `json:"timestamp"`
+	TaskId      string            `json:"taskId"`
+	BlockId     string            `json:"blockId"`
+	Name        string            `json:"name"`
+	Description string            `json:"description"`
+	TaskType    int64             `json:"type"`
+	Options     []TaskOption      `json:"options"`
+	Files       []fileModels.File `json:"files"`
+	Time        int64             `json:"time"`
+	Timestamp   string            `json:"timestamp"`
 }
 
 func NextStageTaskFromDto(in *dto.NextStageTask) *NextStageTask {
 	if in == nil {
 		return nil
 	}
-	files := make([]string, 0)
+	files := make([]fileModels.File, 0)
 
 	if in.Files != nil || len(in.Files) > 0 {
-		files = in.Files
+		for _, file := range in.Files {
+			files = append(files, fileModels.File{
+				Name: file.Name,
+				Url:  file.Url,
+			})
+		}
 	}
 
 	nextStageTask := &NextStageTask{

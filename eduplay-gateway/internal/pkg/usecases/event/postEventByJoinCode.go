@@ -5,6 +5,7 @@ import (
 	eventDto "eduplay-gateway/internal/generated/clients/event"
 	eventModel "eduplay-gateway/internal/lib/models/event"
 	errs "eduplay-gateway/internal/storage"
+	"fmt"
 	"log/slog"
 )
 
@@ -22,6 +23,8 @@ func (s *UseCase) PostEventByJoinCode(ctx context.Context, req *eventModel.Parti
 		s.log.With(slog.String("op", op)).Error("failed to post event id by join code", slog.String("error", err.Error()))
 		return "", err
 	}
+
+	fmt.Println("done getEventByJoinCode")
 
 	event, err := s.eventClient.GetEvent(ctx, &eventDto.Id{Id: ret.Id})
 	if err != nil {
@@ -71,11 +74,11 @@ func (s *UseCase) PostEventByJoinCode(ctx context.Context, req *eventModel.Parti
 
 	s.log.With(slog.String("op", op)).Info("get event by join code", slog.Any("event", ret))
 
-	message, err := s.eventClient.PostParticipant(ctx, &eventDto.PostParticipantIn{UserId: req.UserId, EventId: event.EventId, GroupId: groupId})
+	_, err = s.eventClient.PostParticipant(ctx, &eventDto.PostParticipantIn{UserId: req.UserId, EventId: event.EventId, GroupId: groupId})
 	if err != nil {
 		s.log.With(slog.String("op", op)).Error("failed to post participant", slog.String("error", err.Error()))
 		return "", err
 	}
 
-	return message.Message, nil
+	return ret.Id, nil
 }

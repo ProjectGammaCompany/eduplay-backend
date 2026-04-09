@@ -130,7 +130,8 @@ func New(log *slog.Logger, uc UseCase) http.HandlerFunc {
 		})
 
 		bucket := "eduplay-bucket"
-		key := "uploads/" + newFileName
+		// key := "uploads/" + newFileName
+		key := newFileName
 
 		_, err = awsS3Client.HeadBucket(context.TODO(), &s3.HeadBucketInput{Bucket: aws.String(bucket)})
 		if err != nil {

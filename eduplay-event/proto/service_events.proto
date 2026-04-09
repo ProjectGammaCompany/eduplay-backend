@@ -62,6 +62,11 @@ message Id {
     string id = 1;
 }
 
+message File {
+    string name = 1;
+    string url = 2;
+}
+
 message PutListIn {
     string id = 1; 
     repeated string list = 2;
@@ -254,7 +259,7 @@ message Task {
     string description = 3;
     int64 type = 4;
     repeated TaskOption options = 5;
-    repeated string files = 6;
+    repeated File files = 6;
     int64 points = 7;
     int64 time = 8;
     bool partialPoints = 9;
@@ -301,7 +306,7 @@ message NextStageTask {
     string description = 4; 
     int64 type = 5; 
     repeated TaskOption options = 6;
-    repeated string files = 7;
+    repeated File files = 7;
     int64 time = 9;
     google.protobuf.Timestamp timestamp = 10;
 }
