@@ -637,7 +637,7 @@ func (s *Storage) GetPublicEvents(ctx context.Context, in *dto.EventBaseFilters)
 	userParamIdx := nextParamIdx
 	nextParamIdx++
 
-	where := []string{"e.private = false", "e.groupEvent = false"}
+	where := []string{"e.private = false"}
 
 	if in.Active {
 		where = append(where, "e.startDate < now() AND e.endDate > now()")
@@ -1783,8 +1783,8 @@ func (s *Storage) GetEventUserRating(ctx context.Context, userId string, eventId
 
 	err := s.db.QueryRow(ctx, state, userId, eventId).Scan(&rating)
 	if err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
-			return 0, errs.ErrNotFound
+		if errors.Is(err, pgx.ErrNoRows) || err.Error() == "no rows in result set" {
+			return -1, errs.ErrNotFound
 		}
 		return 0, fmt.Errorf("%s: %w", op, err)
 	}

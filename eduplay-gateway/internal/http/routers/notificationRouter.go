@@ -26,7 +26,7 @@ func NotificationRouter(router chi.Router, log *slog.Logger, cfg *config.Config)
 
 	router.Route("/notifications", func(r chi.Router) {
 		r.Get("/", getNotifications.New(log, notifs.New(log, notificationClient)))
-		r.Put("/{id}", deleteNotifications.New(log, notifs.New(log, notificationClient)))
+		r.Delete("/{id}", deleteNotifications.New(log, notifs.New(log, notificationClient)))
 	})
 
 	return router

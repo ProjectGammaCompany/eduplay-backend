@@ -2,6 +2,7 @@ package event
 
 import (
 	"context"
+	"errors"
 	"log/slog"
 	"strconv"
 
@@ -20,8 +21,8 @@ func (a *UseCase) GetEventUserRating(ctx context.Context, in *dto.UserEventIds) 
 
 	rating, err := a.storage.GetEventUserRating(ctx, in.UserId, in.EventId)
 	if err != nil {
-		if err == errs.ErrNotFound {
-			return &dto.MessageOut{Message: "0"}, nil
+		if errors.Is(err, errs.ErrNotFound) {
+			return &dto.MessageOut{Message: "-1"}, nil
 		}
 		log.Error("failed to get event user rating", err.Error(), slog.String("event", in.EventId), slog.String("user", in.UserId))
 		return nil, err
