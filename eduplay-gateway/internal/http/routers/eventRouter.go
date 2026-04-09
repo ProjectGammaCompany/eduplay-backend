@@ -14,6 +14,7 @@ import (
 	"eduplay-gateway/internal/http/handlers/event/getBlocksForConditions"
 	"eduplay-gateway/internal/http/handlers/event/getEvent"
 	"eduplay-gateway/internal/http/handlers/event/getEventBlocks"
+	"eduplay-gateway/internal/http/handlers/event/getEventDownload"
 	"eduplay-gateway/internal/http/handlers/event/getEventPlayerInfo"
 	"eduplay-gateway/internal/http/handlers/event/getEventRole"
 	"eduplay-gateway/internal/http/handlers/event/getEventSettings"
@@ -126,6 +127,7 @@ func EventRouter(router chi.Router, log *slog.Logger, cfg *config.Config) chi.Ro
 		r.Get("/joinRequiredFields/{joinCode}", getJoinRequiredFields.New(log, events.New(log, eventClient, userClient)))
 		r.Post("/join/{joinCode}", postEventByJoinCode.New(log, events.New(log, eventClient, userClient)))
 		r.Post("/{eventId}/join", postGroupParticipant.New(log, events.New(log, eventClient, userClient)))
+		r.Get("/{eventId}/download", getEventDownload.New(log, events.New(log, eventClient, userClient)))
 	})
 
 	return router
