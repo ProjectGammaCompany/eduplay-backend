@@ -12,10 +12,10 @@ resources:
 
 images:
   - name: notocactus/eduplay-gateway
-    newTag: sha-69219af
+    newTag: sha-d0525a9
   - name: notocactus/eduplay-user
-    newTag: sha-69219af
+    newTag: sha-d0525a9
   - name: notocactus/eduplay-event
-    newTag: sha-69219af
+    newTag: sha-d0525a9
   - name: notocactus/eduplay-notification
-    newTag: sha-69219af
+    newTag: sha-d0525a9
