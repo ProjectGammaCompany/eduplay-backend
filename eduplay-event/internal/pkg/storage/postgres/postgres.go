@@ -1654,15 +1654,24 @@ func (s *Storage) GetUserStats(ctx context.Context, userId string, eventId strin
 	state := `SELECT SUM(points) AS total_points FROM answers WHERE userId = $1 AND taskId = ANY 
 	(SELECT taskId FROM tasks WHERE blockId = ANY (SELECT blockId FROM blocks WHERE eventId = $2));`
 
-	var totalPoints int64
+	fmt.Println(state)
+	fmt.Println(userId, eventId)
+
+	var totalPoints sql.NullInt64
 	err := s.db.QueryRow(ctx, state, userId, eventId).Scan(&totalPoints)
 	if err != nil {
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
+	if !totalPoints.Valid {
+		return &dto.User{
+			Id:     userId,
+			Points: -1,
+		}, nil
+	}
 
 	return &dto.User{
 		Id:     userId,
-		Points: totalPoints,
+		Points: totalPoints.Int64,
 	}, nil
 }
 
