@@ -1218,7 +1218,7 @@ func (s *Storage) GetBlockTasks(ctx context.Context, blockId string) (*dto.Tasks
 				fileRes := s.db.QueryRow(ctx, state, file)
 
 				fileDto := &dto.File{}
-				err = fileRes.Scan(&fileDto.Name, &fileDto.Url)
+				err = fileRes.Scan(&fileDto.Url, &fileDto.Name)
 				if err != nil {
 					return nil, fmt.Errorf("%s: %w", op, err)
 				}
@@ -1291,7 +1291,7 @@ func (s *Storage) GetTaskById(ctx context.Context, taskId string) (*dto.Task, er
 			fileRes := s.db.QueryRow(ctx, state, file)
 
 			fileDto := &dto.File{}
-			err = fileRes.Scan(&fileDto.Name, &fileDto.Url)
+			err = fileRes.Scan(&fileDto.Url, &fileDto.Name)
 			if err != nil {
 				return nil, fmt.Errorf("%s: %w", op, err)
 			}
