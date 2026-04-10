@@ -175,7 +175,7 @@ func New(log *slog.Logger, uc UseCase) http.HandlerFunc {
 		//nolint:staticcheck // SA1019 this is intentional
 		result, err := uploader.Upload(context.TODO(), &s3.PutObjectInput{
 			Bucket: aws.String(bucket),
-			Key:    aws.String(fileKey),
+			Key:    aws.String("generated/" + fileKey),
 			Body:   bytes.NewReader(jsonData),
 		})
 
