@@ -1189,6 +1189,8 @@ func (s *Storage) GetBlockConditionsFull(ctx context.Context, blockId string) (*
 func (s *Storage) GetBlockTasks(ctx context.Context, blockId string) (*dto.Tasks, error) {
 	const op = "storage.postgres.GetBlockTasks"
 
+	files := make([]string, 0)
+
 	state := `SELECT taskId, name, description, type, files, time, points, partialPoint, taskOrder FROM tasks WHERE blockId = $1 ORDER BY taskOrder;`
 
 	res, err := s.db.Query(ctx, state, blockId)
@@ -1201,10 +1203,32 @@ func (s *Storage) GetBlockTasks(ctx context.Context, blockId string) (*dto.Tasks
 	tasks := make([]*dto.Task, 0)
 	for res.Next() {
 		task := &dto.Task{}
-		err = res.Scan(&task.TaskId, &task.Name, &task.Description, &task.Type, &task.Files, &task.Time, &task.Points, &task.PartialPoints, &task.Order)
+		err = res.Scan(&task.TaskId, &task.Name, &task.Description, &task.Type, &files, &task.Time, &task.Points, &task.PartialPoints, &task.Order)
 		if err != nil {
 			return nil, fmt.Errorf("%s: %w", op, err)
 		}
+
+		fileDtos := make([]*dto.File, 0)
+
+		if files != nil || len(files) > 0 {
+			for _, file := range files {
+				state := `SELECT fileKey, filename FROM files WHERE fileKey = $1;`
+				fmt.Println("getting file by key ", file)
+
+				fileRes := s.db.QueryRow(ctx, state, file)
+
+				fileDto := &dto.File{}
+				err = fileRes.Scan(&fileDto.Name, &fileDto.Url)
+				if err != nil {
+					return nil, fmt.Errorf("%s: %w", op, err)
+				}
+
+				fileDtos = append(fileDtos, fileDto)
+			}
+			task.Files = fileDtos
+		}
+		task.Files = fileDtos
+
 		options, err := s.GetTaskOptions(ctx, task.TaskId)
 		if err != nil {
 			return nil, fmt.Errorf("%s: %w", op, err)
