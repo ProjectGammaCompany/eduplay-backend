@@ -97,6 +97,12 @@ func New(log *slog.Logger, uc UseCase) http.HandlerFunc {
 
 		ret, err := uc.GetEventPlayerInfo(request.Context(), accessClaims.ID, id)
 		if err != nil {
+			if errors.Is(err, storage.ErrNotFound) {
+				log.Debug(err.Error(), slog.String("error", err.Error()))
+				writer.WriteHeader(http.StatusNotFound)
+				render.JSON(writer, request, err)
+				return
+			}
 			log.Error(err.Error(), slog.String("error", err.Error()))
 			writer.WriteHeader(http.StatusInternalServerError)
 			render.JSON(writer, request, err)

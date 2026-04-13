@@ -66,6 +66,7 @@ type storage interface {
 	GetEventByJoinCode(ctx context.Context, joinCode string) (string, error)
 	GetEventUserRating(ctx context.Context, userId string, eventId string) (int64, error)
 	PostParticipant(ctx context.Context, userId string, eventId string, groupId string) (string, error)
+	ClearBlockAnswers(ctx context.Context, userId string, blockId string) error
 }
 
 type UseCase struct {

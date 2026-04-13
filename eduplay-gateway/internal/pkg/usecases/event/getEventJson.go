@@ -19,6 +19,7 @@ func (s *UseCase) GetEventJson(ctx context.Context, eventId string) (*eventModel
 	eventGroups := make([]eventModel.GroupDownload, 0)
 
 	uniqueFiles := make(map[string]bool)
+	uniqueConditions := make(map[string]bool)
 
 	event, err := s.eventClient.GetEvent(ctx, &eventDto.Id{Id: eventId})
 	if err != nil {
@@ -30,11 +31,23 @@ func (s *UseCase) GetEventJson(ctx context.Context, eventId string) (*eventModel
 	eventJson.EventDownload.EventId = event.EventId
 	eventJson.EventDownload.Title = event.Title
 	eventJson.EventDownload.Description = event.Description
-	eventJson.EventDownload.Tags = event.Tags
+	eventJson.EventDownload.Tags = make([]string, 0)
+	if len(event.Tags) != 0 {
+		eventJson.EventDownload.Tags = event.Tags
+	}
 	eventJson.EventDownload.Cover = event.Cover
 	eventJson.EventDownload.StartDate = event.StartDate.AsTime().Format("02.01.2006 15:04:05.000")
 	eventJson.EventDownload.EndDate = event.EndDate.AsTime().Format("02.01.2006 15:04:05.000")
 	eventJson.EventDownload.LastEditionDate = event.LastEditionDate.AsTime().Format("02.01.2006 15:04:05.000")
+	if eventJson.EventDownload.LastEditionDate == "01.01.1970 00:00:00.000" {
+		eventJson.EventDownload.LastEditionDate = ""
+	}
+	if eventJson.EventDownload.StartDate == "01.01.1970 00:00:00.000" {
+		eventJson.EventDownload.StartDate = ""
+	}
+	if eventJson.EventDownload.EndDate == "01.01.1970 00:00:00.000" {
+		eventJson.EventDownload.EndDate = ""
+	}
 	eventJson.EventDownload.GroupEvent = event.GroupEvent
 
 	uniqueFiles[event.Cover] = true
@@ -100,6 +113,12 @@ func (s *UseCase) GetEventJson(ctx context.Context, eventId string) (*eventModel
 		})
 
 		for _, condition := range block.Conditions {
+			if uniqueConditions[condition.ConditionId] {
+				continue
+			}
+
+			uniqueConditions[condition.ConditionId] = true
+
 			eventBlockConditions = append(eventBlockConditions, eventModel.ConditionDownload{
 				ConditionId: condition.ConditionId,
 				PrevBlockId: condition.PreviousBlockId,

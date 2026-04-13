@@ -4,6 +4,7 @@ import (
 	"context"
 	eventDto "eduplay-gateway/internal/generated/clients/event"
 	eventModel "eduplay-gateway/internal/lib/models/event"
+	storage "eduplay-gateway/internal/storage"
 	"log/slog"
 )
 
@@ -16,6 +17,10 @@ func (s *UseCase) GetEventPlayerInfo(ctx context.Context, userId string, eventId
 
 	event, err := s.eventClient.GetEvent(ctx, &eventDto.Id{Id: eventId})
 	if err != nil {
+		// TODO find a better way to handle this
+		if err.Error() == "GetEvent.Client: rpc error: code = Unknown desc = GetEvent.Handler: "+storage.ErrNotFound.Error() {
+			return nil, storage.ErrNotFound
+		}
 		s.log.With(slog.String("op", op)).Error("failed to get event", slog.String("error", err.Error()))
 		return nil, err
 	}

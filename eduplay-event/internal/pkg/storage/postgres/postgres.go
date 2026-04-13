@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	dto "eduplay-event/internal/generated"
 	errs "eduplay-event/internal/storage"
+	"slices"
 	"strings"
 	"time"
 
@@ -180,6 +181,9 @@ func (s *Storage) GetEvent(ctx context.Context, id string) (*dto.PostEventIn, er
 		&groupEvent, &showRating, &eventRating)
 
 	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, errs.ErrNotFound
+		}
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
 
@@ -1153,7 +1157,7 @@ func (s *Storage) GetBlockInfo(ctx context.Context, blockId string) (*dto.PostEv
 func (s *Storage) GetBlockConditionsFull(ctx context.Context, blockId string) (*dto.BlockInfo, error) {
 	const op = "storage.postgres.GetBlockConditions"
 
-	state := `SELECT bl.blockOrder, c.prevBlockId, c.nextBlockId, c.groupName, c.min, c.max, c.conditionId FROM conditions c INNER JOIN blocks bl ON c.nextBlockId = bl.blockId WHERE c.prevBlockId = $1;`
+	state := `SELECT bl.blockOrder, c.prevBlockId, c.nextBlockId, c.groupName, c.min, c.max, c.conditionId FROM conditions c INNER JOIN blocks bl ON c.nextBlockId = bl.blockId WHERE c.prevBlockId = $1 ORDER BY c.max;`
 	// state := `SELECT bl.blockOrder, c.prevBlockId, c.nextBlockId, c.groupName, c.min, c.max, c.conditionId FROM blocks bl INNER JOIN conditions c ON bl.blockId = c.nextBlockId WHERE bl.blockId = $1;`
 
 	res, err := s.db.Query(ctx, state, blockId)
@@ -1885,4 +1889,59 @@ func (s *Storage) PostParticipant(ctx context.Context, userId string, eventId st
 	}
 
 	return "participant added", nil
+}
+
+func (s *Storage) ClearBlockAnswers(ctx context.Context, userId string, blockId string) error {
+	const op = "storage.postgres.ClearBlockAnswers"
+
+	blockTasks := []string{}
+
+	state := `SELECT taskId FROM tasks WHERE blockId = $1;`
+
+	res, err := s.db.Query(ctx, state, blockId)
+	if err != nil {
+		return fmt.Errorf("%s: %w", op, err)
+	}
+
+	for res.Next() {
+		var task string
+		err := res.Scan(&task)
+		if err != nil {
+			return fmt.Errorf("%s: %w", op, err)
+		}
+		blockTasks = append(blockTasks, task)
+	}
+
+	userAnswers := []string{}
+
+	state = `SELECT taskId FROM answers WHERE userId = $1 AND taskId = ANY ($2);`
+
+	res, err = s.db.Query(ctx, state, userId, blockTasks)
+	if err != nil {
+		return fmt.Errorf("%s: %w", op, err)
+	}
+
+	for res.Next() {
+		var task string
+		err := res.Scan(&task)
+		if err != nil {
+			return fmt.Errorf("%s: %w", op, err)
+		}
+		userAnswers = append(userAnswers, task)
+	}
+
+	for _, blockTask := range blockTasks {
+		if !slices.Contains(userAnswers, blockTask) {
+			return errs.ErrNotFound
+		}
+	}
+
+	state = `DELETE FROM answers WHERE userId = $1 AND taskId = ANY ($2);`
+
+	_, err = s.db.Exec(ctx, state, userId, blockTasks)
+	if err != nil {
+		return fmt.Errorf("%s: %w", op, err)
+	}
+
+	return nil
 }
