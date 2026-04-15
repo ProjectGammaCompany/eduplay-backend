@@ -9,6 +9,7 @@ service Users {
     rpc SignIn(SignInIn) returns (SignUpOut);
     rpc Refresh(RefreshIn) returns (RefreshOut);
     rpc PutAvatar(Profile) returns (Empty);
+    rpc PutUsername(Profile) returns (Empty);
     // rpc GetUserAccess (GetUserAccessIn) returns (GetUserAccessOut);
     // rpc GetUserInfo (GetUserAccessIn) returns (GetUserInfoOut);
     // rpc ChangeUserInfo (ChangeUserInfoIn) returns (GetUserInfoOut);
@@ -120,4 +121,5 @@ message Profile {
     string email = 1;
     string avatar = 2;
     string userId = 3;
+    string userName = 4; 
 }

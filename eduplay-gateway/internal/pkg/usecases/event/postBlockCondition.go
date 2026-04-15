@@ -11,9 +11,9 @@ func (s *UseCase) PostBlockCondition(ctx context.Context, req *eventModel.Condit
 
 	s.log.With(slog.String("op", op)).Info("attempting to post block condition")
 
-	taskDto := eventModel.ConditionToDto(req)
+	conditionDto := eventModel.ConditionToDto(req)
 
-	ret, err := s.eventClient.PostBlockCondition(ctx, taskDto)
+	ret, err := s.eventClient.PostBlockCondition(ctx, conditionDto)
 	if err != nil {
 		s.log.With(slog.String("op", op)).Error("failed to post block condition", slog.String("error", err.Error()))
 		return nil, err

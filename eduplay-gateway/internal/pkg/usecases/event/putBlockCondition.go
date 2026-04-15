@@ -12,15 +12,15 @@ func (s *UseCase) PutBlockCondition(ctx context.Context, req *eventModel.Conditi
 
 	s.log.With(slog.String("op", op)).Info("attempting to update block condition")
 
-	taskDto := eventModel.ConditionToDto(req)
+	conditionDto := eventModel.ConditionToDto(req)
 
-	ret, err := s.eventClient.PutBlockCondition(ctx, taskDto)
+	ret, err := s.eventClient.PutBlockCondition(ctx, conditionDto)
 	if err != nil {
 		s.log.With(slog.String("op", op)).Error("failed to update block condition", slog.String("error", err.Error()))
 		return 0, err
 	}
 
-	blockInfo, err := s.eventClient.GetBlockInfo(ctx, &dto.Id{Id: ret.Message})
+	blockInfo, err := s.eventClient.GetBlockInfo(ctx, &dto.Id{Id: req.NextBlockId})
 	if err != nil {
 		s.log.With(slog.String("op", op)).Error("failed to get block info", slog.String("error", err.Error()))
 		return 0, err

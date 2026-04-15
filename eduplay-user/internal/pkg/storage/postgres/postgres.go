@@ -7,6 +7,7 @@ import (
 	"eduplay-user/internal/storage"
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -61,8 +62,11 @@ func (s *Storage) SignUpUser(ctx context.Context, email string, password string)
 	err := res.Scan(&id)
 
 	if errors.Is(err, pgx.ErrNoRows) {
-		state := `INSERT INTO users (email, passwordHash) VALUES ($1, $2) RETURNING userId;`
-		res := s.db.QueryRow(ctx, state, email, password)
+		state := `INSERT INTO users (email, passwordHash, name) VALUES ($1, $2, $3) RETURNING userId;`
+
+		userName := strings.Split(email, "@")[0]
+
+		res := s.db.QueryRow(ctx, state, email, password, userName)
 
 		var id string
 		err = res.Scan(&id)
@@ -246,6 +250,19 @@ func (s *Storage) PutAvatar(ctx context.Context, in *dto.Profile) (string, error
 	return "success", nil
 }
 
+func (s *Storage) PutUsername(ctx context.Context, in *dto.Profile) (string, error) {
+	const op = "storage.postgres.PutUsername"
+
+	state := `UPDATE users SET name = $1 WHERE userId = $2`
+
+	_, err := s.db.Exec(ctx, state, in.UserName, in.Email)
+	if err != nil {
+		return "", fmt.Errorf("%s: %w", op, err)
+	}
+
+	return "success", nil
+}
+
 // func (s *Storage) GetUserInfoByAuthToken(ctx context.Context, userID string) (*model.UserInfo, error) {
 // 	const op = "storage.postgres.GetUserInfoByAuthToken"
 
@@ -358,10 +375,10 @@ func (s *Storage) SignOutUser(ctx context.Context, userId string) error {
 func (s *Storage) GetProfile(ctx context.Context, userId string) (*dto.Profile, error) {
 	const op = "storage.postgres.GetUserById"
 
-	state := `SELECT avatar, email FROM users WHERE userId = $1`
+	state := `SELECT avatar, email, name FROM users WHERE userId = $1`
 	res := s.db.QueryRow(ctx, state, userId)
 	user := &dto.Profile{}
-	err := res.Scan(&user.Avatar, &user.Email)
+	err := res.Scan(&user.Avatar, &user.Email, &user.UserName)
 	if err != nil {
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}

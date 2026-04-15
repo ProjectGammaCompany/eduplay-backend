@@ -23,5 +23,5 @@ func (a *UseCase) GetProfile(ctx context.Context, userId string) (*model.Profile
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
 
-	return &model.Profile{Email: profile.Email, Avatar: profile.Avatar}, nil
+	return &model.Profile{Email: profile.Email, Avatar: profile.Avatar, UserName: profile.UserName}, nil
 }

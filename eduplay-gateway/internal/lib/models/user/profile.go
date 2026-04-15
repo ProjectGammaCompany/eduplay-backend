@@ -1,7 +1,8 @@
 package userModel
 
 type Profile struct {
-	Email  string `json:"username"`
-	Avatar string `json:"avatar"`
+	Email    string `json:"email"`
+	Avatar   string `json:"avatar"`
+	UserName string `json:"username"`
 	// Password string `json:"password"`
 }

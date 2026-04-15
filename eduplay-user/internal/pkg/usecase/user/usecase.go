@@ -17,6 +17,7 @@ type storage interface {
 	GetSessionByUserId(ctx context.Context, userId string) (*model.Session, error)
 	GetUserByRefreshToken(ctx context.Context, refreshToken string) (*model.User, error)
 	PutAvatar(ctx context.Context, in *dto.Profile) (string, error)
+	PutUsername(ctx context.Context, in *dto.Profile) (string, error)
 	// GetUserInfoByAuthToken(ctx context.Context, userID string) (*model.UserInfo, error)
 	//  ChangeUserInfo(ctx context.Context, userInfo *dto.ChangeUserInfoIn, userID string) (*model.UserInfo, error)
 	ChangeUserPassword(ctx context.Context, newHash, authToken string) error

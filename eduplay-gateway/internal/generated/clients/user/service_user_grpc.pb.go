@@ -23,6 +23,7 @@ const (
 	Users_SignIn_FullMethodName            = "/user_data.Users/SignIn"
 	Users_Refresh_FullMethodName           = "/user_data.Users/Refresh"
 	Users_PutAvatar_FullMethodName         = "/user_data.Users/PutAvatar"
+	Users_PutUsername_FullMethodName       = "/user_data.Users/PutUsername"
 	Users_ChangePassword_FullMethodName    = "/user_data.Users/ChangePassword"
 	Users_DeleteAccount_FullMethodName     = "/user_data.Users/DeleteAccount"
 	Users_SignOut_FullMethodName           = "/user_data.Users/SignOut"
@@ -38,6 +39,7 @@ type UsersClient interface {
 	SignIn(ctx context.Context, in *SignInIn, opts ...grpc.CallOption) (*SignUpOut, error)
 	Refresh(ctx context.Context, in *RefreshIn, opts ...grpc.CallOption) (*RefreshOut, error)
 	PutAvatar(ctx context.Context, in *Profile, opts ...grpc.CallOption) (*Empty, error)
+	PutUsername(ctx context.Context, in *Profile, opts ...grpc.CallOption) (*Empty, error)
 	// rpc GetUserAccess (GetUserAccessIn) returns (GetUserAccessOut);
 	// rpc GetUserInfo (GetUserAccessIn) returns (GetUserInfoOut);
 	// rpc ChangeUserInfo (ChangeUserInfoIn) returns (GetUserInfoOut);
@@ -90,6 +92,16 @@ func (c *usersClient) PutAvatar(ctx context.Context, in *Profile, opts ...grpc.C
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(Empty)
 	err := c.cc.Invoke(ctx, Users_PutAvatar_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *usersClient) PutUsername(ctx context.Context, in *Profile, opts ...grpc.CallOption) (*Empty, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(Empty)
+	err := c.cc.Invoke(ctx, Users_PutUsername_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -154,6 +166,7 @@ type UsersServer interface {
 	SignIn(context.Context, *SignInIn) (*SignUpOut, error)
 	Refresh(context.Context, *RefreshIn) (*RefreshOut, error)
 	PutAvatar(context.Context, *Profile) (*Empty, error)
+	PutUsername(context.Context, *Profile) (*Empty, error)
 	// rpc GetUserAccess (GetUserAccessIn) returns (GetUserAccessOut);
 	// rpc GetUserInfo (GetUserAccessIn) returns (GetUserInfoOut);
 	// rpc ChangeUserInfo (ChangeUserInfoIn) returns (GetUserInfoOut);
@@ -183,6 +196,9 @@ func (UnimplementedUsersServer) Refresh(context.Context, *RefreshIn) (*RefreshOu
 }
 func (UnimplementedUsersServer) PutAvatar(context.Context, *Profile) (*Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method PutAvatar not implemented")
+}
+func (UnimplementedUsersServer) PutUsername(context.Context, *Profile) (*Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method PutUsername not implemented")
 }
 func (UnimplementedUsersServer) ChangePassword(context.Context, *ChangePasswordIn) (*Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ChangePassword not implemented")
@@ -288,6 +304,24 @@ func _Users_PutAvatar_Handler(srv interface{}, ctx context.Context, dec func(int
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(UsersServer).PutAvatar(ctx, req.(*Profile))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Users_PutUsername_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Profile)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UsersServer).PutUsername(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Users_PutUsername_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UsersServer).PutUsername(ctx, req.(*Profile))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -404,6 +438,10 @@ var Users_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "PutAvatar",
 			Handler:    _Users_PutAvatar_Handler,
+		},
+		{
+			MethodName: "PutUsername",
+			Handler:    _Users_PutUsername_Handler,
 		},
 		{
 			MethodName: "ChangePassword",

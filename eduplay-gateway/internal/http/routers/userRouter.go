@@ -7,6 +7,7 @@ import (
 	"eduplay-gateway/internal/http/handlers/user/deleteAccount"
 	"eduplay-gateway/internal/http/handlers/user/getProfile"
 	"eduplay-gateway/internal/http/handlers/user/putAvatar"
+	"eduplay-gateway/internal/http/handlers/user/putUsername"
 	"eduplay-gateway/internal/http/handlers/user/refresh"
 	"eduplay-gateway/internal/http/handlers/user/signIn"
 	signOutUser "eduplay-gateway/internal/http/handlers/user/signOut"
@@ -44,6 +45,7 @@ func UserRouter(router chi.Router, log *slog.Logger, cfg *config.Config) chi.Rou
 	router.Route("/profile", func(r chi.Router) {
 		r.Get("/", getProfile.New(log, users.New(log, userClient)))
 		r.Put("/avatar", putAvatar.New(log, users.New(log, userClient)))
+		r.Put("/username", putUsername.New(log, users.New(log, userClient)))
 	})
 
 	return router
