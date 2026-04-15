@@ -1,9 +1,11 @@
 package postFile
 
 import (
+	"bytes"
 	"context"
 	"eduplay-gateway/internal/http/tokens"
 	"eduplay-gateway/internal/lib"
+	"fmt"
 	"log/slog"
 	"strings"
 
@@ -20,6 +22,8 @@ import (
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/feature/s3/manager"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
+
+	"github.com/disintegration/imaging"
 )
 
 type UseCase interface {
@@ -155,6 +159,50 @@ func New(log *slog.Logger, uc UseCase) http.HandlerFunc {
 
 		//nolint:staticcheck // SA1019 this is intentional
 		uploader := manager.NewUploader(awsS3Client)
+
+		if splitFileName[len(splitFileName)-1] == "png" || splitFileName[len(splitFileName)-1] == "jpg" || splitFileName[len(splitFileName)-1] == "jpeg" {
+			image, err := imaging.Decode(file)
+			if err != nil {
+				log.Error("failed to decode image", slog.String("error", err.Error()))
+				writer.WriteHeader(http.StatusInternalServerError)
+				render.JSON(writer, request, lib.Error("error decoding image"))
+				return
+			}
+
+			sizesToGenerate := map[string]int{
+				"small":  7,
+				"medium": 3,
+			}
+
+			for sizeName, targetWidth := range sizesToGenerate {
+				thumbnail := imaging.Thumbnail(image, image.Bounds().Dx()/targetWidth, image.Bounds().Dy()/targetWidth, imaging.Lanczos)
+
+				fileName := fmt.Sprintf("%s_%s.%s", fileUUID, sizeName, splitFileName[len(splitFileName)-1])
+
+				buf := new(bytes.Buffer)
+				err = imaging.Encode(buf, thumbnail, imaging.JPEG, imaging.JPEGQuality(85))
+				if err != nil {
+					log.Error("failed to encode image", slog.String("error", err.Error()))
+					writer.WriteHeader(http.StatusInternalServerError)
+					render.JSON(writer, request, lib.Error("error encoding image"))
+					return
+				}
+
+				//nolint:staticcheck // SA1019 this is intentional
+				_, err := uploader.Upload(context.TODO(), &s3.PutObjectInput{
+					Bucket: aws.String(bucket),
+					Key:    aws.String("uploads/" + fileName),
+					Body:   bytes.NewReader(buf.Bytes()),
+				})
+
+				if err != nil {
+					log.Error("failed to upload resized file", slog.String("error", err.Error()))
+					writer.WriteHeader(http.StatusInternalServerError)
+					render.JSON(writer, request, lib.Error("error uploading resized file"))
+					return
+				}
+			}
+		}
 
 		//nolint:staticcheck // SA1019 this is intentional
 		result, err := uploader.Upload(context.TODO(), &s3.PutObjectInput{
