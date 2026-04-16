@@ -697,3 +697,50 @@ type EventStatus struct {
 type EventStatuses struct {
 	EventStatuses []EventStatus `json:"events"`
 }
+
+type AnswerShort struct {
+	TaskId  string   `json:"taskId"`
+	Options []string `json:"options"`
+}
+
+type AnswerBatch struct {
+	UserId       string        `json:"userId" validate:"required"`
+	EventId      string        `json:"eventId" validate:"required"`
+	Answers      []AnswerShort `json:"answers" validate:"required"`
+	TotalPoints  int64         `json:"totalPoints"`
+	CurrentBlock string        `json:"currentBlock" validate:"required"`
+	CurrentTask  string        `json:"currentTask" validate:"required"`
+	TimeStamp    string        `json:"timeStamp"`
+	IsDone       bool          `json:"isDone" validate:"required"`
+}
+
+func AnswerBatchToDto(in *AnswerBatch) (*dto.AnswerBatch, error) {
+	answers := make([]*dto.AnswerShort, len(in.Answers))
+	for i, answer := range in.Answers {
+		answers[i] = &dto.AnswerShort{
+			TaskId:  answer.TaskId,
+			Options: answer.Options,
+		}
+	}
+
+	answerBatch := &dto.AnswerBatch{
+		UserId:       in.UserId,
+		EventId:      in.EventId,
+		Answers:      answers,
+		TotalPoints:  in.TotalPoints,
+		CurrentBlock: in.CurrentBlock,
+		CurrentTask:  in.CurrentTask,
+		IsDone:       in.IsDone,
+	}
+
+	if in.TimeStamp != "" {
+		timeStamp, err := time.Parse("02.01.2006 15:04:05.000", in.TimeStamp)
+		if err != nil {
+			return nil, err
+		}
+
+		answerBatch.TimeStamp = timestamppb.New(timeStamp)
+	}
+
+	return answerBatch, nil
+}

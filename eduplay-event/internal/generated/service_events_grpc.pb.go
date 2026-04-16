@@ -68,6 +68,7 @@ const (
 	Events_PostParticipant_FullMethodName      = "/event_data.Events/PostParticipant"
 	Events_PostRate_FullMethodName             = "/event_data.Events/PostRate"
 	Events_GetBlockProgress_FullMethodName     = "/event_data.Events/GetBlockProgress"
+	Events_PostAnswerBatch_FullMethodName      = "/event_data.Events/PostAnswerBatch"
 )
 
 // EventsClient is the client API for Events service.
@@ -123,6 +124,7 @@ type EventsClient interface {
 	PostParticipant(ctx context.Context, in *PostParticipantIn, opts ...grpc.CallOption) (*MessageOut, error)
 	PostRate(ctx context.Context, in *Rate, opts ...grpc.CallOption) (*MessageOut, error)
 	GetBlockProgress(ctx context.Context, in *UserEventIds, opts ...grpc.CallOption) (*BlockProgress, error)
+	PostAnswerBatch(ctx context.Context, in *AnswerBatch, opts ...grpc.CallOption) (*MessageOut, error)
 }
 
 type eventsClient struct {
@@ -623,6 +625,16 @@ func (c *eventsClient) GetBlockProgress(ctx context.Context, in *UserEventIds, o
 	return out, nil
 }
 
+func (c *eventsClient) PostAnswerBatch(ctx context.Context, in *AnswerBatch, opts ...grpc.CallOption) (*MessageOut, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(MessageOut)
+	err := c.cc.Invoke(ctx, Events_PostAnswerBatch_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // EventsServer is the server API for Events service.
 // All implementations must embed UnimplementedEventsServer
 // for forward compatibility.
@@ -676,6 +688,7 @@ type EventsServer interface {
 	PostParticipant(context.Context, *PostParticipantIn) (*MessageOut, error)
 	PostRate(context.Context, *Rate) (*MessageOut, error)
 	GetBlockProgress(context.Context, *UserEventIds) (*BlockProgress, error)
+	PostAnswerBatch(context.Context, *AnswerBatch) (*MessageOut, error)
 	mustEmbedUnimplementedEventsServer()
 }
 
@@ -832,6 +845,9 @@ func (UnimplementedEventsServer) PostRate(context.Context, *Rate) (*MessageOut, 
 }
 func (UnimplementedEventsServer) GetBlockProgress(context.Context, *UserEventIds) (*BlockProgress, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetBlockProgress not implemented")
+}
+func (UnimplementedEventsServer) PostAnswerBatch(context.Context, *AnswerBatch) (*MessageOut, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method PostAnswerBatch not implemented")
 }
 func (UnimplementedEventsServer) mustEmbedUnimplementedEventsServer() {}
 func (UnimplementedEventsServer) testEmbeddedByValue()                {}
@@ -1736,6 +1752,24 @@ func _Events_GetBlockProgress_Handler(srv interface{}, ctx context.Context, dec 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Events_PostAnswerBatch_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AnswerBatch)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(EventsServer).PostAnswerBatch(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Events_PostAnswerBatch_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(EventsServer).PostAnswerBatch(ctx, req.(*AnswerBatch))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Events_ServiceDesc is the grpc.ServiceDesc for Events service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -1938,6 +1972,10 @@ var Events_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetBlockProgress",
 			Handler:    _Events_GetBlockProgress_Handler,
+		},
+		{
+			MethodName: "PostAnswerBatch",
+			Handler:    _Events_PostAnswerBatch_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

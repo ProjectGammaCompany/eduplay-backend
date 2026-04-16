@@ -69,6 +69,7 @@ type storage interface {
 	ClearBlockAnswers(ctx context.Context, userId string, blockId string) error
 	PostRate(ctx context.Context, in *dto.Rate) (*dto.MessageOut, error)
 	GetBlockProgress(ctx context.Context, in *dto.UserEventIds) (*dto.BlockProgress, error)
+	// PostAnswerBatch(ctx context.Context, in *dto.AnswerBatch) (*dto.MessageOut, error)
 }
 
 type UseCase struct {

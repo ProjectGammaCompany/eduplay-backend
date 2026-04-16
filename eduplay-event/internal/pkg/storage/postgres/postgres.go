@@ -1378,6 +1378,8 @@ func (s *Storage) PutNextStage(ctx context.Context, stage *dto.EventBlockTaskUse
 		currBlockId = &blockId
 	}
 
+	fmt.Println("currTaskId", currTaskId, "currBlockId", currBlockId, "finished", stage.Finished, "eventId", stage.EventId, "userId", stage.UserId)
+
 	state := `UPDATE userLinks SET currTaskId = $1, currBlockId = $2, finished = $5 WHERE userId = $3 AND eventId = $4;`
 
 	_, err := s.db.Exec(ctx, state, currTaskId, currBlockId, stage.UserId, stage.EventId, stage.Finished)
@@ -1997,3 +1999,37 @@ func (s *Storage) GetBlockProgress(ctx context.Context, in *dto.UserEventIds) (*
 
 	return &dto.BlockProgress{PointsInBlock: points, CompletedTasks: tasks}, nil
 }
+
+// func (s *Storage) PostAnswerBatch(ctx context.Context, in *dto.AnswerBatch) (*dto.MessageOut, error) {
+// 	const op = "storage.postgres.PostAnswerBatch"
+
+// 	state := `SELECT linkId FROM userLinks WHERE userId = $1 AND eventId = $2 AND isParticipant = true;`
+
+// 	res := s.db.QueryRow(ctx, state, in.UserId, in.EventId)
+
+// 	var linkId string
+// 	err := res.Scan(&linkId)
+// 	if err != nil {
+// 		if errors.Is(err, pgx.ErrNoRows) {
+// 			state = `INSERT INTO userLinks (userId, eventId, isParticipant, currTaskId, currBlockId, finished, currTaskStartTime)
+// 			VALUES ($1, $2, true, $3, $4, $5, $6) RETURNING linkId;`
+
+// 			err = s.db.QueryRow(ctx, state, in.UserId, in.EventId, in.CurrentTask, in.CurrentBlock, in.IsDone, in.TimeStamp).Scan(&linkId)
+// 			if err != nil {
+// 				return nil, fmt.Errorf("%s: %w", op, err)
+// 			}
+
+// 			return &dto.MessageOut{Message: linkId + " created"}, nil
+// 		}
+// 		return nil, fmt.Errorf("%s: %w", op, err)
+// 	}
+
+// 	state = `UPDATE userLinks SET currTaskId = $1, currBlockId = $2, finished = $3, currTaskStartTime = $4 WHERE linkId = $5;`
+
+// 	_, err = s.db.Exec(ctx, state, in.CurrentTask, in.CurrentBlock, in.IsDone, in.TimeStamp.AsTime(), linkId)
+// 	if err != nil {
+// 		return nil, fmt.Errorf("%s: %w", op, err)
+// 	}
+
+// 	return &dto.MessageOut{Message: linkId + " updated"}, nil
+// }

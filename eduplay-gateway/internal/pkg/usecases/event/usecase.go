@@ -59,6 +59,7 @@ type EventClient interface {
 	PostParticipant(ctx context.Context, in *dto.PostParticipantIn) (*dto.MessageOut, error)
 	PostRate(ctx context.Context, in *dto.Rate) (*dto.MessageOut, error)
 	GetBlockProgress(ctx context.Context, in *dto.UserEventIds) (*dto.BlockProgress, error)
+	PostAnswerBatch(ctx context.Context, in *dto.AnswerBatch) (*dto.MessageOut, error)
 }
 
 type UserClient interface {

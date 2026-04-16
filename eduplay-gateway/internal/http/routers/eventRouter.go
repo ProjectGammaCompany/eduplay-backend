@@ -29,6 +29,7 @@ import (
 	"eduplay-gateway/internal/http/handlers/event/getTaskById"
 	"eduplay-gateway/internal/http/handlers/event/getUserFavorites"
 	"eduplay-gateway/internal/http/handlers/event/postAnswer"
+	"eduplay-gateway/internal/http/handlers/event/postAnswerBatch"
 	"eduplay-gateway/internal/http/handlers/event/postBlockCondition"
 	"eduplay-gateway/internal/http/handlers/event/postComplaint"
 	"eduplay-gateway/internal/http/handlers/event/postDownloadUserEventStatus"
@@ -132,6 +133,7 @@ func EventRouter(router chi.Router, log *slog.Logger, cfg *config.Config) chi.Ro
 		r.Post("/{eventId}/join", postGroupParticipant.New(log, events.New(log, eventClient, userClient)))
 		r.Get("/{eventId}/download", getEventDownload.New(log, events.New(log, eventClient, userClient)))
 		r.Post("/{eventId}/rate", postRate.New(log, events.New(log, eventClient, userClient)))
+		r.Post("/{eventId}/answerBatch", postAnswerBatch.New(log, events.New(log, eventClient, userClient)))
 	})
 
 	return router

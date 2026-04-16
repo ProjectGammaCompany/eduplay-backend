@@ -60,6 +60,7 @@ type UseCase interface {
 	PostParticipant(ctx context.Context, in *dto.PostParticipantIn) (*dto.MessageOut, error)
 	PostRate(ctx context.Context, in *dto.Rate) (*dto.MessageOut, error)
 	GetBlockProgress(ctx context.Context, in *dto.UserEventIds) (*dto.BlockProgress, error)
+	PostAnswerBatch(ctx context.Context, in *dto.AnswerBatch) (*dto.MessageOut, error)
 }
 
 type Handler struct {
@@ -605,4 +606,15 @@ func (h *Handler) GetBlockProgress(ctx context.Context, in *dto.UserEventIds) (*
 	}
 
 	return status, nil
+}
+
+func (h *Handler) PostAnswerBatch(ctx context.Context, in *dto.AnswerBatch) (*dto.MessageOut, error) {
+	op := "PostAnswerBatch.Handler"
+
+	message, err := h.uc.PostAnswerBatch(ctx, in)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return message, nil
 }
