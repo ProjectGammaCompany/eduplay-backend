@@ -670,3 +670,30 @@ type ParticipationPasswords struct {
 	JoinCode      string `json:"joinCode"`
 	EventId       string `json:"eventId"`
 }
+
+type Rate struct {
+	EventId string `json:"eventId"`
+	UserId  string `json:"userId"`
+	Rate    int64  `json:"rate"`
+}
+
+type EventIds struct {
+	EventIds []string `json:"eventIds"`
+}
+
+type EventStatus struct {
+	EventId               string   `json:"eventId"`
+	Status                string   `json:"status"` // "not started" or "in progress" or "finished"
+	Type                  string   `json:"type"`   // "task" or "block" or "end"
+	TaskId                string   `json:"taskId"`
+	BlockId               string   `json:"blockId"`
+	Timestamp             string   `json:"timestamp"`
+	GroupName             string   `json:"groupName"`
+	PointsInBlock         int64    `json:"pointsInBlock"`
+	LastEditionDate       string   `json:"lastEditionDate"`
+	CompletedTasksInBlock []string `json:"completedTasksInBlock"`
+}
+
+type EventStatuses struct {
+	EventStatuses []EventStatus `json:"events"`
+}

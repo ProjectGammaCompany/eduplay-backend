@@ -66,6 +66,8 @@ const (
 	Events_GetEventByJoinCode_FullMethodName   = "/event_data.Events/GetEventByJoinCode"
 	Events_GetEventUserRating_FullMethodName   = "/event_data.Events/GetEventUserRating"
 	Events_PostParticipant_FullMethodName      = "/event_data.Events/PostParticipant"
+	Events_PostRate_FullMethodName             = "/event_data.Events/PostRate"
+	Events_GetBlockProgress_FullMethodName     = "/event_data.Events/GetBlockProgress"
 )
 
 // EventsClient is the client API for Events service.
@@ -109,7 +111,7 @@ type EventsClient interface {
 	PutNextStage(ctx context.Context, in *EventBlockTaskUserIds, opts ...grpc.CallOption) (*MessageOut, error)
 	GetNextStage(ctx context.Context, in *UserEventIds, opts ...grpc.CallOption) (*NextStageInfo, error)
 	PutTimestamp(ctx context.Context, in *PutTimestampIn, opts ...grpc.CallOption) (*MessageOut, error)
-	GetUserStatus(ctx context.Context, in *UserEventIds, opts ...grpc.CallOption) (*MessageOut, error)
+	GetUserStatus(ctx context.Context, in *UserEventIds, opts ...grpc.CallOption) (*UserStatus, error)
 	GetGroupUsers(ctx context.Context, in *Id, opts ...grpc.CallOption) (*GetGroupUsersOut, error)
 	GetUserStats(ctx context.Context, in *UserEventIds, opts ...grpc.CallOption) (*User, error)
 	GetEventUsers(ctx context.Context, in *Id, opts ...grpc.CallOption) (*GetCollaboratorsOut, error)
@@ -119,6 +121,8 @@ type EventsClient interface {
 	GetEventByJoinCode(ctx context.Context, in *Id, opts ...grpc.CallOption) (*Id, error)
 	GetEventUserRating(ctx context.Context, in *UserEventIds, opts ...grpc.CallOption) (*MessageOut, error)
 	PostParticipant(ctx context.Context, in *PostParticipantIn, opts ...grpc.CallOption) (*MessageOut, error)
+	PostRate(ctx context.Context, in *Rate, opts ...grpc.CallOption) (*MessageOut, error)
+	GetBlockProgress(ctx context.Context, in *UserEventIds, opts ...grpc.CallOption) (*BlockProgress, error)
 }
 
 type eventsClient struct {
@@ -499,9 +503,9 @@ func (c *eventsClient) PutTimestamp(ctx context.Context, in *PutTimestampIn, opt
 	return out, nil
 }
 
-func (c *eventsClient) GetUserStatus(ctx context.Context, in *UserEventIds, opts ...grpc.CallOption) (*MessageOut, error) {
+func (c *eventsClient) GetUserStatus(ctx context.Context, in *UserEventIds, opts ...grpc.CallOption) (*UserStatus, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(MessageOut)
+	out := new(UserStatus)
 	err := c.cc.Invoke(ctx, Events_GetUserStatus_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -599,6 +603,26 @@ func (c *eventsClient) PostParticipant(ctx context.Context, in *PostParticipantI
 	return out, nil
 }
 
+func (c *eventsClient) PostRate(ctx context.Context, in *Rate, opts ...grpc.CallOption) (*MessageOut, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(MessageOut)
+	err := c.cc.Invoke(ctx, Events_PostRate_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *eventsClient) GetBlockProgress(ctx context.Context, in *UserEventIds, opts ...grpc.CallOption) (*BlockProgress, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(BlockProgress)
+	err := c.cc.Invoke(ctx, Events_GetBlockProgress_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // EventsServer is the server API for Events service.
 // All implementations must embed UnimplementedEventsServer
 // for forward compatibility.
@@ -640,7 +664,7 @@ type EventsServer interface {
 	PutNextStage(context.Context, *EventBlockTaskUserIds) (*MessageOut, error)
 	GetNextStage(context.Context, *UserEventIds) (*NextStageInfo, error)
 	PutTimestamp(context.Context, *PutTimestampIn) (*MessageOut, error)
-	GetUserStatus(context.Context, *UserEventIds) (*MessageOut, error)
+	GetUserStatus(context.Context, *UserEventIds) (*UserStatus, error)
 	GetGroupUsers(context.Context, *Id) (*GetGroupUsersOut, error)
 	GetUserStats(context.Context, *UserEventIds) (*User, error)
 	GetEventUsers(context.Context, *Id) (*GetCollaboratorsOut, error)
@@ -650,6 +674,8 @@ type EventsServer interface {
 	GetEventByJoinCode(context.Context, *Id) (*Id, error)
 	GetEventUserRating(context.Context, *UserEventIds) (*MessageOut, error)
 	PostParticipant(context.Context, *PostParticipantIn) (*MessageOut, error)
+	PostRate(context.Context, *Rate) (*MessageOut, error)
+	GetBlockProgress(context.Context, *UserEventIds) (*BlockProgress, error)
 	mustEmbedUnimplementedEventsServer()
 }
 
@@ -771,7 +797,7 @@ func (UnimplementedEventsServer) GetNextStage(context.Context, *UserEventIds) (*
 func (UnimplementedEventsServer) PutTimestamp(context.Context, *PutTimestampIn) (*MessageOut, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method PutTimestamp not implemented")
 }
-func (UnimplementedEventsServer) GetUserStatus(context.Context, *UserEventIds) (*MessageOut, error) {
+func (UnimplementedEventsServer) GetUserStatus(context.Context, *UserEventIds) (*UserStatus, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetUserStatus not implemented")
 }
 func (UnimplementedEventsServer) GetGroupUsers(context.Context, *Id) (*GetGroupUsersOut, error) {
@@ -800,6 +826,12 @@ func (UnimplementedEventsServer) GetEventUserRating(context.Context, *UserEventI
 }
 func (UnimplementedEventsServer) PostParticipant(context.Context, *PostParticipantIn) (*MessageOut, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method PostParticipant not implemented")
+}
+func (UnimplementedEventsServer) PostRate(context.Context, *Rate) (*MessageOut, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method PostRate not implemented")
+}
+func (UnimplementedEventsServer) GetBlockProgress(context.Context, *UserEventIds) (*BlockProgress, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetBlockProgress not implemented")
 }
 func (UnimplementedEventsServer) mustEmbedUnimplementedEventsServer() {}
 func (UnimplementedEventsServer) testEmbeddedByValue()                {}
@@ -1668,6 +1700,42 @@ func _Events_PostParticipant_Handler(srv interface{}, ctx context.Context, dec f
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Events_PostRate_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Rate)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(EventsServer).PostRate(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Events_PostRate_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(EventsServer).PostRate(ctx, req.(*Rate))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Events_GetBlockProgress_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UserEventIds)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(EventsServer).GetBlockProgress(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Events_GetBlockProgress_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(EventsServer).GetBlockProgress(ctx, req.(*UserEventIds))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Events_ServiceDesc is the grpc.ServiceDesc for Events service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -1862,6 +1930,14 @@ var Events_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "PostParticipant",
 			Handler:    _Events_PostParticipant_Handler,
+		},
+		{
+			MethodName: "PostRate",
+			Handler:    _Events_PostRate_Handler,
+		},
+		{
+			MethodName: "GetBlockProgress",
+			Handler:    _Events_GetBlockProgress_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

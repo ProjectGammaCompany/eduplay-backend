@@ -31,10 +31,12 @@ import (
 	"eduplay-gateway/internal/http/handlers/event/postAnswer"
 	"eduplay-gateway/internal/http/handlers/event/postBlockCondition"
 	"eduplay-gateway/internal/http/handlers/event/postComplaint"
+	"eduplay-gateway/internal/http/handlers/event/postDownloadUserEventStatus"
 	"eduplay-gateway/internal/http/handlers/event/postEvent"
 	"eduplay-gateway/internal/http/handlers/event/postEventBlock"
 	"eduplay-gateway/internal/http/handlers/event/postEventByJoinCode"
 	"eduplay-gateway/internal/http/handlers/event/postGroupParticipant"
+	"eduplay-gateway/internal/http/handlers/event/postRate"
 	"eduplay-gateway/internal/http/handlers/event/postTask"
 	"eduplay-gateway/internal/http/handlers/event/putBlockCondition"
 	"eduplay-gateway/internal/http/handlers/event/putBlockList"
@@ -87,6 +89,7 @@ func EventRouter(router chi.Router, log *slog.Logger, cfg *config.Config) chi.Ro
 		r.Get("/events/personal/created", getOwnedEvents.New(log, events.New(log, eventClient, userClient)))
 		r.Get("/events/personal/history", getHistory.New(log, events.New(log, eventClient, userClient)))
 		r.Get("/tags", getAllTags.New(log, events.New(log, eventClient, userClient)))
+		r.Post("/user/eventStatus", postDownloadUserEventStatus.New(log, events.New(log, eventClient, userClient)))
 	})
 
 	router.Route("/event", func(r chi.Router) {
@@ -128,6 +131,7 @@ func EventRouter(router chi.Router, log *slog.Logger, cfg *config.Config) chi.Ro
 		r.Post("/join/{joinCode}", postEventByJoinCode.New(log, events.New(log, eventClient, userClient)))
 		r.Post("/{eventId}/join", postGroupParticipant.New(log, events.New(log, eventClient, userClient)))
 		r.Get("/{eventId}/download", getEventDownload.New(log, events.New(log, eventClient, userClient)))
+		r.Post("/{eventId}/rate", postRate.New(log, events.New(log, eventClient, userClient)))
 	})
 
 	return router

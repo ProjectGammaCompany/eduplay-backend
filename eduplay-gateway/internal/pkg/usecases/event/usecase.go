@@ -47,7 +47,7 @@ type EventClient interface {
 	PutNextStage(ctx context.Context, in *dto.EventBlockTaskUserIds) (*dto.MessageOut, error)
 	GetNextStage(ctx context.Context, in *dto.UserEventIds) (*dto.NextStageInfo, error)
 	PutTimestamp(ctx context.Context, in *dto.PutTimestampIn) (*dto.MessageOut, error)
-	GetUserStatus(ctx context.Context, in *dto.UserEventIds) (*dto.MessageOut, error)
+	GetUserStatus(ctx context.Context, in *dto.UserEventIds) (*dto.UserStatus, error)
 	GetGroupUsers(ctx context.Context, in *dto.Id) (*dto.GetGroupUsersOut, error)
 	GetUserStats(ctx context.Context, in *dto.UserEventIds) (*dto.User, error)
 	GetUserGroup(ctx context.Context, in *dto.UserEventIds) (*dto.GetUserGroupOut, error)
@@ -57,6 +57,8 @@ type EventClient interface {
 	GetEventByJoinCode(ctx context.Context, in *dto.Id) (*dto.Id, error)
 	GetEventUserRating(ctx context.Context, in *dto.UserEventIds) (*dto.MessageOut, error)
 	PostParticipant(ctx context.Context, in *dto.PostParticipantIn) (*dto.MessageOut, error)
+	PostRate(ctx context.Context, in *dto.Rate) (*dto.MessageOut, error)
+	GetBlockProgress(ctx context.Context, in *dto.UserEventIds) (*dto.BlockProgress, error)
 }
 
 type UserClient interface {

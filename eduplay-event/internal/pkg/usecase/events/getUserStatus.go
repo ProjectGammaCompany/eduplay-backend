@@ -7,7 +7,7 @@ import (
 	dto "eduplay-event/internal/generated"
 )
 
-func (a *UseCase) GetUserStatus(ctx context.Context, in *dto.UserEventIds) (*dto.MessageOut, error) {
+func (a *UseCase) GetUserStatus(ctx context.Context, in *dto.UserEventIds) (*dto.UserStatus, error) {
 	const op = "Events.UseCase.GetUserStatus"
 
 	log := a.log.With(

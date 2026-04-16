@@ -425,7 +425,7 @@ func (cl *Client) PutTimestamp(ctx context.Context, in *events.PutTimestampIn) (
 	return out, nil
 }
 
-func (cl *Client) GetUserStatus(ctx context.Context, in *events.UserEventIds) (*events.MessageOut, error) {
+func (cl *Client) GetUserStatus(ctx context.Context, in *events.UserEventIds) (*events.UserStatus, error) {
 	op := "GetUserStatus.Client"
 	out, err := cl.api.GetUserStatus(ctx, in)
 	if err != nil {
@@ -518,6 +518,26 @@ func (cl *Client) GetEventUserRating(ctx context.Context, in *events.UserEventId
 func (cl *Client) PostParticipant(ctx context.Context, in *events.PostParticipantIn) (*events.MessageOut, error) {
 	op := "PostParticipant.Client"
 	out, err := cl.api.PostParticipant(ctx, in)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return out, nil
+}
+
+func (cl *Client) PostRate(ctx context.Context, in *events.Rate) (*events.MessageOut, error) {
+	op := "PostRate.Client"
+	out, err := cl.api.PostRate(ctx, in)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return out, nil
+}
+
+func (cl *Client) GetBlockProgress(ctx context.Context, in *events.UserEventIds) (*events.BlockProgress, error) {
+	op := "GetBlockProgress.Client"
+	out, err := cl.api.GetBlockProgress(ctx, in)
 	if err != nil {
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}

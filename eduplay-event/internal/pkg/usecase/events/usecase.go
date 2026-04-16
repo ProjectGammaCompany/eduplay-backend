@@ -52,7 +52,7 @@ type storage interface {
 	EndMe(ctx context.Context, userId string, eventId string) (string, error)
 	GetUserBlockPointsSum(ctx context.Context, userId string, blockId string) (int64, error)
 	GetUserBlockTasksShort(ctx context.Context, blockId string, userId string) ([]*dto.NextStageTaskShort, error)
-	GetUserStatus(ctx context.Context, userId string, eventId string) (*dto.MessageOut, error)
+	GetUserStatus(ctx context.Context, userId string, eventId string) (*dto.UserStatus, error)
 	UpdateEventCollaborators(ctx context.Context, eventId string, collaboratorIds []string) error
 	UpdateEventGroups(ctx context.Context, eventId string, groups []*dto.Group) error
 	GetTaskAnswer(ctx context.Context, taskId string, userId string) (*dto.Answer, error)
@@ -67,6 +67,8 @@ type storage interface {
 	GetEventUserRating(ctx context.Context, userId string, eventId string) (int64, error)
 	PostParticipant(ctx context.Context, userId string, eventId string, groupId string) (string, error)
 	ClearBlockAnswers(ctx context.Context, userId string, blockId string) error
+	PostRate(ctx context.Context, in *dto.Rate) (*dto.MessageOut, error)
+	GetBlockProgress(ctx context.Context, in *dto.UserEventIds) (*dto.BlockProgress, error)
 }
 
 type UseCase struct {

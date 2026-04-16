@@ -1505,25 +1505,26 @@ ORDER BY t.taskOrder;
 	return tasks, nil
 }
 
-func (s *Storage) GetUserStatus(ctx context.Context, userId string, eventId string) (*dto.MessageOut, error) {
+func (s *Storage) GetUserStatus(ctx context.Context, userId string, eventId string) (*dto.UserStatus, error) {
 	const op = "storage.postgres.GetUserStatus"
 
-	state := `SELECT finished FROM userLinks WHERE userId = $1 AND eventId = $2;`
+	state := `SELECT finished, currTaskStartTime FROM userLinks WHERE userId = $1 AND eventId = $2;`
 
 	var finished bool
-	err := s.db.QueryRow(ctx, state, userId, eventId).Scan(&finished)
+	var currTaskStartTime time.Time
+	err := s.db.QueryRow(ctx, state, userId, eventId).Scan(&finished, &currTaskStartTime)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return &dto.MessageOut{Message: "not started"}, nil
+			return &dto.UserStatus{Status: "not started"}, nil
 		}
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
 
 	if finished {
-		return &dto.MessageOut{Message: "finished"}, nil
+		return &dto.UserStatus{Status: "finished"}, nil
 	}
 
-	return &dto.MessageOut{Message: "in progress"}, nil
+	return &dto.UserStatus{Status: "in progress", Timestamp: timestamppb.New(currTaskStartTime)}, nil
 }
 
 func (s *Storage) UpdateEventCollaborators(ctx context.Context, eventId string, collaboratorIds []string) error {
@@ -1944,4 +1945,55 @@ func (s *Storage) ClearBlockAnswers(ctx context.Context, userId string, blockId 
 	}
 
 	return nil
+}
+
+func (s *Storage) PostRate(ctx context.Context, in *dto.Rate) (*dto.MessageOut, error) {
+	const op = "storage.postgres.PostRate"
+
+	state := `INSERT INTO ratings (userId, eventId, rating) VALUES ($1, $2, $3);`
+
+	_, err := s.db.Exec(ctx, state, in.UserId, in.EventId, in.Rate)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return &dto.MessageOut{Message: "rate added"}, nil
+}
+
+func (s *Storage) GetBlockProgress(ctx context.Context, in *dto.UserEventIds) (*dto.BlockProgress, error) {
+	const op = "storage.postgres.GetBlockProgress"
+
+	// state := `SELECT t.taskId FROM tasks t JOIN answers a ON t.taskId = a.taskId WHERE a.userId = $1 AND t.blockId = $2;`
+	state := `SELECT taskId FROM answers WHERE userId = $1 AND taskId = ANY 
+	(SELECT taskId FROM tasks WHERE blockId = $2);`
+
+	res, err := s.db.Query(ctx, state, in.UserId, in.EventId)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	defer res.Close()
+
+	var tasks []string
+
+	for res.Next() {
+		var task string
+		err := res.Scan(&task)
+		if err != nil {
+			return nil, fmt.Errorf("%s: %w", op, err)
+		}
+		tasks = append(tasks, task)
+	}
+
+	state = `SELECT sum(points) FROM answers WHERE userId = $1 AND taskId = ANY 
+	(SELECT taskId FROM tasks WHERE blockId = $2);`
+
+	var points int64
+
+	err = s.db.QueryRow(ctx, state, in.UserId, in.EventId).Scan(&points)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return &dto.BlockProgress{PointsInBlock: points, CompletedTasks: tasks}, nil
 }

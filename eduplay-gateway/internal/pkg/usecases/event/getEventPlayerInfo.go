@@ -79,10 +79,9 @@ func (s *UseCase) GetEventPlayerInfo(ctx context.Context, userId string, eventId
 	playerInfo.Authors = eventModel.CollaboratorsFromDto(collaborators)
 	playerInfo.Rate = eventForUser.Rate
 	playerInfo.Favorite = eventForUser.Favorite
-	playerInfo.Status = userStatus.Message
+	playerInfo.Status = userStatus.Status
 	playerInfo.Authors = append(playerInfo.Authors, eventModel.Collaborator{Id: event.OwnerId, Email: ownerProfile.Email, Avatar: ownerProfile.Avatar})
 	playerInfo.CanBeDownloaded = event.AllowDownloading
-	playerInfo.Status = userStatus.Message
 	playerInfo.IsPrivate = event.Private
 	playerInfo.Rated = rated
 

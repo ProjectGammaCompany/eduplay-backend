@@ -48,7 +48,7 @@ type UseCase interface {
 	PutNextStage(ctx context.Context, stage *dto.EventBlockTaskUserIds) (string, error)
 	GetNextStage(ctx context.Context, in *dto.UserEventIds) (*dto.NextStageInfo, error)
 	PutTimestamp(ctx context.Context, in *dto.PutTimestampIn) (string, error)
-	GetUserStatus(ctx context.Context, in *dto.UserEventIds) (*dto.MessageOut, error)
+	GetUserStatus(ctx context.Context, in *dto.UserEventIds) (*dto.UserStatus, error)
 	GetUserStats(ctx context.Context, in *dto.UserEventIds) (*dto.User, error)
 	GetGroupUsers(ctx context.Context, in *dto.Id) (*dto.GetGroupUsersOut, error)
 	GetUserGroup(ctx context.Context, in *dto.UserEventIds) (*dto.GetUserGroupOut, error)
@@ -58,6 +58,8 @@ type UseCase interface {
 	GetEventByJoinCode(ctx context.Context, in *dto.Id) (*dto.Id, error)
 	GetEventUserRating(ctx context.Context, in *dto.UserEventIds) (*dto.MessageOut, error)
 	PostParticipant(ctx context.Context, in *dto.PostParticipantIn) (*dto.MessageOut, error)
+	PostRate(ctx context.Context, in *dto.Rate) (*dto.MessageOut, error)
+	GetBlockProgress(ctx context.Context, in *dto.UserEventIds) (*dto.BlockProgress, error)
 }
 
 type Handler struct {
@@ -476,7 +478,7 @@ func (h *Handler) PutTimestamp(ctx context.Context, in *dto.PutTimestampIn) (*dt
 	return &dto.MessageOut{Message: message}, nil
 }
 
-func (h *Handler) GetUserStatus(ctx context.Context, in *dto.UserEventIds) (*dto.MessageOut, error) {
+func (h *Handler) GetUserStatus(ctx context.Context, in *dto.UserEventIds) (*dto.UserStatus, error) {
 	op := "GetUserStatus.Handler"
 
 	ret, err := h.uc.GetUserStatus(ctx, in)
@@ -581,4 +583,26 @@ func (h *Handler) PostParticipant(ctx context.Context, in *dto.PostParticipantIn
 	}
 
 	return message, nil
+}
+
+func (h *Handler) PostRate(ctx context.Context, in *dto.Rate) (*dto.MessageOut, error) {
+	op := "PostRate.Handler"
+
+	message, err := h.uc.PostRate(ctx, in)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return message, nil
+}
+
+func (h *Handler) GetBlockProgress(ctx context.Context, in *dto.UserEventIds) (*dto.BlockProgress, error) {
+	op := "GetBlockProgress.Handler"
+
+	status, err := h.uc.GetBlockProgress(ctx, in)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return status, nil
 }

@@ -44,7 +44,7 @@ service Events {
     rpc PutNextStage(EventBlockTaskUserIds) returns (MessageOut);
     rpc GetNextStage(UserEventIds) returns (NextStageInfo);
     rpc PutTimestamp(PutTimestampIn) returns (MessageOut);
-    rpc GetUserStatus(UserEventIds) returns (MessageOut);
+    rpc GetUserStatus(UserEventIds) returns (UserStatus);
     rpc GetGroupUsers(Id) returns (GetGroupUsersOut);
     rpc GetUserStats(UserEventIds) returns (User);
     rpc GetEventUsers(Id) returns (GetCollaboratorsOut);
@@ -54,6 +54,8 @@ service Events {
     rpc GetEventByJoinCode(Id) returns (Id);
     rpc GetEventUserRating(UserEventIds) returns (MessageOut);
     rpc PostParticipant(PostParticipantIn) returns (MessageOut);
+    rpc PostRate(Rate) returns (MessageOut);
+    rpc GetBlockProgress(UserEventIds) returns (BlockProgress);
 }
 
 message Empty {}
@@ -363,4 +365,22 @@ message PostParticipantIn {
     string userId = 1; 
     string eventId = 2; 
     string groupId = 3; 
+}
+
+message Rate {
+    string eventId = 1;
+    string userId = 2;
+    int64 rate = 3;
+}
+
+message UserStatus {
+    string userId = 1;
+    string eventId = 2;
+    string status = 3;
+    google.protobuf.Timestamp timestamp = 4;
+}
+
+message BlockProgress {
+    repeated string completedTasks = 1;
+    int64 pointsInBlock = 2; 
 }

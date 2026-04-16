@@ -26,8 +26,9 @@ var (
 	ErrMultipleChoiceAnswerIncorrect = errors.New("multiple choice answer is incorrect")
 	ErrTextAnswerIncorrect           = errors.New("text answer is incorrect")
 
-	ErrNoRows   = errors.New("no rows were found")
-	ErrNotFound = errors.New("not found")
+	ErrNoRows           = errors.New("no rows were found")
+	ErrNotFound         = errors.New("not found")
+	ErrInvalidOperation = errors.New("incorrect user action")
 
 	ErrJoinCodeRetryFailed = errors.New("failed to generate and save join code")
 	ErrEventIsPrivate      = errors.New("event is private")
