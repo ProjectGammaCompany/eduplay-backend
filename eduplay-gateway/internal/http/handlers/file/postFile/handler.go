@@ -160,6 +160,30 @@ func New(log *slog.Logger, uc UseCase) http.HandlerFunc {
 		//nolint:staticcheck // SA1019 this is intentional
 		uploader := manager.NewUploader(awsS3Client)
 
+		//nolint:staticcheck // SA1019 this is intentional
+		result, err := uploader.Upload(context.TODO(), &s3.PutObjectInput{
+			Bucket: aws.String(bucket),
+			Key:    aws.String("uploads/" + key),
+			Body:   file,
+		})
+
+		if err != nil {
+			log.Error("failed to upload file", slog.String("error", err.Error()))
+			writer.WriteHeader(http.StatusInternalServerError)
+			render.JSON(writer, request, lib.Error("error uploading file"))
+			return
+		}
+
+		log.Info("file uploaded", slog.String("file_name", fileName), slog.String("file_path", result.Location))
+
+		_, err = uc.SaveFile(context.Background(), fileName, key, fileUUID)
+		if err != nil {
+			log.Error("failed to save file", slog.String("error", err.Error()))
+			writer.WriteHeader(http.StatusInternalServerError)
+			render.JSON(writer, request, lib.Error("error saving file"))
+			return
+		}
+
 		if splitFileName[len(splitFileName)-1] == "png" || splitFileName[len(splitFileName)-1] == "jpg" || splitFileName[len(splitFileName)-1] == "jpeg" {
 			image, err := imaging.Decode(file)
 			if err != nil {
@@ -202,30 +226,6 @@ func New(log *slog.Logger, uc UseCase) http.HandlerFunc {
 					return
 				}
 			}
-		}
-
-		//nolint:staticcheck // SA1019 this is intentional
-		result, err := uploader.Upload(context.TODO(), &s3.PutObjectInput{
-			Bucket: aws.String(bucket),
-			Key:    aws.String("uploads/" + key),
-			Body:   file,
-		})
-
-		if err != nil {
-			log.Error("failed to upload file", slog.String("error", err.Error()))
-			writer.WriteHeader(http.StatusInternalServerError)
-			render.JSON(writer, request, lib.Error("error uploading file"))
-			return
-		}
-
-		log.Info("file uploaded", slog.String("file_name", fileName), slog.String("file_path", result.Location))
-
-		_, err = uc.SaveFile(context.Background(), fileName, key, fileUUID)
-		if err != nil {
-			log.Error("failed to save file", slog.String("error", err.Error()))
-			writer.WriteHeader(http.StatusInternalServerError)
-			render.JSON(writer, request, lib.Error("error saving file"))
-			return
 		}
 
 		log.Info("success to save file", slog.Any("response", newFileName))
