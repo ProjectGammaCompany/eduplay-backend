@@ -3,7 +3,6 @@ package event
 import (
 	"context"
 	eventModel "eduplay-gateway/internal/lib/models/event"
-	"fmt"
 	"log/slog"
 )
 
@@ -17,8 +16,6 @@ func (s *UseCase) PostAnswerBatch(ctx context.Context, req *eventModel.AnswerBat
 		s.log.With(slog.String("op", op)).Error("failed to convert answer batch to dto", slog.String("error", err.Error()))
 		return "", err
 	}
-
-	fmt.Println("-1-1-1-1--1--1-", op, req.CurrentTask, req.CurrentBlock, req.IsDone, req.EventId)
 
 	ret, err := s.eventClient.PostAnswerBatch(ctx, answerBatchDto)
 	if err != nil {

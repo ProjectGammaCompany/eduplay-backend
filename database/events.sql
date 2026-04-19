@@ -104,6 +104,8 @@ CREATE TABLE answers (
     optionIds uuid[] NOT NULL DEFAULT '{}',
     values text[] NOT NULL DEFAULT '{}',
     points INTEGER NOT NULL DEFAULT 0,
+    status text NOT NULL DEFAULT '',
+    -- ALTER TABLE answers ADD COLUMN status text NOT NULL DEFAULT '';
     -- FOREIGN KEY (userId) REFERENCES users(userid) ON DELETE CASCADE,
     FOREIGN KEY (taskId) REFERENCES tasks(taskId) ON DELETE CASCADE
 );

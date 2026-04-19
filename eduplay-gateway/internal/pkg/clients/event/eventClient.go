@@ -555,6 +555,17 @@ func (cl *Client) PostAnswerBatch(ctx context.Context, in *events.AnswerBatch) (
 	return out, nil
 }
 
+func (cl *Client) GetUserAnswers(ctx context.Context, in *events.UserEventIds) (*events.UserAnswers, error) {
+	op := "GetUserAnswers.Client"
+
+	out, err := cl.api.GetUserAnswers(ctx, in)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return out, nil
+}
+
 func InterceptorLogger(l *slog.Logger) interlog.Logger {
 	return interlog.LoggerFunc(func(ctx context.Context, lvl interlog.Level, msg string, fields ...any) {
 		l.Log(ctx, slog.Level(lvl), msg, fields...)

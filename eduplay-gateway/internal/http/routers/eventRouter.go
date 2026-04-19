@@ -12,6 +12,7 @@ import (
 	"eduplay-gateway/internal/http/handlers/event/getBlockInfo"
 	"eduplay-gateway/internal/http/handlers/event/getBlockTasks"
 	"eduplay-gateway/internal/http/handlers/event/getBlocksForConditions"
+	"eduplay-gateway/internal/http/handlers/event/getEditorStats"
 	"eduplay-gateway/internal/http/handlers/event/getEvent"
 	"eduplay-gateway/internal/http/handlers/event/getEventBlocks"
 	"eduplay-gateway/internal/http/handlers/event/getEventDownload"
@@ -134,6 +135,7 @@ func EventRouter(router chi.Router, log *slog.Logger, cfg *config.Config) chi.Ro
 		r.Get("/{eventId}/download", getEventDownload.New(log, events.New(log, eventClient, userClient)))
 		r.Post("/{eventId}/rate", postRate.New(log, events.New(log, eventClient, userClient)))
 		r.Post("/{eventId}/answerBatch", postAnswerBatch.New(log, events.New(log, eventClient, userClient)))
+		r.Get("/{eventId}/editorStats", getEditorStats.New(log, events.New(log, eventClient, userClient)))
 	})
 
 	return router

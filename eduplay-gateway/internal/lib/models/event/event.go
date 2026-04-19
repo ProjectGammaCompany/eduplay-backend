@@ -744,3 +744,28 @@ func AnswerBatchToDto(in *AnswerBatch) (*dto.AnswerBatch, error) {
 
 	return answerBatch, nil
 }
+
+type EditorStats struct {
+	GroupEvent bool       `json:"groupEvent"`
+	Users      []UserDTO  `json:"users"`
+	Groups     []GroupDTO `json:"groups"`
+}
+
+type GroupDTO struct {
+	GroupId string    `json:"id"`
+	Name    string    `json:"name"`
+	Users   []UserDTO `json:"users"`
+}
+
+type UserDTO struct {
+	UserId   string      `json:"id"`
+	Username string      `json:"username"`
+	Avatar   string      `json:"avatar"`
+	Points   int64       `json:"points"`
+	Answers  UserAnswers `json:"answers"`
+}
+
+type UserAnswers struct {
+	Correct int64 `json:"correct"`
+	Total   int64 `json:"total"`
+}

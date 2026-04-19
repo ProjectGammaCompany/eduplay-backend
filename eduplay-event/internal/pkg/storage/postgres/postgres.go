@@ -1339,7 +1339,8 @@ func (s *Storage) DeleteTaskById(ctx context.Context, taskId string) (string, er
 func (s *Storage) PostAnswer(ctx context.Context, answer *dto.Answer) (string, error) {
 	const op = "storage.postgres.PostAnswer"
 
-	state := `INSERT INTO answers (userId, taskId, values, optionIds, points) VALUES ($1, $2, COALESCE($3, '{}'::text[]), COALESCE($4, '{}'::uuid[]), $5) RETURNING answerId;`
+	state := `INSERT INTO answers (userId, taskId, values, optionIds, points) 
+	VALUES ($1, $2, COALESCE($3, '{}'::text[]), COALESCE($4, '{}'::uuid[]), $5) RETURNING answerId;`
 
 	var answerId string
 	err := s.db.QueryRow(ctx, state, answer.UserId, answer.TaskId, answer.Answer, answer.AnswerIds, answer.Points).Scan(&answerId)
@@ -1779,7 +1780,7 @@ func (s *Storage) GetGroupUsers(ctx context.Context, groupId string) (*dto.GetGr
 
 	for res.Next() {
 		var user dto.User
-		err := res.Scan(&user.Id, groupName)
+		err := res.Scan(&user.Id, &groupName)
 		if err != nil {
 			return nil, fmt.Errorf("%s: %w", op, err)
 		}
@@ -1999,6 +2000,58 @@ func (s *Storage) GetBlockProgress(ctx context.Context, in *dto.UserEventIds) (*
 
 	return &dto.BlockProgress{PointsInBlock: points, CompletedTasks: tasks}, nil
 }
+
+func (s *Storage) GetUserAnswers(ctx context.Context, in *dto.UserEventIds) (corr int64, total int64, err error) {
+	const op = "storage.postgres.GetUserAnswers"
+
+	state := `SELECT COUNT(*) FROM answers WHERE userId = $1 AND taskId = ANY 
+	(SELECT taskId FROM tasks WHERE blockId = ANY (SELECT blockId FROM blocks WHERE eventId = $2));`
+
+	res := s.db.QueryRow(ctx, state, in.UserId, in.EventId)
+
+	err = res.Scan(&total)
+	if err != nil {
+		return 0, 0, fmt.Errorf("%s: %w", op, err)
+	}
+
+	state = `SELECT COUNT(*) FROM answers WHERE userId = $1 AND taskId = ANY 
+	(SELECT taskId FROM tasks WHERE blockId = ANY (SELECT blockId FROM blocks WHERE eventId = $2)) AND points > 0;`
+
+	res = s.db.QueryRow(ctx, state, in.UserId, in.EventId)
+
+	err = res.Scan(&corr)
+	if err != nil {
+		return 0, 0, fmt.Errorf("%s: %w", op, err)
+	}
+	return
+}
+
+// func (s *Storage) GetUserAnswers(ctx context.Context, in *dto.UserEventIds) ([]*dto.Answer, error) {
+// 	const op = "storage.postgres.GetUserAnswers"
+
+// 	state := `SELECT optionIds, values, points FROM answers WHERE userId = $1 AND
+// 	taskId = ANY (SELECT taskId FROM tasks WHERE blockId = ANY (SELECT blockId FROM blocks WHERE eventId = $2));`
+
+// 	res, err := s.db.Query(ctx, state, in.UserId, in.EventId)
+// 	if err != nil {
+// 		return nil, fmt.Errorf("%s: %w", op, err)
+// 	}
+
+// 	defer res.Close()
+
+// 	var answers []*dto.Answer
+
+// 	for res.Next() {
+// 		var answer dto.Answer
+// 		err := res.Scan(&answer.AnswerIds, &answer.Answer, &answer.Points)
+// 		if err != nil {
+// 			return nil, fmt.Errorf("%s: %w", op, err)
+// 		}
+// 		answers = append(answers, &answer)
+// 	}
+
+// 	return answers, nil
+// }
 
 // func (s *Storage) PostAnswerBatch(ctx context.Context, in *dto.AnswerBatch) (*dto.MessageOut, error) {
 // 	const op = "storage.postgres.PostAnswerBatch"

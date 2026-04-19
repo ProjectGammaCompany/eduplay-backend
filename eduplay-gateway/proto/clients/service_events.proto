@@ -57,6 +57,7 @@ service Events {
     rpc PostRate(Rate) returns (MessageOut);
     rpc GetBlockProgress(UserEventIds) returns (BlockProgress);
     rpc PostAnswerBatch(AnswerBatch) returns (MessageOut);
+    rpc GetUserAnswers(UserEventIds) returns (UserAnswers);
 }
 
 message Empty {}
@@ -400,4 +401,10 @@ message AnswerBatch {
     string currentTask = 6;
     google.protobuf.Timestamp timeStamp = 7;
     bool isDone = 8;
+}
+
+message UserAnswers {
+    int64 correct = 1;
+    int64 total = 2;
+    int64 points = 3; 
 }
