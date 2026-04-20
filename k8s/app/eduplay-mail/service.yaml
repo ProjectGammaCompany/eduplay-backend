@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: eduplay-mail
+  namespace: eduplay
+spec:
+  selector:
+    app: eduplay-mail
+  ports:
+    - port: 80
+      targetPort: 12350

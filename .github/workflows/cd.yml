@@ -14,7 +14,7 @@ jobs:
 
     strategy:
       matrix:
-        service: [ "eduplay-gateway", "eduplay-user", "eduplay-event", "eduplay-notification" ]
+        service: [ "eduplay-gateway", "eduplay-user", "eduplay-event", "eduplay-notification", "eduplay-mail" ]
 
     steps:
       - uses: actions/checkout@v4
@@ -58,6 +58,7 @@ jobs:
           sed -i '/name: notocactus\/eduplay-user/{n;s#newTag: .*#newTag: sha-${{ steps.vars.outputs.sha }}#;}' k8s/app/kustomization.yaml
           sed -i '/name: notocactus\/eduplay-event/{n;s#newTag: .*#newTag: sha-${{ steps.vars.outputs.sha }}#;}' k8s/app/kustomization.yaml
           sed -i '/name: notocactus\/eduplay-notification/{n;s#newTag: .*#newTag: sha-${{ steps.vars.outputs.sha }}#;}' k8s/app/kustomization.yaml
+          sed -i '/name: notocactus\/eduplay-mail/{n;s#newTag: .*#newTag: sha-${{ steps.vars.outputs.sha }}#;}' k8s/app/kustomization.yaml
 
       - name: Commit & push
         run: |

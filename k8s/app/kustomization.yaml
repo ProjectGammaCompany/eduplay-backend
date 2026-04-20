@@ -9,6 +9,8 @@ resources:
   - eduplay-notification/deployment.yaml
   - eduplay-notification/service.yaml
   - eduplay-gateway/ingress.yaml
+  - eduplay-mail/deployment.yaml
+  - eduplay-mail/service.yaml
 
 images:
   - name: notocactus/eduplay-gateway
@@ -18,4 +20,6 @@ images:
   - name: notocactus/eduplay-event
     newTag: sha-8ddf472
   - name: notocactus/eduplay-notification
+    newTag: sha-8ddf472
+  - name: notocactus/eduplay-mail
     newTag: sha-8ddf472

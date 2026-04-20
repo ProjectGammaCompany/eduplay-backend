@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: eduplay-mail
+  namespace: eduplay
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: eduplay-mail
+  template:
+    metadata:
+      labels:
+        app: eduplay-mail
+    spec:
+      containers:
+        - name: eduplay-mail
+          image: notocactus/eduplay-mail:latest
+          ports:
+            - containerPort: 12350
+          env:
+            - name: PORT
+              value: "12350"
+            - name: EM_USER
+              valueFrom:
+                secretKeyRef:
+                  name: mail-secrets
+                  key: user
+            - name: EM_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mail-secrets
+                  key: password
+            - name: EM_SRV
+              value: "smtp.gmail.com"
+            - name: EM_PORT
+              value: "587"
+            - name: EM_SENDERNAME
+              value: "EduPlay"
+            - name: EM_SENDEREMAIL
+              value: "hseEduPlay@gmail.com"
