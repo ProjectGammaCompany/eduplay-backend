@@ -9,4 +9,4 @@ COPY . .
 
 EXPOSE 12350
 
-CMD ["python", "main.py"]
+CMD ["python", "run.py"]
