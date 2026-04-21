@@ -31,7 +31,7 @@ const sendCodeTemplate = `
           <tr>
             <td align="center" style="padding:20px 0;">
               <div style="display:inline-block; padding:15px 25px; font-size:28px; letter-spacing:4px; background-color:#f4f4f7; border-radius:6px; font-weight:bold; color:#333;">
-                {.Code}
+                {{.Code}}
               </div>
             </td>
           </tr>
