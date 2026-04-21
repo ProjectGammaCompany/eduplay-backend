@@ -9,7 +9,7 @@ CREATE TABLE users (
     city VARCHAR(255) DEFAULT '',
     avatar VARCHAR(255) DEFAULT ''
     pwdChangeCode VARCHAR(255) DEFAULT '', 
-    pwdChangeCodeExpires TIMESTAMP DEFAULT '1970-01-01 00:00:00'
+    pwdChangeCodeExpiry TIMESTAMP DEFAULT '1970-01-01 00:00:00'
 );
 
 CREATE TABLE sessions (
