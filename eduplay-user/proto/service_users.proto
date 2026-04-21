@@ -10,10 +10,12 @@ service Users {
     rpc Refresh(RefreshIn) returns (RefreshOut);
     rpc PutAvatar(Profile) returns (Empty);
     rpc PutUsername(Profile) returns (Empty);
+    rpc SendVerificationCode(Id) returns (MessageOut);
+    rpc GetVerificationCode(Id) returns (MessageOut);
+    rpc ChangePassword(ChangePasswordIn) returns (SignUpOut);
     // rpc GetUserAccess (GetUserAccessIn) returns (GetUserAccessOut);
     // rpc GetUserInfo (GetUserAccessIn) returns (GetUserInfoOut);
     // rpc ChangeUserInfo (ChangeUserInfoIn) returns (GetUserInfoOut);
-    rpc ChangePassword(ChangePasswordIn) returns (Empty);
     rpc DeleteAccount(DeleteAccountIn) returns (Empty);
     rpc SignOut(DeleteAccountIn) returns (Empty);
     rpc GetProfile(Id) returns (Profile);
@@ -21,6 +23,10 @@ service Users {
 }
 
 message Empty{}
+
+message MessageOut {
+    string message = 1;
+}
 
 message Id {
     string id = 1;
@@ -107,10 +113,15 @@ message RefreshOut {
 //     string accessToken = 13;
 // }
 
+// message ChangePasswordIn {
+//     string password = 1;
+//     string newPassword = 2;
+//     string accessToken = 3;
+// }
+
 message ChangePasswordIn {
-    string password = 1;
-    string newPassword = 2;
-    string accessToken = 3;
+    string password = 1; 
+    string code = 2; 
 }
 
 message DeleteAccountIn {

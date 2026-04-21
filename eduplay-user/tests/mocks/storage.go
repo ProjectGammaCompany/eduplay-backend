@@ -18,9 +18,9 @@ type Storage struct {
 	mock.Mock
 }
 
-// ChangeUserPassword provides a mock function with given fields: ctx, newHash, authToken
-func (_m *Storage) ChangeUserPassword(ctx context.Context, newHash string, authToken string) error {
-	ret := _m.Called(ctx, newHash, authToken)
+// ChangeUserPassword provides a mock function with given fields: ctx, newHash, userID
+func (_m *Storage) ChangeUserPassword(ctx context.Context, newHash string, userID string) error {
+	ret := _m.Called(ctx, newHash, userID)
 
 	if len(ret) == 0 {
 		panic("no return value specified for ChangeUserPassword")
@@ -28,7 +28,7 @@ func (_m *Storage) ChangeUserPassword(ctx context.Context, newHash string, authT
 
 	var r0 error
 	if rf, ok := ret.Get(0).(func(context.Context, string, string) error); ok {
-		r0 = rf(ctx, newHash, authToken)
+		r0 = rf(ctx, newHash, userID)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -267,6 +267,41 @@ func (_m *Storage) GetUserPasswordById(ctx context.Context, userId string) (stri
 	return r0, r1
 }
 
+// GetVerificationCode provides a mock function with given fields: ctx, code
+func (_m *Storage) GetVerificationCode(ctx context.Context, code string) (string, string, error) {
+	ret := _m.Called(ctx, code)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetVerificationCode")
+	}
+
+	var r0 string
+	var r1 string
+	var r2 error
+	if rf, ok := ret.Get(0).(func(context.Context, string) (string, string, error)); ok {
+		return rf(ctx, code)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, string) string); ok {
+		r0 = rf(ctx, code)
+	} else {
+		r0 = ret.Get(0).(string)
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, string) string); ok {
+		r1 = rf(ctx, code)
+	} else {
+		r1 = ret.Get(1).(string)
+	}
+
+	if rf, ok := ret.Get(2).(func(context.Context, string) error); ok {
+		r2 = rf(ctx, code)
+	} else {
+		r2 = ret.Error(2)
+	}
+
+	return r0, r1, r2
+}
+
 // PutAvatar provides a mock function with given fields: ctx, in
 func (_m *Storage) PutAvatar(ctx context.Context, in *eduplay_user_v1.Profile) (string, error) {
 	ret := _m.Called(ctx, in)
@@ -321,6 +356,24 @@ func (_m *Storage) PutUsername(ctx context.Context, in *eduplay_user_v1.Profile)
 	}
 
 	return r0, r1
+}
+
+// PutVerificationCode provides a mock function with given fields: ctx, email, code
+func (_m *Storage) PutVerificationCode(ctx context.Context, email string, code string) error {
+	ret := _m.Called(ctx, email, code)
+
+	if len(ret) == 0 {
+		panic("no return value specified for PutVerificationCode")
+	}
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, string, string) error); ok {
+		r0 = rf(ctx, email, code)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
 }
 
 // SaveSession provides a mock function with given fields: ctx, userId, refreshToken

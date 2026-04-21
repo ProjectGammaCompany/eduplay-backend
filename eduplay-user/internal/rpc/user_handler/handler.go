@@ -20,10 +20,12 @@ type UseCase interface {
 	RefreshSession(ctx context.Context, refreshToken string) (*model.Tokens, error)
 	PutAvatar(ctx context.Context, in *dto.Profile) (string, error)
 	PutUsername(ctx context.Context, in *dto.Profile) (string, error)
+	SendVerificationCode(ctx context.Context, email string) (*dto.MessageOut, error)
+	GetVerificationCode(ctx context.Context, code string) (*dto.MessageOut, error)
+	ChangeUserPassword(ctx context.Context, in *dto.ChangePasswordIn) (*model.Session, error)
 	// GetUserAccess(ctx context.Context, authToken string) (*dto.GetUserAccessOut, error)
 	// GetUserInfo(ctx context.Context, accessToken string) (*model.UserInfo, error)
 	// ChangeUserInfo(ctx context.Context, in *dto.ChangeUserInfoIn) (*model.UserInfo, error)
-	ChangeUserPassword(ctx context.Context, in *dto.ChangePasswordIn) error
 	DeleteUserAccount(ctx context.Context, accessToken string) error
 	SignOutUser(ctx context.Context, accessToken string) error
 	GetProfile(ctx context.Context, userId string) (*dto.Profile, error)
@@ -121,6 +123,45 @@ func (h *Handler) PutUsername(ctx context.Context, in *dto.Profile) (*dto.Empty,
 	return &dto.Empty{}, nil
 }
 
+func (h *Handler) SendVerificationCode(ctx context.Context, in *dto.Id) (*dto.MessageOut, error) {
+	op := "SendVerificationCode.Handler"
+
+	message, err := h.uc.SendVerificationCode(ctx, in.Id)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return message, nil
+}
+
+func (h *Handler) GetVerificationCode(ctx context.Context, in *dto.Id) (*dto.MessageOut, error) {
+	op := "GetVerificationCode.Handler"
+
+	message, err := h.uc.GetVerificationCode(ctx, in.Id)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return message, nil
+}
+
+func (h *Handler) ChangePassword(ctx context.Context, in *dto.ChangePasswordIn) (*dto.SignUpOut, error) {
+	op := "ChangePassword.Handler"
+
+	session, err := h.uc.ChangeUserPassword(ctx, in)
+	if err != nil {
+		if errors.Is(err, storage.ErrUserNotFound) {
+			return &dto.SignUpOut{ErrorMessage: storage.ErrUserNotFound.Error()}, nil
+		}
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return &dto.SignUpOut{
+		AccessToken:  session.AccessToken,
+		RefreshToken: session.RefreshToken,
+	}, nil
+}
+
 // func (h *Handler) GetUserAccess(ctx context.Context, in *dto.GetUserAccessIn) (*dto.GetUserAccessOut, error) {
 // 	op := "GetUserAccess.Handler"
 
@@ -181,17 +222,6 @@ func (h *Handler) PutUsername(ctx context.Context, in *dto.Profile) (*dto.Empty,
 
 // 	return resp, nil
 // }
-
-func (h *Handler) ChangePassword(ctx context.Context, in *dto.ChangePasswordIn) (*dto.Empty, error) {
-	op := "ChangePassword.Handler"
-
-	err := h.uc.ChangeUserPassword(ctx, in)
-	if err != nil {
-		return nil, fmt.Errorf("%s: %w", op, err)
-	}
-
-	return &dto.Empty{}, nil
-}
 
 func (h *Handler) DeleteAccount(ctx context.Context, in *dto.DeleteAccountIn) (*dto.Empty, error) {
 	op := "ChangePassword.Handler"

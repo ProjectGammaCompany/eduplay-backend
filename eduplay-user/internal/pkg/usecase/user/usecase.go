@@ -18,9 +18,11 @@ type storage interface {
 	GetUserByRefreshToken(ctx context.Context, refreshToken string) (*model.User, error)
 	PutAvatar(ctx context.Context, in *dto.Profile) (string, error)
 	PutUsername(ctx context.Context, in *dto.Profile) (string, error)
+	PutVerificationCode(ctx context.Context, email string, code string) error
+	GetVerificationCode(ctx context.Context, code string) (string, string, error)
+	ChangeUserPassword(ctx context.Context, newHash string, userID string) error
 	// GetUserInfoByAuthToken(ctx context.Context, userID string) (*model.UserInfo, error)
 	//  ChangeUserInfo(ctx context.Context, userInfo *dto.ChangeUserInfoIn, userID string) (*model.UserInfo, error)
-	ChangeUserPassword(ctx context.Context, newHash, authToken string) error
 	DeleteAccount(ctx context.Context, authToken string) error
 	CheckRefreshTokenExists(ctx context.Context, refreshToken string) (bool, time.Time, error)
 	GetUserPasswordById(ctx context.Context, userId string) (string, error)
@@ -33,23 +35,30 @@ type rabbitmq interface {
 	SendDeleteAccountMessage(ctx context.Context, userID string) (string, error)
 }
 
+type emailClient interface {
+	SendEmail(data []byte) error
+}
+
 type UseCase struct {
-	log      *slog.Logger
-	storage  storage
-	rabbitmq rabbitmq
-	secret   string
+	log         *slog.Logger
+	storage     storage
+	rabbitmq    rabbitmq
+	emailClient emailClient
+	secret      string
 }
 
 func New(
 	log *slog.Logger,
 	st storage,
 	rabbitmq rabbitmq,
+	emailCl emailClient,
 	secret string,
 ) *UseCase {
 	return &UseCase{
-		log:      log,
-		storage:  st,
-		rabbitmq: rabbitmq,
-		secret:   secret,
+		log:         log,
+		storage:     st,
+		rabbitmq:    rabbitmq,
+		emailClient: emailCl,
+		secret:      secret,
 	}
 }

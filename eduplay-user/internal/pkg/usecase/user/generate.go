@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/rand"
 	"eduplay-user/internal/model"
+	"encoding/base32"
 	"encoding/base64"
 	"io"
 
@@ -63,4 +64,15 @@ func GenerateSession(ctx context.Context,
 		// Role:         role,
 		// AccessLevel:  accessLevel
 	}, nil
+}
+
+var encoding = base32.NewEncoding("ABCDEFGHJKLMNPQRSTUVWXYZ23456789").WithPadding(base32.NoPadding)
+
+func GenerateJoinCode(length int) (string, error) {
+	b := make([]byte, length)
+	_, err := rand.Read(b)
+	if err != nil {
+		return "", err
+	}
+	return encoding.EncodeToString(b)[:length], nil
 }

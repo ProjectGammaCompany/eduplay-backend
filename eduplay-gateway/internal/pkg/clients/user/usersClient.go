@@ -102,6 +102,36 @@ func (cl *Client) PutUsername(ctx context.Context, in *users.Profile) (*users.Em
 	return out, nil
 }
 
+func (cl *Client) SendVerificationCode(ctx context.Context, in *users.Id) (*users.MessageOut, error) {
+	op := "SendVerificationCode.Client"
+	out, err := cl.api.SendVerificationCode(ctx, in)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return out, nil
+}
+
+func (cl *Client) GetVerificationCode(ctx context.Context, in *users.Id) (*users.MessageOut, error) {
+	op := "GetVerificationCode.Client"
+	out, err := cl.api.GetVerificationCode(ctx, in)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return out, nil
+}
+
+func (cl *Client) ChangePassword(ctx context.Context, in *users.ChangePasswordIn) (*users.SignUpOut, error) {
+	op := "ChangePassword.Client"
+	out, err := cl.api.ChangePassword(ctx, in)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return out, nil
+}
+
 // func (cl *Client) GetUserAccess(ctx context.Context, in *users.GetUserAccessIn) (*users.GetUserAccessOut, error) {
 // 	op := "GetUserAccess.Client"
 // 	out, err := cl.api.GetUserAccess(ctx, in)
@@ -135,16 +165,6 @@ func (cl *Client) PutUsername(ctx context.Context, in *users.Profile) (*users.Em
 func (cl *Client) DeleteAccount(ctx context.Context, token string) error {
 	op := "DeleteAccount.Client"
 	_, err := cl.api.DeleteAccount(ctx, &users.DeleteAccountIn{AccessToken: token})
-	if err != nil {
-		return fmt.Errorf("%s: %w", op, err)
-	}
-
-	return nil
-}
-
-func (cl *Client) ChangePassword(ctx context.Context, in *users.ChangePasswordIn) error {
-	op := "ChangePassword.Client"
-	_, err := cl.api.ChangePassword(ctx, in)
 	if err != nil {
 		return fmt.Errorf("%s: %w", op, err)
 	}

@@ -1,10 +1,10 @@
-package changePassword
+package postValidationCode
 
 import (
 	"context"
-
 	"eduplay-gateway/internal/lib"
-	reqModel "eduplay-gateway/internal/lib/models/user"
+	model "eduplay-gateway/internal/lib/models/user"
+	storage "eduplay-gateway/internal/storage"
 	"errors"
 	"log/slog"
 	"net/http"
@@ -15,12 +15,12 @@ import (
 )
 
 type UseCase interface {
-	ChangePassword(ctx context.Context, info reqModel.ChangePasswordRequest) (*reqModel.Credentials, error)
+	PostValidationCode(ctx context.Context, pd *model.Email) error
 }
 
 func New(log *slog.Logger, uc UseCase) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
-		const op = "handlers.users.changePassword"
+		const op = "handlers.users.PostValidationCode"
 
 		log = log.With(slog.String("op", op),
 			slog.String("request_id", middleware.GetReqID(request.Context())))
@@ -41,7 +41,7 @@ func New(log *slog.Logger, uc UseCase) http.HandlerFunc {
 		// 	return
 		// }
 
-		// _, err := tokens.ValidateAccessToken(accessToken)
+		// accessClaims, err := tokens.ValidateAccessToken(accessToken)
 		// if err != nil {
 		// 	if errors.Is(err, storage.ErrInvalidAccessToken) {
 		// 		log.Error("invalid access token", slog.String("error", err.Error()))
@@ -61,7 +61,7 @@ func New(log *slog.Logger, uc UseCase) http.HandlerFunc {
 		// 	return
 		// }
 
-		var req reqModel.ChangePasswordRequest
+		var req *model.Email
 
 		err := render.DecodeJSON(request.Body, &req)
 		if err != nil {
@@ -82,22 +82,21 @@ func New(log *slog.Logger, uc UseCase) http.HandlerFunc {
 			return
 		}
 
-		if req.Password != req.RepeatPass {
-			log.Error("passwords do not match")
-			writer.WriteHeader(http.StatusBadRequest)
-			render.JSON(writer, request, lib.Error("passwords do not match"))
-			return
-		}
-
-		creds, err := uc.ChangePassword(context.Background(), req)
+		err = uc.PostValidationCode(context.Background(), req)
 		if err != nil {
-			log.Error("failed to change user password")
+			if errors.Is(err, storage.ErrUserNotFound) {
+				log.Error("user not found", slog.String("error", err.Error()))
+				writer.WriteHeader(http.StatusNotFound)
+				render.JSON(writer, request, lib.Error("user not found"))
+				return
+			}
+			log.Error("failed to send validation code")
 			writer.WriteHeader(http.StatusInternalServerError)
-			render.JSON(writer, request, lib.Error("failed to change user password"))
+			render.JSON(writer, request, lib.Error("failed to set new username"))
 			return
 		}
 
-		log.Info("success to change user password")
-		render.JSON(writer, request, creds)
+		log.Info("user validation code sent", slog.Any("response", req))
+		render.JSON(writer, request, nil)
 	}
 }

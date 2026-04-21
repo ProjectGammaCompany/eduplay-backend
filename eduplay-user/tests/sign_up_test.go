@@ -31,7 +31,7 @@ func TestSignUpUser_Success(t *testing.T) {
 		On("SaveSession", ctx, "testUserId", mock.Anything).
 		Return(nil)
 
-	uc := user.New(logger, mockStorage, nil, "secret")
+	uc := user.New(logger, mockStorage, nil, nil, "secret")
 
 	session, err := uc.SignUpUser(ctx, &dto.SignUpIn{
 		Email:    "test@mail.ru",
@@ -58,7 +58,7 @@ func TestSignUpUser_SaveSessionError(t *testing.T) {
 		On("SaveSession", mock.Anything, "userId", mock.Anything).
 		Return(errors.New("db error"))
 
-	uc := user.New(logger, mockStorage, nil, "secret")
+	uc := user.New(logger, mockStorage, nil, nil, "secret")
 
 	_, err := uc.SignUpUser(context.Background(), &dto.SignUpIn{
 		Email:    "test@mail.ru",
@@ -77,7 +77,7 @@ func TestSignUpUser_UserExists(t *testing.T) {
 		On("SignUpUser", mock.Anything, "test@mail.ru", mock.Anything).
 		Return("", errors.New("user exists"))
 
-	uc := user.New(logger, mockStorage, nil, "secret")
+	uc := user.New(logger, mockStorage, nil, nil, "secret")
 
 	_, err := uc.SignUpUser(context.Background(), &dto.SignUpIn{
 		Email:    "test@mail.ru",

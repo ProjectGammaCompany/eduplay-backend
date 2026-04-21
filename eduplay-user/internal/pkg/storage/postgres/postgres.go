@@ -263,6 +263,65 @@ func (s *Storage) PutUsername(ctx context.Context, in *dto.Profile) (string, err
 	return "success", nil
 }
 
+func (s *Storage) PutVerificationCode(ctx context.Context, email string, code string) error {
+	const op = "storage.postgres.PutVerificationCode"
+
+	expiryTime := time.Now().UTC().Add(3 * time.Hour).Add(time.Minute * 10)
+
+	state := `UPDATE users SET pwdChangeCode = $1, pwdChangeCodeExpiry = $2 WHERE email = $3`
+
+	_, err := s.db.Exec(ctx, state, code, expiryTime, email)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return storage.ErrUserNotFound
+		}
+		return fmt.Errorf("%s: %w", op, err)
+	}
+	return nil
+}
+
+func (s *Storage) GetVerificationCode(ctx context.Context, code string) (string, string, error) {
+	const op = "storage.postgres.GetVerificationCode"
+
+	state := `SELECT userId, email, pwdChangeCodeExpiry FROM users WHERE pwdChangeCode = $1`
+
+	var email string
+	var userId string
+	var expiry time.Time
+	err := s.db.QueryRow(ctx, state, code).Scan(&userId, &email, &expiry)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return "", "", storage.ErrUserNotFound
+		}
+		return "", "", fmt.Errorf("%s: %w", op, err)
+	}
+
+	if expiry.Before(time.Now().UTC()) {
+		return userId, email, storage.ErrCodeExpired
+	}
+
+	return userId, email, nil
+}
+
+func (s *Storage) ChangeUserPassword(ctx context.Context, newHash string, userID string) error {
+	const op = "storage.postgres.ChangeUserPassword"
+
+	state := `UPDATE users SET passwordHash = $1 WHERE userId = $2`
+
+	result, err := s.db.Exec(ctx, state, newHash, userID)
+	if err != nil {
+		return fmt.Errorf("%s: %w", op, err)
+	}
+
+	rowsAffected := result.RowsAffected()
+
+	if rowsAffected == 0 {
+		return fmt.Errorf("%s: password change failed", op)
+	}
+
+	return nil
+}
+
 // func (s *Storage) GetUserInfoByAuthToken(ctx context.Context, userID string) (*model.UserInfo, error) {
 // 	const op = "storage.postgres.GetUserInfoByAuthToken"
 
@@ -296,25 +355,6 @@ func (s *Storage) PutUsername(ctx context.Context, in *dto.Profile) (string, err
 
 // 	return user, nil
 // }
-
-func (s *Storage) ChangeUserPassword(ctx context.Context, newHash, userID string) error {
-	const op = "storage.postgres.ChangeUserPassword"
-
-	state := `UPDATE users SET passwordHash = $1 WHERE userId = $2`
-
-	result, err := s.db.Exec(ctx, state, newHash, userID)
-	if err != nil {
-		return fmt.Errorf("%s: %w", op, err)
-	}
-
-	rowsAffected := result.RowsAffected()
-
-	if rowsAffected == 0 {
-		return fmt.Errorf("%s: password change failed: old password does not match", op)
-	}
-
-	return nil
-}
 
 func (s *Storage) DeleteAccount(ctx context.Context, userID string) error {
 	const op = "storage.postgres.DeleteAccount"

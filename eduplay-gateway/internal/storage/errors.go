@@ -20,6 +20,7 @@ var (
 	ErrUserIsNotOperator    = errors.New("user is not operator")
 	ErrIsActive             = errors.New("user is already active")
 	ErrUserIsNotPlayer      = errors.New("user is not player")
+	ErrCodeExpired          = errors.New("code expired")
 
 	ErrInfoSegmentAnswerIncorrect    = errors.New("info segment answer is incorrect")
 	ErrSingleChoiceAnswerIncorrect   = errors.New("single choice answer is incorrect")

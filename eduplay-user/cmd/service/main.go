@@ -4,6 +4,7 @@ import (
 	"context"
 	"eduplay-user/internal/application"
 	"eduplay-user/internal/config"
+	emailClient "eduplay-user/internal/pkg/clients/email"
 	db "eduplay-user/internal/pkg/storage/postgres"
 	rabbit "eduplay-user/internal/pkg/usecase/rabbitmq"
 	users "eduplay-user/internal/pkg/usecase/user"
@@ -32,7 +33,9 @@ func main() {
 
 	rabbit, _ := rabbit.NewRabbitMQ(cfg.RabbitMQ)
 
-	usersService := users.New(log, storage, rabbit, cfg.SecretKey)
+	emailClient := emailClient.New(log, cfg.EmailPath)
+
+	usersService := users.New(log, storage, rabbit, emailClient, cfg.SecretKey)
 
 	grpcApp := application.New(log, usersService, cfg.GRPC.Port)
 

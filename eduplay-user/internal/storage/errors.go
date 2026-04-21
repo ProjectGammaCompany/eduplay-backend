@@ -10,4 +10,5 @@ var (
 	ErrIncorrectPassword = errors.New("incorrect password")
 	ErrInvalidRefresh    = errors.New("invalid refresh token")
 	ErrIsActive          = errors.New("user is already active")
+	ErrCodeExpired       = errors.New("code expired")
 )
