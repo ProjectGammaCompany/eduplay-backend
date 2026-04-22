@@ -304,7 +304,7 @@ func (a *UseCase) GetNextBlock(ctx context.Context, log *slog.Logger, currBlockO
 			}
 
 			fmt.Println("min ", min, " max ", max)
-			if max == 0 {
+			if max <= 0 || max < min {
 				currBlockTasks, err := a.storage.GetBlockTasks(ctx, currEvent.Blocks[currBlockOrder-1].BlockId)
 				if err != nil {
 					return nil, err
