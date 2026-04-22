@@ -5,6 +5,7 @@ import (
 	"crypto/sha256"
 	eventDto "eduplay-gateway/internal/generated/clients/event"
 	eventModel "eduplay-gateway/internal/lib/models/event"
+	fileModel "eduplay-gateway/internal/lib/models/file"
 	"encoding/hex"
 	"log/slog"
 )
@@ -15,10 +16,10 @@ func (s *UseCase) GetEventJson(ctx context.Context, eventId string) (*eventModel
 	s.log.With(slog.String("op", op)).Info("attempting to get event json")
 
 	eventJson := &eventModel.EventDownloadFull{}
-	eventJson.Files = make([]string, 0)
+	eventJson.Files = make([]fileModel.File, 0)
 	eventGroups := make([]eventModel.GroupDownload, 0)
 
-	uniqueFiles := make(map[string]bool)
+	uniqueFiles := make(map[string]string)
 	uniqueConditions := make(map[string]bool)
 
 	event, err := s.eventClient.GetEvent(ctx, &eventDto.Id{Id: eventId})
@@ -50,7 +51,7 @@ func (s *UseCase) GetEventJson(ctx context.Context, eventId string) (*eventModel
 	}
 	eventJson.EventDownload.GroupEvent = event.GroupEvent
 
-	uniqueFiles[event.Cover] = true
+	uniqueFiles[event.Cover] = event.Cover
 
 	if event.GroupEvent {
 		groups, err := s.eventClient.GetGroups(ctx, &eventDto.Id{Id: eventId})
@@ -145,7 +146,7 @@ func (s *UseCase) GetEventJson(ctx context.Context, eventId string) (*eventModel
 			eventTaskFiles := make([]string, len(taskInfo.Files))
 			for _, file := range task.Files {
 				eventTaskFiles = append(eventTaskFiles, file.Url)
-				uniqueFiles[file.Url] = true
+				uniqueFiles[file.Url] = file.Name
 			}
 
 			eventTasks = append(eventTasks, eventModel.TaskDownload{
@@ -188,7 +189,10 @@ func (s *UseCase) GetEventJson(ctx context.Context, eventId string) (*eventModel
 	}
 
 	for file := range uniqueFiles {
-		eventJson.Files = append(eventJson.Files, file)
+		eventJson.Files = append(eventJson.Files, fileModel.File{
+			Name: uniqueFiles[file],
+			Url:  file,
+		})
 	}
 
 	eventJson.GroupsDownload = eventGroups

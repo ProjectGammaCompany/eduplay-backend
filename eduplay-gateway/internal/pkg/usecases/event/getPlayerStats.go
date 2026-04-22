@@ -49,7 +49,7 @@ func (s *UseCase) GetPlayerStats(ctx context.Context, in *eventModel.UserEventId
 					return nil, err
 				}
 
-				groupUsers.Users[i].Email = userInfo.Email
+				groupUsers.Users[i].Email = userInfo.UserName
 				groupUsers.Users[i].Avatar = userInfo.Avatar
 				groupUsers.Users[i].Points = userStats.Points
 			}
@@ -86,7 +86,7 @@ func (s *UseCase) GetPlayerStats(ctx context.Context, in *eventModel.UserEventId
 
 		ret.Users = append(ret.Users, eventModel.UserStats{
 			UserId:   userStats.Id,
-			Username: userInfo.Email,
+			Username: userInfo.UserName,
 			Avatar:   userInfo.Avatar,
 			Points:   userStats.Points,
 		})
@@ -137,7 +137,7 @@ func (s *UseCase) GetPlayerStats(ctx context.Context, in *eventModel.UserEventId
 					return nil, err
 				}
 
-				userStat.Username = userInfo.Email
+				userStat.Username = userInfo.UserName
 				userStat.Avatar = userInfo.Avatar
 				userStat.Points = userStats.Points
 
@@ -185,7 +185,7 @@ func (s *UseCase) GetPlayerStats(ctx context.Context, in *eventModel.UserEventId
 			return nil, err
 		}
 
-		userStat.Username = userInfo.Email
+		userStat.Username = userInfo.UserName
 		userStat.Avatar = userInfo.Avatar
 
 		userStats = append(userStats, userStat)

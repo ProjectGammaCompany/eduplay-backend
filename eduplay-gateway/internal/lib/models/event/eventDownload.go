@@ -1,5 +1,9 @@
 package eventModel
 
+import (
+	fileModels "eduplay-gateway/internal/lib/models/file"
+)
+
 type EventDownloadFull struct {
 	EventDownload          EventDownload           `json:"event"`
 	BlocksDownload         []BlockDownload         `json:"blocks"`
@@ -8,7 +12,7 @@ type EventDownloadFull struct {
 	TasksDownload          []TaskDownload          `json:"tasks"`
 	OptionsDownload        []OptionDownload        `json:"options"`
 	CorrectAnswersDownload []CorrectAnswerDownload `json:"correctAnswers"`
-	Files                  []string                `json:"files"`
+	Files                  []fileModels.File       `json:"files"`
 }
 
 type EventDownload struct {
