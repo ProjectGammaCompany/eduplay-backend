@@ -145,6 +145,9 @@ func (s *UseCase) GetEventJson(ctx context.Context, eventId string) (*eventModel
 
 			eventTaskFiles := make([]string, len(taskInfo.Files))
 			for _, file := range task.Files {
+				if file.Url == "" {
+					continue
+				}
 				eventTaskFiles = append(eventTaskFiles, file.Url)
 				uniqueFiles[file.Url] = file.Name
 			}
