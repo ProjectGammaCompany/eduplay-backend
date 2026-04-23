@@ -209,15 +209,71 @@ func (s *Storage) GetEvent(ctx context.Context, id string) (*dto.PostEventIn, er
 func (s *Storage) DeleteEvent(ctx context.Context, eventId string) (string, error) {
 	const op = "storage.postgres.DeleteEvent"
 
-	state := `DELETE FROM events WHERE eventId = $1;`
+	tx, err := s.db.BeginTx(ctx, pgx.TxOptions{})
+	if err != nil {
+		return "", fmt.Errorf("%s: %w", op, err)
+	}
+	defer func() { _ = tx.Rollback(ctx) }()
 
-	_, err := s.db.Exec(ctx, state, eventId)
-
+	state := `DELETE FROM options WHERE taskId IN 
+	(SELECT taskId FROM tasks WHERE blockId IN 
+	(SELECT blockId FROM blocks WHERE eventId=$1));`
+	_, err = tx.Exec(ctx, state, eventId)
 	if err != nil {
 		return "", fmt.Errorf("%s: %w", op, err)
 	}
 
-	return "event" + eventId + "deleted", nil
+	state = `DELETE FROM tasks WHERE blockId IN 
+	(SELECT blockId FROM blocks WHERE eventId=$1);`
+	_, err = tx.Exec(ctx, state, eventId)
+	if err != nil {
+		return "", fmt.Errorf("%s: %w", op, err)
+	}
+
+	state = `DELETE FROM conditions WHERE prevBlockId IN 
+	(SELECT blockId FROM blocks WHERE eventId=$1);`
+	_, err = tx.Exec(ctx, state, eventId)
+	if err != nil {
+		return "", fmt.Errorf("%s: %w", op, err)
+	}
+
+	state = `DELETE FROM blocks WHERE eventId=$1;`
+	_, err = tx.Exec(ctx, state, eventId)
+	if err != nil {
+		return "", fmt.Errorf("%s: %w", op, err)
+	}
+
+	state = `DELETE FROM groups WHERE eventId=$1;`
+	_, err = tx.Exec(ctx, state, eventId)
+	if err != nil {
+		return "", fmt.Errorf("%s: %w", op, err)
+	}
+
+	state = `DELETE FROM ratings WHERE eventId=$1;`
+	_, err = tx.Exec(ctx, state, eventId)
+	if err != nil {
+		return "", fmt.Errorf("%s: %w", op, err)
+	}
+
+	state = `DELETE FROM userFavorites WHERE eventId=$1;`
+	_, err = tx.Exec(ctx, state, eventId)
+	if err != nil {
+		return "", fmt.Errorf("%s: %w", op, err)
+	}
+
+	state = `DELETE FROM complaints WHERE eventId=$1;`
+	_, err = tx.Exec(ctx, state, eventId)
+	if err != nil {
+		return "", fmt.Errorf("%s: %w", op, err)
+	}
+
+	state = `DELETE FROM events WHERE eventId=$1;`
+	_, err = tx.Exec(ctx, state, eventId)
+	if err != nil {
+		return "", fmt.Errorf("%s: %w", op, err)
+	}
+
+	return "event" + eventId + "deleted", tx.Commit(ctx)
 }
 
 func (s *Storage) GetRole(ctx context.Context, userId string, eventId string) (int64, error) {

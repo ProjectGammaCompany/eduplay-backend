@@ -41,7 +41,7 @@ func New(log *slog.Logger, uc UseCase) http.HandlerFunc {
 			return
 		}
 
-		_, err := tokens.ValidateAccessToken(accessToken)
+		accessClaims, err := tokens.ValidateAccessToken(accessToken)
 		if err != nil {
 			if errors.Is(err, storage.ErrInvalidAccessToken) {
 				log.Error("invalid access token", slog.String("error", err.Error()))
@@ -61,7 +61,7 @@ func New(log *slog.Logger, uc UseCase) http.HandlerFunc {
 			return
 		}
 
-		err = uc.DeleteAccount(context.Background(), accessToken)
+		err = uc.DeleteAccount(context.Background(), accessClaims.ID)
 		if err != nil {
 			log.Error("failed to delete user")
 			writer.WriteHeader(http.StatusInternalServerError)

@@ -1,6 +1,7 @@
 package rabbitmq
 
 import (
+	"context"
 	"encoding/json"
 	"log/slog"
 
@@ -8,6 +9,7 @@ import (
 )
 
 type storage interface {
+	DeleteUserData(ctx context.Context, userId string) (string, error)
 }
 
 type RabbitMQ struct {
@@ -121,10 +123,18 @@ func (r *RabbitMQ) ReceiveUserDeletedMessage() {
 
 		r.log.Info("Получено событие", "userID", event.UserID)
 
-		// TODO: вызвать метод storage для удаления данных пользователя
-		// Например: r.storage.DeleteUserData(event.UserID)
-		// fmt.Println("OAAAAAAAAAAAAAAAAAAA USER DELETED")
-		r.log.Info("User deleted", "userID", event.UserID)
+		ret, err := r.storage.DeleteUserData(context.Background(), event.UserID)
+		if err != nil {
+			r.log.Error("Ошибка удаления данных", "error", err)
+			err = d.Ack(false) // или d.Nack(false, false)
+			if err != nil {
+				r.log.Error("Ошибка подтверждения", "error", err)
+				return
+			}
+			continue
+		}
+
+		r.log.Info("User", event.UserID, ret)
 
 		err = d.Ack(false)
 		if err != nil {
