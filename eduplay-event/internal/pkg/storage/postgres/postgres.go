@@ -709,8 +709,38 @@ func (s *Storage) GetEventProgress(ctx context.Context, userId string, eventId s
 	return
 }
 
+func (s *Storage) GetAllTagsMap(ctx context.Context) (map[string]*dto.Tag, error) {
+	const op = "storage.postgres.GetAllTags"
+
+	state := `SELECT tagId, name FROM tags;`
+
+	res, err := s.db.Query(ctx, state)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	defer res.Close()
+
+	tags := make(map[string]*dto.Tag)
+	for res.Next() {
+		tag := &dto.Tag{}
+		err = res.Scan(&tag.Id, &tag.Name)
+		if err != nil {
+			return nil, fmt.Errorf("%s: %w", op, err)
+		}
+		tags[tag.Id] = tag
+	}
+
+	return tags, nil
+}
+
 func (s *Storage) GetPublicEvents(ctx context.Context, in *dto.EventBaseFilters) (*dto.GetPublicEventsOut, error) {
 	const op = "storage.postgres.GetPublicEvents"
+
+	tags, err := s.GetAllTagsMap(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
 
 	args := []interface{}{
 		in.MaxOnPage,
@@ -757,24 +787,31 @@ func (s *Storage) GetPublicEvents(ctx context.Context, in *dto.EventBaseFilters)
 	}
 
 	state := fmt.Sprintf(`
-			SELECT
-            e.eventId,
-            e.title,
-            e.description,
-            e.cover,
-            e.lastEditionDate,
-            e.tags,
-            COALESCE(AVG(r.rating), 0) AS rate,
-            EXISTS (SELECT 1 FROM userFavorites WHERE userId = $%d AND eventId = e.eventId) AS favorite
+	WITH event_ratings AS (
+    SELECT 
+        eventId,
+        COALESCE(AVG(rating), 0) as avg_rating,
+        COUNT(rating) as rating_count
+    FROM ratings
+    GROUP BY eventId
+	)
+	SELECT
+    e.eventId,
+    e.title,
+    e.description,
+    e.cover,
+    e.lastEditionDate,
+    e.tags,
+    COALESCE(er.avg_rating, 0) AS rate,
+    EXISTS (SELECT 1 FROM userFavorites WHERE userId = $%d AND eventId = e.eventId) AS favorite
         FROM events e
-        LEFT JOIN ratings r ON e.eventId = r.eventId
+        LEFT JOIN event_ratings er ON e.eventId = er.eventId
         WHERE %s
-        GROUP BY e.eventId
         ORDER BY %s
         LIMIT $1 OFFSET $2
 	`, userParamIdx, whereClause, orderBy)
 
-	// fmt.Println(state, args)
+	fmt.Println(state, args)
 
 	res, err := s.db.Query(ctx, state, args...)
 	if err != nil {
@@ -787,18 +824,19 @@ func (s *Storage) GetPublicEvents(ctx context.Context, in *dto.EventBaseFilters)
 
 	for res.Next() {
 		var event dto.GetPublicEvent
-		var tags []string
+		var eventTags []string
 		var lastEditionDate time.Time
-		err = res.Scan(&event.EventId, &event.Title, &event.Description, &event.Cover, &lastEditionDate, &tags, &event.Rate, &event.Favorite)
+		err = res.Scan(&event.EventId, &event.Title, &event.Description, &event.Cover, &lastEditionDate, &eventTags, &event.Rate, &event.Favorite)
 		if err != nil {
 			return nil, fmt.Errorf("%s: %w", op, err)
 		}
-		fullTags, err := s.GetTagsByIds(ctx, tags)
-		if err != nil {
-			return nil, fmt.Errorf("%s: %w", op, err)
+		fullTags := make([]*dto.Tag, 0)
+
+		for _, tag := range eventTags {
+			fullTags = append(fullTags, tags[tag])
 		}
 
-		event.Tags = fullTags.Tags
+		event.Tags = fullTags
 		event.LastEditionDate = timestamppb.New(lastEditionDate)
 		events.Events = append(events.Events, &event)
 	}
