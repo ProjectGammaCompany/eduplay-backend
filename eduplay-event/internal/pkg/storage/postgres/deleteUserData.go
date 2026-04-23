@@ -15,11 +15,6 @@ func (s *Storage) DeleteUserData(ctx context.Context, userId string) (string, er
 		return "", fmt.Errorf("%s: %w", op, err)
 	}
 
-	err = s.DeleteUserEvents(ctx, userId)
-	if err != nil {
-		return "", fmt.Errorf("%s: %w", op, err)
-	}
-
 	err = s.DeleteUserComplaints(ctx, userId)
 	if err != nil {
 		return "", fmt.Errorf("%s: %w", op, err)
@@ -41,6 +36,11 @@ func (s *Storage) DeleteUserData(ctx context.Context, userId string) (string, er
 	}
 
 	err = s.DeleteUserFavorites(ctx, userId)
+	if err != nil {
+		return "", fmt.Errorf("%s: %w", op, err)
+	}
+
+	err = s.DeleteUserEvents(ctx, userId)
 	if err != nil {
 		return "", fmt.Errorf("%s: %w", op, err)
 	}

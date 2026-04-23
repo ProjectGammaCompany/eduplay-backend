@@ -223,6 +223,14 @@ func (s *Storage) DeleteEvent(ctx context.Context, eventId string) (string, erro
 		return "", fmt.Errorf("%s: %w", op, err)
 	}
 
+	state = `DELETE FROM answers WHERE taskId IN 
+	(SELECT taskId FROM tasks WHERE blockId IN 
+	(SELECT blockId FROM blocks WHERE eventId=$1));`
+	_, err = tx.Exec(ctx, state, eventId)
+	if err != nil {
+		return "", fmt.Errorf("%s: %w", op, err)
+	}
+
 	state = `DELETE FROM tasks WHERE blockId IN 
 	(SELECT blockId FROM blocks WHERE eventId=$1);`
 	_, err = tx.Exec(ctx, state, eventId)
@@ -250,6 +258,24 @@ func (s *Storage) DeleteEvent(ctx context.Context, eventId string) (string, erro
 	}
 
 	state = `DELETE FROM ratings WHERE eventId=$1;`
+	_, err = tx.Exec(ctx, state, eventId)
+	if err != nil {
+		return "", fmt.Errorf("%s: %w", op, err)
+	}
+
+	state = `DELETE FROM userFavorites WHERE eventId=$1;`
+	_, err = tx.Exec(ctx, state, eventId)
+	if err != nil {
+		return "", fmt.Errorf("%s: %w", op, err)
+	}
+
+	state = `DELETE FROM complaints WHERE eventId=$1;`
+	_, err = tx.Exec(ctx, state, eventId)
+	if err != nil {
+		return "", fmt.Errorf("%s: %w", op, err)
+	}
+
+	state = `DELETE FROM userLinks WHERE eventId=$1;`
 	_, err = tx.Exec(ctx, state, eventId)
 	if err != nil {
 		return "", fmt.Errorf("%s: %w", op, err)
