@@ -137,7 +137,15 @@ func (s *Storage) PostEvent(ctx context.Context, in *dto.PostEventIn) (string, e
 func (s *Storage) GetEvent(ctx context.Context, id string) (*dto.PostEventIn, error) {
 	const op = "storage.postgres.GetEvent"
 
-	state := `SELECT 
+	state := `WITH event_ratings AS (
+		SELECT 
+			eventId,
+			COALESCE(AVG(rating), 0) as avg_rating,
+			COUNT(rating) as rating_count
+		FROM ratings
+		GROUP BY eventId
+	)
+	SELECT 
 	e.title, 
 	e.description, 
 	e.tags, 
@@ -151,11 +159,10 @@ func (s *Storage) GetEvent(ctx context.Context, id string) (*dto.PostEventIn, er
 	e.allowDownloading, 
 	e.groupEvent, 
 	e.showRating, 
-	COALESCE(AVG(r.rating), 0) AS rate
+	COALESCE(ROUND(er.avg_rating), 0)::INTEGER AS rate
 	FROM events e 
-	LEFT JOIN ratings r ON e.eventId = r.eventId 
-	WHERE e.eventId = $1
-	GROUP BY e.eventId;`
+	LEFT JOIN event_ratings er ON e.eventId = er.eventId 
+	WHERE e.eventId = $1;`
 
 	res := s.db.QueryRow(ctx, state, id)
 
@@ -606,14 +613,22 @@ func (s *Storage) GetBlockConditions(ctx context.Context, blockId string) ([]*dt
 func (s *Storage) GetPublicEvent(ctx context.Context, ids *dto.UserEventIds) (*dto.GetPublicEvent, error) {
 	const op = "storage.postgres.GetPublicEvent"
 
-	state := `SELECT 
+	state := `WITH event_ratings AS (
+		SELECT 
+			eventId,
+			COALESCE(AVG(rating), 0) as avg_rating,
+			COUNT(rating) as rating_count
+		FROM ratings
+		GROUP BY eventId
+	)
+	SELECT 
     e.eventId,
     e.title, 
     e.description,
     e.cover,
     e.lastEditionDate,
     e.tags,
-    COALESCE(AVG(r.rating), 0) AS rate,
+    COALESCE(ROUND(er.avg_rating), 0)::INTEGER AS rate,
     EXISTS (
         SELECT 1 
         FROM userFavorites 
@@ -621,9 +636,8 @@ func (s *Storage) GetPublicEvent(ctx context.Context, ids *dto.UserEventIds) (*d
           AND eventId = e.eventId
     ) AS favorite
 FROM events e
-LEFT JOIN ratings r ON e.eventId = r.eventId  
-WHERE e.eventId = $1
-GROUP BY e.eventId;`
+LEFT JOIN event_ratings er ON e.eventId = er.eventId  
+WHERE e.eventId = $1;`
 
 	res := s.db.QueryRow(ctx, state, ids.EventId, ids.UserId)
 
@@ -802,7 +816,7 @@ func (s *Storage) GetPublicEvents(ctx context.Context, in *dto.EventBaseFilters)
     e.cover,
     e.lastEditionDate,
     e.tags,
-    COALESCE(er.avg_rating, 0) AS rate,
+    COALESCE(ROUND(er.avg_rating), 0)::INTEGER AS rate,
     EXISTS (SELECT 1 FROM userFavorites WHERE userId = $%d AND eventId = e.eventId) AS favorite
         FROM events e
         LEFT JOIN event_ratings er ON e.eventId = er.eventId
@@ -847,23 +861,30 @@ func (s *Storage) GetPublicEvents(ctx context.Context, in *dto.EventBaseFilters)
 func (s *Storage) GetUserFavorites(ctx context.Context, in *dto.EventBaseFilters) (*dto.GetPublicEventsOut, error) {
 	const op = "storage.postgres.GetUserFavorites"
 
-	state := `SELECT 
+	state := `WITH event_ratings AS (
+		SELECT 
+			eventId,
+			COALESCE(AVG(rating), 0) as avg_rating,
+			COUNT(rating) as rating_count
+		FROM ratings
+		GROUP BY eventId
+	)
+	SELECT 
     e.eventId,
     e.title, 
     e.description,
     e.cover,
     e.lastEditionDate,
     e.tags,
-    COALESCE(AVG(r.rating), 0) as rate,
+    COALESCE(ROUND(er.avg_rating), 0)::INTEGER as rate,
     true as favorite
 FROM events AS e
-LEFT JOIN ratings r ON e.eventId = r.eventId
+LEFT JOIN event_ratings er ON e.eventId = er.eventId
 WHERE EXISTS (
     SELECT 1 
     FROM userFavorites 
     WHERE userId = $3 AND eventId = e.eventId
 )
-GROUP BY e.eventId
 ORDER BY e.lastEditionDate DESC
 LIMIT $1 
 OFFSET $2;`
@@ -901,21 +922,29 @@ OFFSET $2;`
 func (s *Storage) GetOwnedEvents(ctx context.Context, in *dto.EventBaseFilters) (*dto.GetPublicEventsOut, error) {
 	const op = "storage.postgres.GetOwnedEvents"
 
-	state := `SELECT 
+	state := `WITH event_ratings AS (
+		SELECT 
+			eventId,
+			COALESCE(AVG(rating), 0) as avg_rating,
+			COUNT(rating) as rating_count
+		FROM ratings
+		GROUP BY eventId
+	)
+	SELECT 
 	e.eventId,
     e.title, 
     e.description,
     e.cover,
     e.lastEditionDate,
     e.tags,
-    COALESCE(AVG(r.rating), 0) as rate,
+    COALESCE(ROUND(er.avg_rating), 0)::INTEGER as rate,
     EXISTS (
         SELECT 1 
         FROM userFavorites 
         WHERE userId = $3 AND eventId = e.eventId
     ) as favorite
 FROM events AS e
-LEFT JOIN ratings r ON e.eventId = r.eventId
+LEFT JOIN event_ratings er ON e.eventId = er.eventId
 WHERE e.ownerId = $3
 GROUP BY e.eventId
 ORDER BY e.lastEditionDate DESC
@@ -956,25 +985,34 @@ OFFSET $2;`
 func (s *Storage) GetHistory(ctx context.Context, in *dto.EventBaseFilters) (*dto.GetPublicEventsOut, error) {
 	const op = "storage.postgres.GetHistory"
 
-	state := `SELECT 
+	state := `WITH event_ratings AS (
+		SELECT 
+			eventId,
+			COALESCE(AVG(rating), 0) as avg_rating,
+			COUNT(rating) as rating_count
+		FROM ratings
+		GROUP BY eventId
+	), user_completed AS (
+		SELECT DISTINCT eventId
+		FROM userLinks
+		WHERE userId = $3 AND finished = true
+	)
+	SELECT 
     e.eventId,
     e.title, 
     e.description,
     e.cover,
     e.lastEditionDate,
     e.tags,
-    COALESCE(AVG(r.rating), 0) as rate,
+    COALESCE(ROUND(er.avg_rating), 0)::INTEGER as rate,
     EXISTS (
         SELECT 1 
         FROM userFavorites 
         WHERE userId = $3 AND eventId = e.eventId
     ) as favorite
 FROM events AS e
-INNER JOIN userLinks ul ON e.eventId = ul.eventId 
-    AND ul.userId = $3 
-    AND ul.finished = true  
-LEFT JOIN ratings r ON e.eventId = r.eventId
-GROUP BY e.eventId, ul.finished
+INNER JOIN user_completed uc ON e.eventId = uc.eventId 
+LEFT JOIN event_ratings er ON e.eventId = er.eventId
 ORDER BY e.lastEditionDate DESC
 LIMIT $1 
 OFFSET $2;`
@@ -1544,13 +1582,12 @@ RETURNING linkId, COALESCE(currTaskId::text, ''), COALESCE(currBlockId::text, ''
 			if err != nil {
 				return "", "", "", false, nil, fmt.Errorf("%s: %w", op, err)
 			}
+			return linkId, currTaskId, currBlockId, finished, timestamppb.New(currTaskStartTime), nil
 		}
 		return "", "", "", false, nil, fmt.Errorf("%s: %w", op, err)
 	}
 
-	startTime = timestamppb.New(currTaskStartTime)
-
-	return
+	return linkId, currTaskId, currBlockId, finished, timestamppb.New(currTaskStartTime), nil
 }
 
 func (s *Storage) EndMe(ctx context.Context, userId string, eventId string) (string, error) {
@@ -2108,7 +2145,7 @@ func (s *Storage) GetBlockProgress(ctx context.Context, in *dto.UserEventIds) (*
 		tasks = append(tasks, task)
 	}
 
-	state = `SELECT sum(points) FROM answers WHERE userId = $1 AND taskId = ANY 
+	state = `SELECT COALESCE(SUM(points), 0) FROM answers WHERE userId = $1 AND taskId = ANY 
 	(SELECT taskId FROM tasks WHERE blockId = $2);`
 
 	var points int64
@@ -2125,7 +2162,7 @@ func (s *Storage) GetUserAnswers(ctx context.Context, in *dto.UserEventIds) (cor
 	const op = "storage.postgres.GetUserAnswers"
 
 	state := `SELECT COUNT(*) FROM answers WHERE userId = $1 AND taskId = ANY 
-	(SELECT taskId FROM tasks WHERE blockId = ANY (SELECT blockId FROM blocks WHERE eventId = $2));`
+	(SELECT taskId FROM tasks WHERE blockId = ANY (SELECT blockId FROM blocks WHERE eventId = $2) AND type != 0);`
 
 	res := s.db.QueryRow(ctx, state, in.UserId, in.EventId)
 
@@ -2135,7 +2172,7 @@ func (s *Storage) GetUserAnswers(ctx context.Context, in *dto.UserEventIds) (cor
 	}
 
 	state = `SELECT COUNT(*) FROM answers WHERE userId = $1 AND taskId = ANY 
-	(SELECT taskId FROM tasks WHERE blockId = ANY (SELECT blockId FROM blocks WHERE eventId = $2)) AND points > 0;`
+	(SELECT taskId FROM tasks WHERE blockId = ANY (SELECT blockId FROM blocks WHERE eventId = $2) AND type != 0) AND points > 0;`
 
 	res = s.db.QueryRow(ctx, state, in.UserId, in.EventId)
 
