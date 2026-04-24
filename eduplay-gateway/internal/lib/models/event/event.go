@@ -711,7 +711,7 @@ type AnswerBatch struct {
 	CurrentBlock string        `json:"currentBlock" validate:"required"`
 	CurrentTask  string        `json:"currentTask" validate:"required"`
 	TimeStamp    string        `json:"timeStamp"`
-	IsDone       bool          `json:"isDone" validate:"required"`
+	IsDone       bool          `json:"isDone"`
 }
 
 func AnswerBatchToDto(in *AnswerBatch) (*dto.AnswerBatch, error) {
