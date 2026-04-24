@@ -38,6 +38,7 @@ func (s *UseCase) GetDownloadUserEventStatus(ctx context.Context, req *eventMode
 		switch nextStage.Type {
 		case "task":
 			eventStatus.TaskId = nextStage.Task.TaskId
+			eventStatus.BlockId = nextStage.Task.BlockId
 
 			blockProgress, err := s.eventClient.GetBlockProgress(ctx, &dto.UserEventIds{UserId: userId, EventId: nextStage.Task.BlockId})
 			if err != nil {

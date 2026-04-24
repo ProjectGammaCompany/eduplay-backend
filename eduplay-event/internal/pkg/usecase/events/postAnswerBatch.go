@@ -17,6 +17,16 @@ func (a *UseCase) PostAnswerBatch(ctx context.Context, in *dto.AnswerBatch) (*dt
 
 	log.Info("updating user status from answer batch")
 
+	_, _, finished, _, err := a.storage.GetEventProgress(ctx, in.UserId, in.EventId)
+	if err != nil {
+		log.Error("failed to get event progress", err.Error(), slog.String("event", in.EventId))
+		return nil, err
+	}
+
+	if finished {
+		return &dto.MessageOut{Message: "event is finished"}, nil
+	}
+
 	fmt.Println(op, in.CurrentTask, in.CurrentBlock, in.IsDone)
 
 	for _, answer := range in.Answers {
