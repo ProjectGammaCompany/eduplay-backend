@@ -708,8 +708,8 @@ type AnswerBatch struct {
 	EventId      string        `json:"eventId" validate:"required"`
 	Answers      []AnswerShort `json:"answers" validate:"required"`
 	TotalPoints  int64         `json:"totalPoints"`
-	CurrentBlock string        `json:"currentBlock" validate:"required"`
-	CurrentTask  string        `json:"currentTask" validate:"required"`
+	CurrentBlock string        `json:"currentBlock"`
+	CurrentTask  string        `json:"currentTask"`
 	TimeStamp    string        `json:"timeStamp"`
 	IsDone       bool          `json:"isDone"`
 }
