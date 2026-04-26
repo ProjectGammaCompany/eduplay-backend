@@ -97,6 +97,13 @@ func New(log *slog.Logger, uc UseCase) http.HandlerFunc {
 
 		event, err := uc.GetEvent(request.Context(), &eventModel.Id{Id: id})
 
+		if event.EventId == "" {
+			log.Error("event not found")
+			writer.WriteHeader(http.StatusNotFound)
+			render.JSON(writer, request, lib.Error("event not found"))
+			return
+		}
+
 		if err != nil {
 			log.Error(err.Error(), slog.String("error", err.Error()))
 			writer.WriteHeader(http.StatusInternalServerError)

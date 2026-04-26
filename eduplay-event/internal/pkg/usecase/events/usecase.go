@@ -71,6 +71,7 @@ type storage interface {
 	GetBlockProgress(ctx context.Context, in *dto.UserEventIds) (*dto.BlockProgress, error)
 	GetUserAnswers(ctx context.Context, in *dto.UserEventIds) (corr int64, total int64, err error)
 	GetEventProgress(ctx context.Context, userId string, eventId string) (currTaskId string, currBlockId string, finished bool, currTaskStartTime time.Time, err error)
+	GetBlockMaxPoints(ctx context.Context, blockId string) (int64, error)
 	// PostAnswerBatch(ctx context.Context, in *dto.AnswerBatch) (*dto.MessageOut, error)
 }
 

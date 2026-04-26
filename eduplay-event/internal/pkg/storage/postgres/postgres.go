@@ -189,7 +189,7 @@ func (s *Storage) GetEvent(ctx context.Context, id string) (*dto.PostEventIn, er
 
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return nil, errs.ErrNotFound
+			return &dto.PostEventIn{}, nil
 		}
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
@@ -328,6 +328,9 @@ func (s *Storage) GetRole(ctx context.Context, userId string, eventId string) (i
 			err = res.Scan(&ownerId)
 
 			if err != nil {
+				if errors.Is(err, pgx.ErrNoRows) {
+					return 0, nil
+				}
 				return 0, fmt.Errorf("%s: %w", op, err)
 			}
 
@@ -1351,8 +1354,6 @@ func (s *Storage) GetBlockConditionsFull(ctx context.Context, blockId string) (*
 func (s *Storage) GetBlockTasks(ctx context.Context, blockId string) (*dto.Tasks, error) {
 	const op = "storage.postgres.GetBlockTasks"
 
-	files := make([]string, 0)
-
 	state := `SELECT taskId, name, description, type, files, time, points, partialPoint, taskOrder FROM tasks WHERE blockId = $1 ORDER BY taskOrder;`
 
 	res, err := s.db.Query(ctx, state, blockId)
@@ -1364,32 +1365,35 @@ func (s *Storage) GetBlockTasks(ctx context.Context, blockId string) (*dto.Tasks
 
 	tasks := make([]*dto.Task, 0)
 	for res.Next() {
+		files := make([]string, 0)
 		task := &dto.Task{}
 		err = res.Scan(&task.TaskId, &task.Name, &task.Description, &task.Type, &files, &task.Time, &task.Points, &task.PartialPoints, &task.Order)
 		if err != nil {
 			return nil, fmt.Errorf("%s: %w", op, err)
 		}
 
-		fileDtos := make([]*dto.File, 0)
-
 		if files != nil || len(files) > 0 {
-			for _, file := range files {
-				state := `SELECT fileKey, filename FROM files WHERE fileKey = $1;`
-				fmt.Println("getting file by key ", file)
+			fileDtos := make([]*dto.File, 0)
 
-				fileRes := s.db.QueryRow(ctx, state, file)
+			state := `SELECT fileKey, filename FROM files WHERE fileKey = ANY($1);`
 
+			fileRes, err := s.db.Query(ctx, state, files)
+			if err != nil {
+				return nil, fmt.Errorf("%s: %w", op, err)
+			}
+
+			for fileRes.Next() {
 				fileDto := &dto.File{}
 				err = fileRes.Scan(&fileDto.Url, &fileDto.Name)
 				if err != nil {
 					return nil, fmt.Errorf("%s: %w", op, err)
 				}
-
 				fileDtos = append(fileDtos, fileDto)
 			}
+
 			task.Files = fileDtos
 		}
-		task.Files = fileDtos
+		task.Files = make([]*dto.File, 0)
 
 		options, err := s.GetTaskOptions(ctx, task.TaskId)
 		if err != nil {
@@ -1580,6 +1584,10 @@ RETURNING linkId, COALESCE(currTaskId::text, ''), COALESCE(currBlockId::text, ''
 
 			err = s.db.QueryRow(ctx, state, stage.UserId, stage.EventId).Scan(&linkId, &currTaskId, &currBlockId, &finished, &currTaskStartTime)
 			if err != nil {
+				var pgErr *pgconn.PgError
+				if errors.As(err, &pgErr) && pgErr.Code == "23503" {
+					return "", "", "", false, nil, errs.ErrNotFound
+				}
 				return "", "", "", false, nil, fmt.Errorf("%s: %w", op, err)
 			}
 			return linkId, currTaskId, currBlockId, finished, timestamppb.New(currTaskStartTime), nil
@@ -2181,6 +2189,21 @@ func (s *Storage) GetUserAnswers(ctx context.Context, in *dto.UserEventIds) (cor
 		return 0, 0, fmt.Errorf("%s: %w", op, err)
 	}
 	return
+}
+
+func (s *Storage) GetBlockMaxPoints(ctx context.Context, blockId string) (int64, error) {
+	const op = "storage.postgres.GetBlockMaxPoints"
+
+	state := `SELECT COALESCE(SUM(points), 0) FROM tasks WHERE blockId = $1;`
+
+	var points int64
+
+	err := s.db.QueryRow(ctx, state, blockId).Scan(&points)
+	if err != nil {
+		return 0, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return points, nil
 }
 
 // func (s *Storage) GetUserAnswers(ctx context.Context, in *dto.UserEventIds) ([]*dto.Answer, error) {

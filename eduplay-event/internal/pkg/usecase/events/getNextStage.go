@@ -29,11 +29,15 @@ func (a *UseCase) GetNextStage(ctx context.Context, in *dto.UserEventIds) (*dto.
 
 	_, currTaskId, currBlockId, finished, startTime, err := a.storage.GetNextStage(ctx, in)
 	if err != nil {
+		if errors.Is(err, errs.ErrNotFound) {
+			nextStageInfo.Type = errs.ErrNotFound.Error()
+			return nextStageInfo, nil
+		}
 		log.Error("failed to get next stage", slog.Any("error", err), slog.String("event", in.EventId), slog.String("user", in.UserId))
 		return nil, err
 	}
 
-	fmt.Println("gotNextStage: ", currTaskId, " ", currBlockId, " ", finished, " ", startTime, " ", in.UserId, " ", in.EventId)
+	log.Debug("got next stage", slog.String("currTaskId", currTaskId), slog.String("currBlockId", currBlockId), slog.Bool("finished", finished), slog.String("startTime", startTime.String()), slog.String("userId", in.UserId), slog.String("eventId", in.EventId))
 
 	if finished {
 		nextStageInfo.Type = "end"
@@ -41,33 +45,12 @@ func (a *UseCase) GetNextStage(ctx context.Context, in *dto.UserEventIds) (*dto.
 	}
 
 	if currBlockId == "" {
-
-		fmt.Println("currBlockId is empty")
-
-		eventBlocks, err := a.storage.GetEventBlocks(ctx, in.EventId)
+		nextStageInfo, err = a.HandleNoBlock(ctx, log, nextStageInfo, in)
 		if err != nil {
-			log.Error("failed to get event blocks", slog.Any("error", err), slog.String("event", in.EventId))
+			log.Error("failed to handle no block", slog.Any("error", err), slog.String("event", in.EventId), slog.String("user", in.UserId))
 			return nil, err
 		}
-
-		if len(eventBlocks.Blocks) == 0 {
-			nextStageInfo.Type = "end"
-			_, err := a.storage.EndMe(ctx, in.UserId, in.EventId)
-			if err != nil {
-				log.Error("failed to end me", slog.Any("error", err), slog.String("event", in.EventId), slog.String("user", in.UserId))
-				return nil, err
-			}
-			return nextStageInfo, nil
-		}
-
-		nextStageInfo, err = a.GetNextBlock(ctx, log, 0, in)
-		if err != nil {
-			log.Error("failed to get next block", slog.Any("error", err), slog.String("event", in.EventId), slog.String("user", in.UserId))
-			return nil, err
-		}
-
 		return nextStageInfo, nil
-
 	}
 
 	if currTaskId == "" {
@@ -85,8 +68,8 @@ func (a *UseCase) GetNextStage(ctx context.Context, in *dto.UserEventIds) (*dto.
 		return nil, err
 	}
 
-	if startTime.AsTime().Format("02.01.2006 15:04:05.000") != "01.01.1970 00:00:00.000" || taskAnswer == nil {
-		fmt.Println("startTime ", startTime.AsTime().Format("02.01.2006 15:04:05.000"))
+	if startTime.AsTime().IsZero() || taskAnswer == nil {
+		log.Debug("return same task ", slog.String("startTime", startTime.AsTime().Format("02.01.2006 15:04:05.000")))
 		nextStageInfo.Type = "task"
 		currTask, err := a.storage.GetTaskById(ctx, currTaskId)
 		if err != nil {
@@ -107,25 +90,9 @@ func (a *UseCase) GetNextStage(ctx context.Context, in *dto.UserEventIds) (*dto.
 		}
 		nextStageInfo.Task = nextStageTask
 
-		// _, err = a.storage.PutNextStage(ctx, &dto.EventBlockTaskUserIds{
-		// 	UserId:  in.UserId,
-		// 	EventId: in.EventId,
-		// 	BlockId: currBlockId,
-		// 	TaskId:  currTaskId,
-		// })
-		// if err != nil {
-		// 	log.Error("failed to put next stage", slog.Any("error", err), slog.String("event", in.EventId), slog.String("user", in.UserId))
-		// 	return nil, err
-		// }
-
 		return nextStageInfo, nil
 	}
 
-	// currTask, err := a.storage.GetTaskById(ctx, currTaskId)
-	// if err != nil {
-	// 	log.Error("failed to get task", slog.Any("error", err), slog.String("task", currTaskId))
-	// 	return nil, err
-	// }
 	currBlock, err := a.storage.GetBlockInfo(ctx, currBlockId)
 	if err != nil {
 		log.Error("failed to get block", slog.Any("error", err), slog.String("block", currBlockId))
@@ -181,18 +148,18 @@ func (a *UseCase) GetNextStage(ctx context.Context, in *dto.UserEventIds) (*dto.
 		return nil, err
 	}
 
-	currBlockTasks, err := a.storage.GetBlockTasks(ctx, currBlockId)
+	currBlockTasks, err := a.storage.GetUserBlockTasksShort(ctx, currBlockId, in.UserId)
 	if err != nil {
 		log.Error("failed to get block tasks", slog.Any("error", err), slog.String("block", currBlockId))
 		return nil, err
 	}
 
-	fmt.Println("currTask.Order ", currTask.Order, " len(currBlockTasks.Tasks) ", len(currBlockTasks.Tasks))
-	if currTask.Order != int64(len(currBlockTasks.Tasks)) {
+	fmt.Println("currTask.Order ", currTask.Order, " len(currBlockTasks.Tasks) ", len(currBlockTasks))
+	if currTask.Order != int64(len(currBlockTasks)) {
 		// TODO GetNextTask
 		nextStageInfo.Type = "task"
 
-		nextTaskId = currBlockTasks.Tasks[currTask.Order].TaskId
+		nextTaskId = currBlockTasks[currTask.Order].TaskId
 		fmt.Println("currTaskId ", currTaskId, " nextTaskId ", nextTaskId)
 		nextTask, err := a.storage.GetTaskById(ctx, nextTaskId)
 		if err != nil {
@@ -231,9 +198,37 @@ func (a *UseCase) GetNextStage(ctx context.Context, in *dto.UserEventIds) (*dto.
 
 // TODO ___________________________________________________________
 
+func (a *UseCase) HandleNoBlock(ctx context.Context, log *slog.Logger, nextStageInfo *dto.NextStageInfo, in *dto.UserEventIds) (*dto.NextStageInfo, error) {
+	log.Debug("currBlockId is empty")
+
+	eventBlocks, err := a.storage.GetEventBlocks(ctx, in.EventId)
+	if err != nil {
+		log.Error("failed to get event blocks", slog.Any("error", err), slog.String("event", in.EventId))
+		return nil, err
+	}
+
+	if len(eventBlocks.Blocks) == 0 {
+		nextStageInfo.Type = "end"
+		_, err := a.storage.EndMe(ctx, in.UserId, in.EventId)
+		if err != nil {
+			log.Error("failed to end me", slog.Any("error", err), slog.String("event", in.EventId), slog.String("user", in.UserId))
+			return nil, err
+		}
+		return nextStageInfo, nil
+	}
+
+	nextStageInfo, err = a.GetNextBlock(ctx, log, 0, in)
+	if err != nil {
+		log.Error("failed to get next block", slog.Any("error", err), slog.String("event", in.EventId), slog.String("user", in.UserId))
+		return nil, err
+	}
+
+	return nextStageInfo, nil
+}
+
 func (a *UseCase) GetNextBlock(ctx context.Context, log *slog.Logger, currBlockOrder int64, in *dto.UserEventIds) (nextStageInfo *dto.NextStageInfo, err error) {
 
-	fmt.Println("===== func GetNextBlock")
+	log.Debug("===== func GetNextBlock")
 	nextStageInfo = &dto.NextStageInfo{}
 
 	nextBlockOrder := int64(0)
@@ -243,12 +238,12 @@ func (a *UseCase) GetNextBlock(ctx context.Context, log *slog.Logger, currBlockO
 		return nil, err
 	}
 
-	fmt.Println("currBlockOrder ", currBlockOrder, " len(currEvent.Blocks) ", len(currEvent.Blocks))
-	fmt.Println(currBlockOrder == int64(len(currEvent.Blocks)))
+	log.Debug("block order", slog.Int64("currBlockOrder ", currBlockOrder), slog.Int64("len(currEvent.Blocks) ", int64(len(currEvent.Blocks))))
+	log.Debug("is block last in event?", slog.Bool("currBlockOrder == len(currEvent.Blocks)", currBlockOrder == int64(len(currEvent.Blocks))))
 	if currBlockOrder == int64(len(currEvent.Blocks)) {
 		nextStageInfo.Type = "end"
 
-		fmt.Println(nextStageInfo)
+		log.Debug("block is last", slog.Any("nextStageInfo", nextStageInfo))
 		_, err = a.storage.EndMe(ctx, in.UserId, in.EventId)
 		if err != nil {
 			return nil, err
@@ -273,7 +268,7 @@ func (a *UseCase) GetNextBlock(ctx context.Context, log *slog.Logger, currBlockO
 		return nil, err
 	}
 
-	fmt.Println("userPoints ", userPoints, " len(blockConditions) ", len(blockWithConditions.Conditions))
+	log.Debug("check for conditions", slog.Int64("userPoints", userPoints), slog.Int("len(blockConditions) ", len(blockWithConditions.Conditions)))
 	blockConditions := blockWithConditions.Conditions
 
 	if len(blockConditions) > 0 {
@@ -295,7 +290,7 @@ func (a *UseCase) GetNextBlock(ctx context.Context, log *slog.Logger, currBlockO
 		}
 
 		for i := len(blockConditions) - 1; i >= 0; i-- {
-			fmt.Println("blockCondition ", i, " is ", blockConditions[i])
+			log.Debug("curr condition", slog.Int("block condition", i), slog.Int("len(blockConditions)", len(blockConditions)))
 
 			min, max := blockConditions[i].Min, blockConditions[i].Max
 
@@ -303,27 +298,25 @@ func (a *UseCase) GetNextBlock(ctx context.Context, log *slog.Logger, currBlockO
 				continue
 			}
 
-			fmt.Println("min ", min, " max ", max)
+			fmt.Println("points condition", userPoints, min, max)
+			log.Debug("points condition", slog.Int64("userPoints ", userPoints), slog.Int64("min ", min), slog.Int64("max ", max))
 			if max <= 0 || max < min {
-				max = 0
-				currBlockTasks, err := a.storage.GetBlockTasks(ctx, currEvent.Blocks[currBlockOrder-1].BlockId)
+				max, err = a.storage.GetBlockMaxPoints(ctx, currEvent.Blocks[currBlockOrder-1].BlockId)
 				if err != nil {
 					return nil, err
 				}
-				for _, task := range currBlockTasks.Tasks {
-					max += task.Points
-				}
-				fmt.Println("counting absolute max bc no max was set in condition ", max)
+				log.Debug("counting absolute max bc no max was set in condition", slog.Int64("max ", max))
 			}
-			fmt.Println("userPoints ", userPoints, " min ", min, " max ", max)
-			if userPoints > max {
-				// return nil, errors.New("too many points")
-				fmt.Println("somehow user points larger than max, so we go to next block")
-				break
-			}
-			if userPoints >= min {
+			log.Debug("points condition", slog.Int64("userPoints ", userPoints), slog.Int64("min ", min), slog.Int64("max ", max))
+			// if userPoints > max {
+			// 	// return nil, errors.New("too many points")
+			// 	log.Warn("somehow user points larger than max, so we go to next block")
+			// 	break
+			// }
+			if userPoints >= min && userPoints <= max {
 				nextBlockOrder = blockConditions[i].NextBlockOrder
 
+				fmt.Println("nextBlockOrder", nextBlockOrder)
 				nextBlockId := currEvent.Blocks[nextBlockOrder-1].BlockId
 
 				nextStageInfo, err = a.GetNextBlockById(ctx, log, nextBlockId, in)
@@ -455,87 +448,3 @@ func (a *UseCase) GetNextBlockById(ctx context.Context, log *slog.Logger, nextBl
 
 	return nextStageInfo, nil
 }
-
-// func (a *UseCase) GetNextTask(ctx context.Context, сurrTaskId string, currBlockId string, in *dto.UserEventIds) (nextStageInfo *dto.NextStageInfo, err error) {
-// 	fmt.Println("===== func GetNextTask")
-
-// 	nextStageInfo = &dto.NextStageInfo{}
-
-// 	currTask, err := a.storage.GetTaskById(ctx, сurrTaskId)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	currBlock, err := a.storage.GetBlockInfo(ctx, currBlockId)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	currBlockTasks, err := a.storage.GetBlockTasks(ctx, currBlockId)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	if currBlock.IsParallel {
-// 		nextStageInfo.Type = "block"
-// 		nextStageBlock := &dto.NextStageBlock{
-// 			BlockId: currBlockId,
-// 			Name:    currBlock.Name,
-// 		}
-// 		for _, task := range currBlockTasks.Tasks {
-// 			nextStageBlock.Tasks = append(nextStageBlock.Tasks, &dto.NextStageTaskShort{
-// 				TaskId:      task.TaskId,
-// 				Name:        task.Name,
-// 				Time:        task.Time,
-// 				IsCompleted: false,
-// 			})
-// 		}
-// 		nextStageInfo.Block = nextStageBlock
-
-// 		_, err := a.storage.PutNextStage(ctx, &dto.EventBlockTaskUserIds{
-// 			UserId:  in.UserId,
-// 			EventId: in.EventId,
-// 			BlockId: currBlockId,
-// 			TaskId:  "",
-// 		})
-// 		if err != nil {
-// 			return nil, err
-// 		}
-
-// 		return nextStageInfo, nil
-// 	}
-
-// 	if currTask.Order == int64(len(currBlockTasks.Tasks)) {
-// 		return a.GetNextBlock(ctx, currBlock.Order, in)
-// 	}
-
-// 	nextTaskId := currBlockTasks.Tasks[currTask.Order+1].TaskId
-// 	nextTask, err := a.storage.GetTaskById(ctx, nextTaskId)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	nextStageInfo.Task = &dto.NextStageTask{
-// 		TaskId:      nextTaskId,
-// 		BlockId:     currBlockId,
-// 		Name:        nextTask.Name,
-// 		Description: nextTask.Description,
-// 		Type:        nextTask.Type,
-// 		Options:     nextTask.Options,
-// 		Files:       nextTask.Files,
-// 		Time:        nextTask.Time,
-// 		Timestamp:   nil,
-// 	}
-
-// 	_, err = a.storage.PutNextStage(ctx, &dto.EventBlockTaskUserIds{
-// 		UserId:  in.UserId,
-// 		EventId: in.EventId,
-// 		BlockId: currBlockId,
-// 		TaskId:  nextTaskId,
-// 	})
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	return nextStageInfo, nil
-// }

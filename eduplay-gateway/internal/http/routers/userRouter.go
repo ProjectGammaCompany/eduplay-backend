@@ -6,6 +6,7 @@ import (
 	"eduplay-gateway/internal/http/handlers/user/changePassword"
 	"eduplay-gateway/internal/http/handlers/user/deleteAccount"
 	"eduplay-gateway/internal/http/handlers/user/getProfile"
+	"eduplay-gateway/internal/http/handlers/user/getValidationCode"
 	"eduplay-gateway/internal/http/handlers/user/postValidationCode"
 	"eduplay-gateway/internal/http/handlers/user/putAvatar"
 	"eduplay-gateway/internal/http/handlers/user/putUsername"
@@ -38,7 +39,7 @@ func UserRouter(router chi.Router, log *slog.Logger, cfg *config.Config) chi.Rou
 		r.Post("/refresh", refresh.New(log, users.New(log, userClient)))
 		r.Put("/password", changePassword.New(log, users.New(log, userClient)))
 		r.Post("/recoverPasswordCode", postValidationCode.New(log, users.New(log, userClient)))
-		r.Get("/recoverPasswordCodeValidity", postValidationCode.New(log, users.New(log, userClient)))
+		r.Get("/recoverPasswordCodeValidity", getValidationCode.New(log, users.New(log, userClient)))
 		// r.Get("/userData", getUserData.New(log, users.New(log, userClient)))
 		// r.Put("/userData", updateUserData.New(log, users.New(log, userClient)))
 		r.Delete("/", deleteAccount.New(log, users.New(log, userClient)))

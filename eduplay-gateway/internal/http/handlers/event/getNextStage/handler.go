@@ -103,6 +103,12 @@ func New(log *slog.Logger, uc UseCase) http.HandlerFunc {
 		nextStageInfo, err := uc.GetNextStage(request.Context(), &req)
 
 		if err != nil {
+			if errors.Is(err, storage.ErrNotFound) {
+				log.Error(err.Error(), slog.String("error", err.Error()))
+				writer.WriteHeader(http.StatusNotFound)
+				render.JSON(writer, request, err.Error())
+				return
+			}
 			log.Error(err.Error(), slog.String("error", err.Error()))
 			writer.WriteHeader(http.StatusInternalServerError)
 			render.JSON(writer, request, err)

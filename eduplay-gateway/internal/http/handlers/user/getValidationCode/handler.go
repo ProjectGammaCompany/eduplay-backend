@@ -14,7 +14,7 @@ import (
 )
 
 type UseCase interface {
-	GetValidationCode(ctx context.Context, pd *model.Code) (bool, error)
+	GetValidationCode(ctx context.Context, pd model.Code) (bool, error)
 }
 
 func New(log *slog.Logger, uc UseCase) http.HandlerFunc {
@@ -60,7 +60,7 @@ func New(log *slog.Logger, uc UseCase) http.HandlerFunc {
 		// 	return
 		// }
 
-		var req *model.Code
+		var req model.Code
 
 		// err := render.DecodeJSON(request.Body, &req)
 		// if err != nil {
@@ -89,7 +89,7 @@ func New(log *slog.Logger, uc UseCase) http.HandlerFunc {
 			return
 		}
 
-		req = &model.Code{Code: code}
+		req = model.Code{Code: code}
 
 		validity, err := uc.GetValidationCode(context.Background(), req)
 		if err != nil {
