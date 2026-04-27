@@ -19,7 +19,6 @@ func MaxBodySize(limit int64) func(http.Handler) http.Handler {
 func LimitMultipartParts(maxPartSize int64) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			// если не multipart — пропускаем
 			if r.Header.Get("Content-Type") == "" {
 				next.ServeHTTP(w, r)
 				return
@@ -27,7 +26,6 @@ func LimitMultipartParts(maxPartSize int64) func(http.Handler) http.Handler {
 
 			mr, err := r.MultipartReader()
 			if err != nil {
-				// не multipart — пропускаем
 				next.ServeHTTP(w, r)
 				return
 			}
@@ -35,10 +33,18 @@ func LimitMultipartParts(maxPartSize int64) func(http.Handler) http.Handler {
 			pr, pw := io.Pipe()
 
 			go func() {
-				defer pw.Close()
+				defer func() {
+					if err := pw.Close(); err != nil {
+						panic(err)
+					}
+				}()
 
 				writer := multipart.NewWriter(pw)
-				defer writer.Close()
+				defer func() {
+					if err := writer.Close(); err != nil {
+						panic(err)
+					}
+				}()
 
 				for {
 					part, err := mr.NextPart()
