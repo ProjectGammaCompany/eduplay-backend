@@ -6,6 +6,7 @@ import (
 
 	mwCors "eduplay-gateway/internal/http/middleware/cors"
 	mwLogger "eduplay-gateway/internal/http/middleware/logger"
+	mwSize "eduplay-gateway/internal/http/middleware/size"
 	"eduplay-gateway/internal/http/routers"
 	"log/slog"
 	"os"
@@ -59,6 +60,8 @@ func main() {
 	router.Use(mwLogger.New(log))
 	router.Use(middleware.Recoverer)
 	router.Use(mwCors.CorsMiddleware)
+	router.Use(mwSize.MaxBodySize(64 << 20))
+	router.Use(mwSize.LimitMultipartParts(30 << 20))
 
 	routers.UserRouter(router, log, cfg)
 	routers.EventRouter(router, log, cfg)

@@ -56,7 +56,7 @@ func (s *UseCase) GetEventPlayerInfo(ctx context.Context, userId string, eventId
 			return nil, err
 		}
 
-		if userGroup != nil || userGroup.GroupId != "" {
+		if userGroup == nil || userGroup.GroupId == "" {
 			playerInfo.NeedGroup = true
 		}
 	}

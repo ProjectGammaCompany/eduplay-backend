@@ -3,19 +3,19 @@ import { check, sleep } from 'k6';
 
 const BASE_URL = 'https://api.hse-eduplay.ru';
 
-const TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InVzZXI0QG1haWwucnUiLCJleHAiOjE3NzcyMjU3MjcsImlkIjoiZWE5YjYwOTItNDg5Mi00Y2E4LTk4ZTItNjY0M2I1NjIwZjg1In0.CtlDesf8V1vQ3Pcw0-AsJLmhtPs_bwufMRtXRv4bY1k';
+const TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InVzZXIxQG1haWwucnUiLCJleHAiOjE3NzcyNDcxNTYsImlkIjoiNjZmMzNmOWYtMDlhMC00NzA3LWFjYTktYWE3Nzg3NmIxMmFhIn0.kTnF6y8D61Jjkxh7E7jY3PuE91OfqTJNHEJlcZKpYp8';
 
 export const options = {
     stages: [
-        { duration: '30s', target: 10 },   // 10 пользователей
-        { duration: '30s', target: 30 },   // 30 пользователей
-        { duration: '30s', target: 50 },   // 50 пользователей
-        { duration: '30s', target: 0 },    // остановка
+        { duration: '1m', target: 10 },   
+        { duration: '2m', target: 50 },   
+        { duration: '30s', target: 100 },   
+        { duration: '1m', target: 0 },    
     ],
 };
 
 export default function () {
-    const res = http.get(`${BASE_URL}/event/648cc37b-bc2b-4308-aef0-426fc23d3b43/nextStage`, {
+    const res = http.get(`${BASE_URL}/event/5e4e87af-17f8-4308-b3c7-4787488c005f/nextStage`, {
         headers: {
             Authorization: `Bearer ${TOKEN}`,
         },

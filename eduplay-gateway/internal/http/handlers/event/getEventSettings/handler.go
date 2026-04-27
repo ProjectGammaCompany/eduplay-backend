@@ -103,6 +103,12 @@ func New(log *slog.Logger, uc UseCase) http.HandlerFunc {
 			render.JSON(writer, request, err)
 			return
 		}
+		if eventSettings == nil {
+			log.Error("event settings not found")
+			writer.WriteHeader(http.StatusNotFound)
+			render.JSON(writer, request, lib.Error("event settings not found"))
+			return
+		}
 
 		writer.WriteHeader(http.StatusOK)
 		render.JSON(writer, request, eventSettings)

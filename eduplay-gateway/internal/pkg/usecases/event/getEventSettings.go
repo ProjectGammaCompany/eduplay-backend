@@ -19,6 +19,9 @@ func (s *UseCase) GetEventSettings(ctx context.Context, req *eventModel.Id) (*ev
 		s.log.With(slog.String("op", op)).Error("failed to get event for event settings", slog.String("error", err.Error()))
 		return nil, err
 	}
+	if eventInfo == nil || len(eventInfo.EventId) == 0 {
+		return nil, nil
+	}
 
 	groups, err := s.eventClient.GetGroups(ctx, eventId)
 	if err != nil {
