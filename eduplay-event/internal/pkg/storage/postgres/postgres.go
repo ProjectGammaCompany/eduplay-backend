@@ -1901,7 +1901,7 @@ func (s *Storage) GetUserStats(ctx context.Context, userId string, eventId strin
 	if !totalPoints.Valid {
 		return &dto.User{
 			Id:     userId,
-			Points: -1,
+			Points: 0,
 		}, nil
 	}
 
