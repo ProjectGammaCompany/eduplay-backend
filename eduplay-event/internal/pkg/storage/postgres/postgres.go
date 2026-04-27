@@ -949,7 +949,6 @@ func (s *Storage) GetOwnedEvents(ctx context.Context, in *dto.EventBaseFilters) 
 FROM events AS e
 LEFT JOIN event_ratings er ON e.eventId = er.eventId
 WHERE e.ownerId = $3
-GROUP BY e.eventId
 ORDER BY e.lastEditionDate DESC
 LIMIT $1 
 OFFSET $2;`
