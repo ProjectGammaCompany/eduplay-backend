@@ -97,28 +97,9 @@ func (a *UseCase) PostAnswer(ctx context.Context, in *dto.Answer) (*dto.Answer, 
 			RightAnswerId: corrAnswerIds,
 		}
 
-		count := 0
+		ans = CountMulTaskPoints(in, task, corrAnswers, corrAnswerIds, allOptions, ans)
 
-		for _, userAnswer := range in.Answer {
-			ans.Answer = append(ans.Answer, allOptions[userAnswer])
-			for _, correctAnswerId := range corrAnswerIds {
-				if userAnswer == correctAnswerId {
-					count++
-				}
-			}
-		}
-
-		ans.Points = int64(count) * task.Points / int64(len(corrAnswers))
-
-		log.Info("checking answer", slog.Int("count", count), slog.Int("len", len(corrAnswers)), slog.Int64("points", ans.Points))
-
-		if count == len(corrAnswers) {
-			ans.Status = "correct"
-		} else if count > 0 {
-			ans.Status = "partial"
-		} else {
-			ans.Status = "incorrect"
-		}
+		log.Info("checking answer", slog.Int64("points", ans.Points), slog.String("status", ans.Status))
 
 		_, err := a.storage.PostAnswer(ctx, ans)
 		if err != nil {
@@ -218,4 +199,32 @@ func GetCorrectAnswers(task *dto.Task) ([]string, []string, map[string]string) {
 	}
 
 	return corrIds, corr, options
+}
+
+func CountMulTaskPoints(in *dto.Answer, task *dto.Task, corrAnswers []string, corrAnswerIds []string, allOptions map[string]string, ans *dto.Answer) *dto.Answer {
+	correct := 0
+
+	for _, userAnswer := range in.Answer {
+		ans.Answer = append(ans.Answer, allOptions[userAnswer])
+		for _, correctAnswerId := range corrAnswerIds {
+			if userAnswer == correctAnswerId {
+				correct++
+				continue
+			}
+		}
+	}
+
+	wrong := len(in.Answer) - correct
+
+	if correct-wrong == len(corrAnswers) {
+		ans.Points = task.Points
+		ans.Status = "correct"
+	} else if correct > 0 {
+		ans.Points = int64(max(0, int(task.Points)/len(corrAnswers)*(correct-wrong)))
+		ans.Status = "partial"
+	} else {
+		ans.Status = "incorrect"
+	}
+
+	return ans
 }

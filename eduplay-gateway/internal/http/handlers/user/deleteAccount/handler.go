@@ -69,7 +69,7 @@ func New(log *slog.Logger, uc UseCase) http.HandlerFunc {
 			return
 		}
 
-		log.Info("success to delete user")
-		render.JSON(writer, request, nil)
+		log.Info("user deleted successfully")
+		render.JSON(writer, request, "user deleted successfully")
 	}
 }

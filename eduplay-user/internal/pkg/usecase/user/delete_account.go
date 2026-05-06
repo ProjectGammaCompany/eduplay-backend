@@ -21,10 +21,11 @@ func (a *UseCase) DeleteUserAccount(ctx context.Context, userId string) error {
 	}
 
 	log.Info(ret)
-	// err := a.storage.DeleteAccount(ctx, userId)
-	// if err != nil {
-	// 	return err
-	// }
+
+	err = a.storage.DeleteAccount(ctx, userId)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
