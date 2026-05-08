@@ -164,10 +164,11 @@ func (s *Storage) GetUserFavoriteStart(ctx context.Context, in *dto.Filters) err
 	const op = "storage.postgres.GetUserFavoriteStart"
 
 	timeNow := time.Now().UTC().Add(3 * time.Hour)
+	timeZero := time.Time{}
 
-	state := `SELECT e.eventId, e.title FROM events e JOIN userFavorites f ON e.eventId = f.eventId WHERE f.userId = $1 AND e.startDate < $2;`
+	state := `SELECT e.eventId, e.title FROM events e JOIN userFavorites f ON e.eventId = f.eventId WHERE f.userId = $1 AND e.startDate < $2 AND e.startDate != $3;`
 
-	res, err := s.eventDb.Query(ctx, state, in.UserId, timeNow)
+	res, err := s.eventDb.Query(ctx, state, in.UserId, timeNow, timeZero)
 	if err != nil {
 		return fmt.Errorf("%s: %w", op, err)
 	}
@@ -194,13 +195,14 @@ func (s *Storage) GetEndedEvents(ctx context.Context, in *dto.Filters) error {
 
 	timeNowDay := time.Now().UTC().Add(3*time.Hour - time.Hour*24)
 	timeNowHour := time.Now().UTC().Add(3*time.Hour - time.Hour)
+	timeZero := time.Time{}
 
 	// TODO get not started favorite events hour
 
 	state := `SELECT e.eventId, e.title FROM events e 
-	JOIN userFavorites f ON e.eventId = f.eventId WHERE f.userId = $1 AND e.endDate < $2;`
+	JOIN userFavorites f ON e.eventId = f.eventId WHERE f.userId = $1 AND e.endDate < $2 AND e.endDate != $3;`
 
-	res, err := s.eventDb.Query(ctx, state, in.UserId, timeNowHour)
+	res, err := s.eventDb.Query(ctx, state, in.UserId, timeNowHour, timeZero)
 	if err != nil {
 		return fmt.Errorf("%s: %w", op, err)
 	}
@@ -237,9 +239,9 @@ func (s *Storage) GetEndedEvents(ctx context.Context, in *dto.Filters) error {
 
 	state = `SELECT e.eventId, e.title FROM events e JOIN 
 	userLinks ul ON e.eventId = ul.eventId 
-	WHERE ul.userId = $1 AND ul.finished = false AND ul.isParticipant = true AND e.endDate < $2;`
+	WHERE ul.userId = $1 AND ul.finished = false AND ul.isParticipant = true AND e.endDate < $2 AND e.endDate != $3;`
 
-	res, err = s.eventDb.Query(ctx, state, in.UserId, timeNowHour)
+	res, err = s.eventDb.Query(ctx, state, in.UserId, timeNowHour, timeZero)
 	if err != nil {
 		return fmt.Errorf("%s: %w", op, err)
 	}
@@ -261,9 +263,9 @@ func (s *Storage) GetEndedEvents(ctx context.Context, in *dto.Filters) error {
 	// TODO get ended favorite events day
 
 	state = `SELECT e.eventId, e.title FROM events e 
-	JOIN userFavorites f ON e.eventId = f.eventId WHERE f.userId = $1 AND e.endDate < $2;`
+	JOIN userFavorites f ON e.eventId = f.eventId WHERE f.userId = $1 AND e.endDate < $2 AND e.endDate != $3;`
 
-	res, err = s.eventDb.Query(ctx, state, in.UserId, timeNowDay)
+	res, err = s.eventDb.Query(ctx, state, in.UserId, timeNowDay, timeZero)
 	if err != nil {
 		return fmt.Errorf("%s: %w", op, err)
 	}
@@ -300,9 +302,9 @@ func (s *Storage) GetEndedEvents(ctx context.Context, in *dto.Filters) error {
 
 	state = `SELECT e.eventId, e.title FROM events e JOIN 
 	userLinks ul ON e.eventId = ul.eventId 
-	WHERE ul.userId = $1 AND ul.finished = false AND ul.isParticipant = true AND e.endDate < $2;`
+	WHERE ul.userId = $1 AND ul.finished = false AND ul.isParticipant = true AND e.endDate < $2 AND e.endDate != $3;`
 
-	res, err = s.eventDb.Query(ctx, state, in.UserId, timeNowDay)
+	res, err = s.eventDb.Query(ctx, state, in.UserId, timeNowDay, timeZero)
 	if err != nil {
 		return fmt.Errorf("%s: %w", op, err)
 	}
