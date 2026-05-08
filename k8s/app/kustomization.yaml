@@ -14,12 +14,12 @@ resources:
 
 images:
   - name: notocactus/eduplay-gateway
-    newTag: sha-cea2815
+    newTag: sha-404a47c
   - name: notocactus/eduplay-user
-    newTag: sha-cea2815
+    newTag: sha-404a47c
   - name: notocactus/eduplay-event
-    newTag: sha-cea2815
+    newTag: sha-404a47c
   - name: notocactus/eduplay-notification
-    newTag: sha-cea2815
+    newTag: sha-404a47c
   - name: notocactus/eduplay-mail
-    newTag: sha-cea2815
+    newTag: sha-404a47c
