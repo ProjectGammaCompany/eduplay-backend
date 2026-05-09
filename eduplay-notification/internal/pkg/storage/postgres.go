@@ -196,6 +196,7 @@ func (s *Storage) GetEndedEvents(ctx context.Context, in *dto.Filters) error {
 	timeNowDay := time.Now().UTC().Add(3*time.Hour - time.Hour*24)
 	timeNowHour := time.Now().UTC().Add(3*time.Hour - time.Hour)
 	timeZero := time.Time{}
+	timeNow := time.Now().UTC().Add(3 * time.Hour)
 
 	// TODO get not started favorite events hour
 
@@ -210,7 +211,7 @@ func (s *Storage) GetEndedEvents(ctx context.Context, in *dto.Filters) error {
 	defer res.Close()
 
 	for res.Next() {
-		notif := &dto.NotificationInfo{UserId: in.UserId, Date: timestamppb.New(timeNowHour), Type: "eventEnd", NotStartedFavorite: true, TimeLeft: "hour"}
+		notif := &dto.NotificationInfo{UserId: in.UserId, Date: timestamppb.New(timeNow), Type: "eventEnd", NotStartedFavorite: true, TimeLeft: "hour"}
 		err = res.Scan(&notif.EventId, &notif.EventName)
 		if err != nil {
 			return fmt.Errorf("%s: %w", op, err)
@@ -249,7 +250,7 @@ func (s *Storage) GetEndedEvents(ctx context.Context, in *dto.Filters) error {
 	defer res.Close()
 
 	for res.Next() {
-		notif := &dto.NotificationInfo{UserId: in.UserId, Date: timestamppb.New(timeNowHour), Type: "eventEnd", NotStartedFavorite: false, TimeLeft: "hour"}
+		notif := &dto.NotificationInfo{UserId: in.UserId, Date: timestamppb.New(timeNow), Type: "eventEnd", NotStartedFavorite: false, TimeLeft: "hour"}
 		err = res.Scan(&notif.EventId, &notif.EventName)
 		if err != nil {
 			return fmt.Errorf("%s: %w", op, err)
@@ -273,7 +274,7 @@ func (s *Storage) GetEndedEvents(ctx context.Context, in *dto.Filters) error {
 	defer res.Close()
 
 	for res.Next() {
-		notif := &dto.NotificationInfo{UserId: in.UserId, Date: timestamppb.New(timeNowDay), Type: "eventEnd", NotStartedFavorite: true, TimeLeft: "day"}
+		notif := &dto.NotificationInfo{UserId: in.UserId, Date: timestamppb.New(timeNow), Type: "eventEnd", NotStartedFavorite: true, TimeLeft: "day"}
 		err = res.Scan(&notif.EventId, &notif.EventName)
 		if err != nil {
 			return fmt.Errorf("%s: %w", op, err)
@@ -312,7 +313,7 @@ func (s *Storage) GetEndedEvents(ctx context.Context, in *dto.Filters) error {
 	defer res.Close()
 
 	for res.Next() {
-		notif := &dto.NotificationInfo{UserId: in.UserId, Date: timestamppb.New(timeNowDay), Type: "eventEnd", NotStartedFavorite: false, TimeLeft: "day"}
+		notif := &dto.NotificationInfo{UserId: in.UserId, Date: timestamppb.New(timeNow), Type: "eventEnd", NotStartedFavorite: false, TimeLeft: "day"}
 		err = res.Scan(&notif.EventId, &notif.EventName)
 		if err != nil {
 			return fmt.Errorf("%s: %w", op, err)
