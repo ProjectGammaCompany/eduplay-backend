@@ -384,6 +384,36 @@ func (_m *Storage) GetCollaborators(ctx context.Context, eventId string) (*edupl
 	return r0, r1
 }
 
+// GetEditorUserStatsTask provides a mock function with given fields: ctx, userId, taskId
+func (_m *Storage) GetEditorUserStatsTask(ctx context.Context, userId string, taskId string) (*eduplay_event_v1.EditorStatsTask, error) {
+	ret := _m.Called(ctx, userId, taskId)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetEditorUserStatsTask")
+	}
+
+	var r0 *eduplay_event_v1.EditorStatsTask
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, string, string) (*eduplay_event_v1.EditorStatsTask, error)); ok {
+		return rf(ctx, userId, taskId)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, string, string) *eduplay_event_v1.EditorStatsTask); ok {
+		r0 = rf(ctx, userId, taskId)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*eduplay_event_v1.EditorStatsTask)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, string, string) error); ok {
+		r1 = rf(ctx, userId, taskId)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // GetEvent provides a mock function with given fields: ctx, id
 func (_m *Storage) GetEvent(ctx context.Context, id string) (*eduplay_event_v1.PostEventIn, error) {
 	ret := _m.Called(ctx, id)

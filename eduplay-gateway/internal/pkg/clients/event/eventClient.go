@@ -566,6 +566,16 @@ func (cl *Client) GetUserAnswers(ctx context.Context, in *events.UserEventIds) (
 	return out, nil
 }
 
+func (cl *Client) GetEditorUserStatsTask(ctx context.Context, in *events.UserEventIds) (*events.EditorStatsTask, error) {
+	op := "GetEditorUserStats.Client"
+	out, err := cl.api.GetEditorUserStatsTask(ctx, in)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return out, nil
+}
+
 func InterceptorLogger(l *slog.Logger) interlog.Logger {
 	return interlog.LoggerFunc(func(ctx context.Context, lvl interlog.Level, msg string, fields ...any) {
 		l.Log(ctx, slog.Level(lvl), msg, fields...)

@@ -191,3 +191,24 @@ func PutTaskListInToDto(putTaskListIn *PutTaskListIn) *dto.PutListIn {
 		List: putTaskListIn.Tasks,
 	}
 }
+
+type EditorUserStats struct {
+	Blocks []TaskBlock `json:"blocks"`
+}
+
+type TaskBlock struct {
+	BlockId string              `json:"id"`
+	Name    string              `json:"name"`
+	Tasks   []GetUserTaskAnswer `json:"tasks"`
+}
+
+type GetUserTaskAnswer struct {
+	TaskId      string       `json:"id"`
+	Name        string       `json:"name"`
+	Type        int64        `json:"type"`
+	Status      string       `json:"status"`
+	Options     []TaskOption `json:"options"`
+	UserAnswers []string     `json:"userAnswers"`
+	UserPoints  int64        `json:"userPoints"`
+	Points      int64        `json:"points"`
+}

@@ -19,57 +19,58 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	Events_SaveFile_FullMethodName             = "/event_data.Events/SaveFile"
-	Events_PostEvent_FullMethodName            = "/event_data.Events/PostEvent"
-	Events_PutEvent_FullMethodName             = "/event_data.Events/PutEvent"
-	Events_GetEvent_FullMethodName             = "/event_data.Events/GetEvent"
-	Events_GetRole_FullMethodName              = "/event_data.Events/GetRole"
-	Events_GetGroups_FullMethodName            = "/event_data.Events/GetGroups"
-	Events_PutGroups_FullMethodName            = "/event_data.Events/PutGroups"
-	Events_PutTaskList_FullMethodName          = "/event_data.Events/PutTaskList"
-	Events_PutBlockList_FullMethodName         = "/event_data.Events/PutBlockList"
-	Events_GetCollaborators_FullMethodName     = "/event_data.Events/GetCollaborators"
-	Events_PostEventBlock_FullMethodName       = "/event_data.Events/PostEventBlock"
-	Events_PutEventBlock_FullMethodName        = "/event_data.Events/PutEventBlock"
-	Events_PutEventBlockName_FullMethodName    = "/event_data.Events/PutEventBlockName"
-	Events_GetEventBlocks_FullMethodName       = "/event_data.Events/GetEventBlocks"
-	Events_GetPublicEvents_FullMethodName      = "/event_data.Events/GetPublicEvents"
-	Events_GetUserFavorites_FullMethodName     = "/event_data.Events/GetUserFavorites"
-	Events_GetOwnedEvents_FullMethodName       = "/event_data.Events/GetOwnedEvents"
-	Events_GetHistory_FullMethodName           = "/event_data.Events/GetHistory"
-	Events_PutFavorite_FullMethodName          = "/event_data.Events/PutFavorite"
-	Events_GetAllTags_FullMethodName           = "/event_data.Events/GetAllTags"
-	Events_PostTask_FullMethodName             = "/event_data.Events/PostTask"
-	Events_PutTask_FullMethodName              = "/event_data.Events/PutTask"
-	Events_PostBlockCondition_FullMethodName   = "/event_data.Events/PostBlockCondition"
-	Events_PutBlockCondition_FullMethodName    = "/event_data.Events/PutBlockCondition"
-	Events_DeleteBlockCondition_FullMethodName = "/event_data.Events/DeleteBlockCondition"
-	Events_GetBlockInfo_FullMethodName         = "/event_data.Events/GetBlockInfo"
-	Events_GetBlockConditions_FullMethodName   = "/event_data.Events/GetBlockConditions"
-	Events_GetBlockTasks_FullMethodName        = "/event_data.Events/GetBlockTasks"
-	Events_GetTaskById_FullMethodName          = "/event_data.Events/GetTaskById"
-	Events_DeleteTask_FullMethodName           = "/event_data.Events/DeleteTask"
-	Events_DeleteBlockById_FullMethodName      = "/event_data.Events/DeleteBlockById"
-	Events_DeleteEventById_FullMethodName      = "/event_data.Events/DeleteEventById"
-	Events_PostAnswer_FullMethodName           = "/event_data.Events/PostAnswer"
-	Events_GetEventForUser_FullMethodName      = "/event_data.Events/GetEventForUser"
-	Events_PutNextStage_FullMethodName         = "/event_data.Events/PutNextStage"
-	Events_GetNextStage_FullMethodName         = "/event_data.Events/GetNextStage"
-	Events_PutTimestamp_FullMethodName         = "/event_data.Events/PutTimestamp"
-	Events_GetUserStatus_FullMethodName        = "/event_data.Events/GetUserStatus"
-	Events_GetGroupUsers_FullMethodName        = "/event_data.Events/GetGroupUsers"
-	Events_GetUserStats_FullMethodName         = "/event_data.Events/GetUserStats"
-	Events_GetEventUsers_FullMethodName        = "/event_data.Events/GetEventUsers"
-	Events_GetUserGroup_FullMethodName         = "/event_data.Events/GetUserGroup"
-	Events_PostComplaint_FullMethodName        = "/event_data.Events/PostComplaint"
-	Events_GetJoinCode_FullMethodName          = "/event_data.Events/GetJoinCode"
-	Events_GetEventByJoinCode_FullMethodName   = "/event_data.Events/GetEventByJoinCode"
-	Events_GetEventUserRating_FullMethodName   = "/event_data.Events/GetEventUserRating"
-	Events_PostParticipant_FullMethodName      = "/event_data.Events/PostParticipant"
-	Events_PostRate_FullMethodName             = "/event_data.Events/PostRate"
-	Events_GetBlockProgress_FullMethodName     = "/event_data.Events/GetBlockProgress"
-	Events_PostAnswerBatch_FullMethodName      = "/event_data.Events/PostAnswerBatch"
-	Events_GetUserAnswers_FullMethodName       = "/event_data.Events/GetUserAnswers"
+	Events_SaveFile_FullMethodName               = "/event_data.Events/SaveFile"
+	Events_PostEvent_FullMethodName              = "/event_data.Events/PostEvent"
+	Events_PutEvent_FullMethodName               = "/event_data.Events/PutEvent"
+	Events_GetEvent_FullMethodName               = "/event_data.Events/GetEvent"
+	Events_GetRole_FullMethodName                = "/event_data.Events/GetRole"
+	Events_GetGroups_FullMethodName              = "/event_data.Events/GetGroups"
+	Events_PutGroups_FullMethodName              = "/event_data.Events/PutGroups"
+	Events_PutTaskList_FullMethodName            = "/event_data.Events/PutTaskList"
+	Events_PutBlockList_FullMethodName           = "/event_data.Events/PutBlockList"
+	Events_GetCollaborators_FullMethodName       = "/event_data.Events/GetCollaborators"
+	Events_PostEventBlock_FullMethodName         = "/event_data.Events/PostEventBlock"
+	Events_PutEventBlock_FullMethodName          = "/event_data.Events/PutEventBlock"
+	Events_PutEventBlockName_FullMethodName      = "/event_data.Events/PutEventBlockName"
+	Events_GetEventBlocks_FullMethodName         = "/event_data.Events/GetEventBlocks"
+	Events_GetPublicEvents_FullMethodName        = "/event_data.Events/GetPublicEvents"
+	Events_GetUserFavorites_FullMethodName       = "/event_data.Events/GetUserFavorites"
+	Events_GetOwnedEvents_FullMethodName         = "/event_data.Events/GetOwnedEvents"
+	Events_GetHistory_FullMethodName             = "/event_data.Events/GetHistory"
+	Events_PutFavorite_FullMethodName            = "/event_data.Events/PutFavorite"
+	Events_GetAllTags_FullMethodName             = "/event_data.Events/GetAllTags"
+	Events_PostTask_FullMethodName               = "/event_data.Events/PostTask"
+	Events_PutTask_FullMethodName                = "/event_data.Events/PutTask"
+	Events_PostBlockCondition_FullMethodName     = "/event_data.Events/PostBlockCondition"
+	Events_PutBlockCondition_FullMethodName      = "/event_data.Events/PutBlockCondition"
+	Events_DeleteBlockCondition_FullMethodName   = "/event_data.Events/DeleteBlockCondition"
+	Events_GetBlockInfo_FullMethodName           = "/event_data.Events/GetBlockInfo"
+	Events_GetBlockConditions_FullMethodName     = "/event_data.Events/GetBlockConditions"
+	Events_GetBlockTasks_FullMethodName          = "/event_data.Events/GetBlockTasks"
+	Events_GetTaskById_FullMethodName            = "/event_data.Events/GetTaskById"
+	Events_DeleteTask_FullMethodName             = "/event_data.Events/DeleteTask"
+	Events_DeleteBlockById_FullMethodName        = "/event_data.Events/DeleteBlockById"
+	Events_DeleteEventById_FullMethodName        = "/event_data.Events/DeleteEventById"
+	Events_PostAnswer_FullMethodName             = "/event_data.Events/PostAnswer"
+	Events_GetEventForUser_FullMethodName        = "/event_data.Events/GetEventForUser"
+	Events_PutNextStage_FullMethodName           = "/event_data.Events/PutNextStage"
+	Events_GetNextStage_FullMethodName           = "/event_data.Events/GetNextStage"
+	Events_PutTimestamp_FullMethodName           = "/event_data.Events/PutTimestamp"
+	Events_GetUserStatus_FullMethodName          = "/event_data.Events/GetUserStatus"
+	Events_GetGroupUsers_FullMethodName          = "/event_data.Events/GetGroupUsers"
+	Events_GetUserStats_FullMethodName           = "/event_data.Events/GetUserStats"
+	Events_GetEventUsers_FullMethodName          = "/event_data.Events/GetEventUsers"
+	Events_GetUserGroup_FullMethodName           = "/event_data.Events/GetUserGroup"
+	Events_PostComplaint_FullMethodName          = "/event_data.Events/PostComplaint"
+	Events_GetJoinCode_FullMethodName            = "/event_data.Events/GetJoinCode"
+	Events_GetEventByJoinCode_FullMethodName     = "/event_data.Events/GetEventByJoinCode"
+	Events_GetEventUserRating_FullMethodName     = "/event_data.Events/GetEventUserRating"
+	Events_PostParticipant_FullMethodName        = "/event_data.Events/PostParticipant"
+	Events_PostRate_FullMethodName               = "/event_data.Events/PostRate"
+	Events_GetBlockProgress_FullMethodName       = "/event_data.Events/GetBlockProgress"
+	Events_PostAnswerBatch_FullMethodName        = "/event_data.Events/PostAnswerBatch"
+	Events_GetUserAnswers_FullMethodName         = "/event_data.Events/GetUserAnswers"
+	Events_GetEditorUserStatsTask_FullMethodName = "/event_data.Events/GetEditorUserStatsTask"
 )
 
 // EventsClient is the client API for Events service.
@@ -127,6 +128,7 @@ type EventsClient interface {
 	GetBlockProgress(ctx context.Context, in *UserEventIds, opts ...grpc.CallOption) (*BlockProgress, error)
 	PostAnswerBatch(ctx context.Context, in *AnswerBatch, opts ...grpc.CallOption) (*MessageOut, error)
 	GetUserAnswers(ctx context.Context, in *UserEventIds, opts ...grpc.CallOption) (*UserAnswers, error)
+	GetEditorUserStatsTask(ctx context.Context, in *UserEventIds, opts ...grpc.CallOption) (*EditorStatsTask, error)
 }
 
 type eventsClient struct {
@@ -647,6 +649,16 @@ func (c *eventsClient) GetUserAnswers(ctx context.Context, in *UserEventIds, opt
 	return out, nil
 }
 
+func (c *eventsClient) GetEditorUserStatsTask(ctx context.Context, in *UserEventIds, opts ...grpc.CallOption) (*EditorStatsTask, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(EditorStatsTask)
+	err := c.cc.Invoke(ctx, Events_GetEditorUserStatsTask_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // EventsServer is the server API for Events service.
 // All implementations must embed UnimplementedEventsServer
 // for forward compatibility.
@@ -702,6 +714,7 @@ type EventsServer interface {
 	GetBlockProgress(context.Context, *UserEventIds) (*BlockProgress, error)
 	PostAnswerBatch(context.Context, *AnswerBatch) (*MessageOut, error)
 	GetUserAnswers(context.Context, *UserEventIds) (*UserAnswers, error)
+	GetEditorUserStatsTask(context.Context, *UserEventIds) (*EditorStatsTask, error)
 	mustEmbedUnimplementedEventsServer()
 }
 
@@ -864,6 +877,9 @@ func (UnimplementedEventsServer) PostAnswerBatch(context.Context, *AnswerBatch) 
 }
 func (UnimplementedEventsServer) GetUserAnswers(context.Context, *UserEventIds) (*UserAnswers, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetUserAnswers not implemented")
+}
+func (UnimplementedEventsServer) GetEditorUserStatsTask(context.Context, *UserEventIds) (*EditorStatsTask, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetEditorUserStatsTask not implemented")
 }
 func (UnimplementedEventsServer) mustEmbedUnimplementedEventsServer() {}
 func (UnimplementedEventsServer) testEmbeddedByValue()                {}
@@ -1804,6 +1820,24 @@ func _Events_GetUserAnswers_Handler(srv interface{}, ctx context.Context, dec fu
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Events_GetEditorUserStatsTask_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UserEventIds)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(EventsServer).GetEditorUserStatsTask(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Events_GetEditorUserStatsTask_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(EventsServer).GetEditorUserStatsTask(ctx, req.(*UserEventIds))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Events_ServiceDesc is the grpc.ServiceDesc for Events service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -2014,6 +2048,10 @@ var Events_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetUserAnswers",
 			Handler:    _Events_GetUserAnswers_Handler,
+		},
+		{
+			MethodName: "GetEditorUserStatsTask",
+			Handler:    _Events_GetEditorUserStatsTask_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

@@ -314,6 +314,36 @@ func (_m *EventClient) GetCollaborators(ctx context.Context, in *eduplay_event_v
 	return r0, r1
 }
 
+// GetEditorUserStatsTask provides a mock function with given fields: ctx, in
+func (_m *EventClient) GetEditorUserStatsTask(ctx context.Context, in *eduplay_event_v1.UserEventIds) (*eduplay_event_v1.EditorStatsTask, error) {
+	ret := _m.Called(ctx, in)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetEditorUserStatsTask")
+	}
+
+	var r0 *eduplay_event_v1.EditorStatsTask
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, *eduplay_event_v1.UserEventIds) (*eduplay_event_v1.EditorStatsTask, error)); ok {
+		return rf(ctx, in)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, *eduplay_event_v1.UserEventIds) *eduplay_event_v1.EditorStatsTask); ok {
+		r0 = rf(ctx, in)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*eduplay_event_v1.EditorStatsTask)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, *eduplay_event_v1.UserEventIds) error); ok {
+		r1 = rf(ctx, in)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // GetEvent provides a mock function with given fields: ctx, in
 func (_m *EventClient) GetEvent(ctx context.Context, in *eduplay_event_v1.Id) (*eduplay_event_v1.PostEventIn, error) {
 	ret := _m.Called(ctx, in)

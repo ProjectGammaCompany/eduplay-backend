@@ -1,4 +1,4 @@
-package postGroupParticipant
+package getEditorUserStats
 
 import (
 	"context"
@@ -14,17 +14,16 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/render"
-	"github.com/go-playground/validator/v10"
 )
 
 type UseCase interface {
 	GetRole(ctx context.Context, userId string, eventId string) (int64, error)
-	PostGroupParticipant(ctx context.Context, groupParticipant *eventModel.ParticipationPasswords) (string, error)
+	GetEditorUserStats(ctx context.Context, in *eventModel.UserEventIds) (*eventModel.EditorUserStats, error)
 }
 
 func New(log *slog.Logger, uc UseCase) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
-		const op = "handlers.event.postGroupParticipant"
+		const op = "handlers.event.GetEditorUserStats"
 
 		log = log.With(slog.String("op", op),
 			slog.String("request_id", middleware.GetReqID(request.Context())))
@@ -67,83 +66,53 @@ func New(log *slog.Logger, uc UseCase) http.HandlerFunc {
 
 		eventId := chi.URLParam(request, "eventId")
 		if eventId == "" {
-			log.Error("no Id provided")
+			log.Error("no event id provided")
 			writer.WriteHeader(http.StatusBadRequest)
-			render.JSON(writer, request, lib.Error("no Id provided"))
+			render.JSON(writer, request, lib.Error("no event id provided"))
 			return
 		}
 
 		isUUID := tokens.ValidateUUID(eventId)
 		if !isUUID {
-			log.Error("invalid id provided")
+			log.Error("invalid event id provided")
 			writer.WriteHeader(http.StatusBadRequest)
-			render.JSON(writer, request, lib.Error("invalid id provided"))
+			render.JSON(writer, request, lib.Error("invalid event id provided"))
 			return
 		}
 
-		var req *eventModel.ParticipationPasswords
+		userId := chi.URLParam(request, "userId")
+		if userId == "" {
+			log.Error("no user id provided")
+			writer.WriteHeader(http.StatusBadRequest)
+			render.JSON(writer, request, lib.Error("no user id provided"))
+			return
+		}
 
-		err = render.DecodeJSON(request.Body, &req)
+		isUUID = tokens.ValidateUUID(userId)
+		if !isUUID {
+			log.Error("invalid user id provided")
+			writer.WriteHeader(http.StatusBadRequest)
+			render.JSON(writer, request, lib.Error("invalid user id provided"))
+			return
+		}
+
+		role, err := uc.GetRole(request.Context(), accessClaims.ID, eventId)
 		if err != nil {
-			log.Error(storage.ErrInvalidRequest.Error(), slog.String("error", err.Error()))
-			writer.WriteHeader(http.StatusBadRequest)
-			render.JSON(writer, request, storage.ErrInvalidRequest)
+			log.Error(err.Error(), slog.String("error", err.Error()))
+			writer.WriteHeader(http.StatusInternalServerError)
+			render.JSON(writer, request, err)
 			return
 		}
 
-		log.Info("request body decoded", slog.Any("request", req))
-
-		if err := validator.New().Struct(req); err != nil {
-			var validationErrors validator.ValidationErrors
-			errors.As(err, &validationErrors)
-			log.Error(storage.ErrValidationError.Error(), slog.String("error", err.Error()))
-			writer.WriteHeader(http.StatusBadRequest)
-			render.JSON(writer, request, storage.ErrValidationError.Error())
+		if role != 1 {
+			log.Error("forbidden action")
+			writer.WriteHeader(http.StatusForbidden)
+			render.JSON(writer, request, lib.Error("user is forbidden to perform this action"))
 			return
 		}
 
-		req.UserId = accessClaims.ID
-		req.EventId = eventId
-
-		ret, err := uc.PostGroupParticipant(request.Context(), req)
-
+		editorStats, err := uc.GetEditorUserStats(request.Context(), &eventModel.UserEventIds{EventId: eventId, UserId: userId})
 		if err != nil {
-			if errors.Is(err, storage.ErrNotFound) {
-				log.Error(err.Error(), slog.String("error", err.Error()))
-				writer.WriteHeader(http.StatusNotFound)
-				render.JSON(writer, request, err.Error())
-				return
-			}
-			if errors.Is(err, storage.ErrIncorrectPassword) {
-				log.Error(err.Error(), slog.String("error", err.Error()))
-				writer.WriteHeader(http.StatusForbidden)
-				render.JSON(writer, request, err.Error())
-				return
-			}
-			if errors.Is(err, storage.ErrUserIsNotPlayer) {
-				log.Error(err.Error(), slog.String("error", err.Error()))
-				writer.WriteHeader(http.StatusForbidden)
-				render.JSON(writer, request, err.Error())
-				return
-			}
-			if errors.Is(err, storage.ErrEventIsPrivate) {
-				log.Error(err.Error(), slog.String("error", err.Error()))
-				writer.WriteHeader(http.StatusForbidden)
-				render.JSON(writer, request, err.Error())
-				return
-			}
-			if errors.Is(err, storage.ErrEventHasNoGroups) {
-				log.Error(err.Error(), slog.String("error", err.Error()))
-				writer.WriteHeader(http.StatusNotFound)
-				render.JSON(writer, request, err.Error())
-				return
-			}
-			if errors.Is(err, storage.ErrUserAlreadyExists) {
-				log.Error(err.Error(), slog.String("error", err.Error()))
-				writer.WriteHeader(http.StatusNotFound)
-				render.JSON(writer, request, err.Error())
-				return
-			}
 			log.Error(err.Error(), slog.String("error", err.Error()))
 			writer.WriteHeader(http.StatusInternalServerError)
 			render.JSON(writer, request, err)
@@ -151,6 +120,6 @@ func New(log *slog.Logger, uc UseCase) http.HandlerFunc {
 		}
 
 		writer.WriteHeader(http.StatusOK)
-		render.JSON(writer, request, map[string]string{"eventId": ret})
+		render.JSON(writer, request, editorStats)
 	}
 }

@@ -143,8 +143,8 @@ func (s *UseCase) GetEventJson(ctx context.Context, eventId string) (*eventModel
 				return nil, err
 			}
 
-			eventTaskFiles := make([]string, len(taskInfo.Files))
-			for _, file := range task.Files {
+			eventTaskFiles := make([]string, 0)
+			for _, file := range taskInfo.Files {
 				if file.Url == "" {
 					continue
 				}

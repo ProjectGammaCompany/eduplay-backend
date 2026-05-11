@@ -61,6 +61,7 @@ type EventClient interface {
 	GetBlockProgress(ctx context.Context, in *dto.UserEventIds) (*dto.BlockProgress, error)
 	PostAnswerBatch(ctx context.Context, in *dto.AnswerBatch) (*dto.MessageOut, error)
 	GetUserAnswers(ctx context.Context, in *dto.UserEventIds) (*dto.UserAnswers, error)
+	GetEditorUserStatsTask(ctx context.Context, in *dto.UserEventIds) (*dto.EditorStatsTask, error)
 }
 
 type UserClient interface {

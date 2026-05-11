@@ -1446,25 +1446,24 @@ func (s *Storage) GetTaskById(ctx context.Context, taskId string) (*dto.Task, er
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
 
-	fmt.Println("getting files")
-
 	if files != nil || len(files) > 0 {
-		for _, file := range files {
-			state := `SELECT fileKey, filename FROM files WHERE fileKey = $1;`
-			fmt.Println("getting file by key ", file)
+		state := `SELECT fileKey, filename FROM files WHERE fileKey = ANY($1);`
 
-			fileRes := s.db.QueryRow(ctx, state, file)
+		fileRes, err := s.db.Query(ctx, state, files)
+		if err != nil {
+			return nil, fmt.Errorf("%s: %w", op, err)
+		}
 
+		for fileRes.Next() {
 			fileDto := &dto.File{}
 			err = fileRes.Scan(&fileDto.Url, &fileDto.Name)
 			if err != nil {
 				return nil, fmt.Errorf("%s: %w", op, err)
 			}
-
 			fileDtos = append(fileDtos, fileDto)
 		}
-		task.Files = fileDtos
 	}
+	task.Files = fileDtos
 
 	options, err := s.GetTaskOptions(ctx, task.TaskId)
 	if err != nil {
@@ -1500,11 +1499,11 @@ func (s *Storage) DeleteTaskById(ctx context.Context, taskId string) (string, er
 func (s *Storage) PostAnswer(ctx context.Context, answer *dto.Answer) (string, error) {
 	const op = "storage.postgres.PostAnswer"
 
-	state := `INSERT INTO answers (userId, taskId, values, optionIds, points) 
-	VALUES ($1, $2, COALESCE($3, '{}'::text[]), COALESCE($4, '{}'::uuid[]), $5) RETURNING answerId;`
+	state := `INSERT INTO answers (userId, taskId, values, optionIds, points, status) 
+	VALUES ($1, $2, COALESCE($3, '{}'::text[]), COALESCE($4, '{}'::uuid[]), $5, $6) RETURNING answerId;`
 
 	var answerId string
-	err := s.db.QueryRow(ctx, state, answer.UserId, answer.TaskId, answer.Answer, answer.AnswerIds, answer.Points).Scan(&answerId)
+	err := s.db.QueryRow(ctx, state, answer.UserId, answer.TaskId, answer.Answer, answer.AnswerIds, answer.Points, answer.Status).Scan(&answerId)
 	if err != nil {
 		return "", fmt.Errorf("%s: %w", op, err)
 	}
@@ -2203,6 +2202,53 @@ func (s *Storage) GetBlockMaxPoints(ctx context.Context, blockId string) (int64,
 	}
 
 	return points, nil
+}
+
+func (s *Storage) GetEditorUserStatsTask(ctx context.Context, userId string, taskId string) (*dto.EditorStatsTask, error) {
+	const op = "storage.postgres.GetEditorUserStatsTask"
+
+	ret := &dto.EditorStatsTask{}
+
+	state := `SELECT t.taskId, t.name, t.type, a.status, a.optionIds::text[], a.values, a.points, t.points FROM (SELECT * FROM tasks WHERE taskId = $1) as t JOIN answers a ON t.taskId = a.taskId WHERE a.userId = $2;`
+
+	res := s.db.QueryRow(ctx, state, taskId, userId)
+
+	var userAnswerIds []string
+	var userAnswerValues []string
+
+	err := res.Scan(&ret.TaskId, &ret.Name, &ret.Type, &ret.Status, &userAnswerIds, &userAnswerValues, &ret.UserPoints, &ret.Points)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, nil
+		}
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	if ret.Type == 3 || ret.Type == 4 {
+		ret.UserAnswerIds = userAnswerValues
+	} else {
+		ret.UserAnswerIds = userAnswerIds
+	}
+
+	options, err := s.GetTaskOptions(ctx, ret.TaskId)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+	ret.Options = options.Options
+
+	if len(ret.Status) == 0 {
+		if ret.Type == 0 {
+			ret.Status = "correct"
+		} else if ret.UserPoints == ret.Points {
+			ret.Status = "correct"
+		} else if ret.UserPoints > 0 {
+			ret.Status = "partial"
+		} else {
+			ret.Status = "incorrect"
+		}
+	}
+
+	return ret, nil
 }
 
 // func (s *Storage) GetUserAnswers(ctx context.Context, in *dto.UserEventIds) ([]*dto.Answer, error) {
