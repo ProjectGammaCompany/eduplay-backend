@@ -85,7 +85,7 @@ func (s *Storage) GetNotifications(ctx context.Context, in *dto.Filters) (*dto.N
 	eventName, 
 	notStartedFavorite, 
 	isRead
-	FROM notifications WHERE userId = $1 
+	FROM notifications WHERE userId = $1 AND isRead = false 
 	ORDER BY notifDate DESC
 	LIMIT $2 OFFSET $3;`
 
@@ -114,7 +114,8 @@ func (s *Storage) GetNotifications(ctx context.Context, in *dto.Filters) (*dto.N
 func (s *Storage) DeleteNotification(ctx context.Context, in *dto.Ids) error {
 	const op = "storage.postgres.DeleteNotification"
 
-	state := `DELETE FROM notifications WHERE userId = $1 AND notifId = $2;`
+	// state := `DELETE FROM notifications WHERE userId = $1 AND notifId = $2;`
+	state := `UPDATE notifications SET isRead = true WHERE userId = $1 AND notifId = $2;`
 
 	_, err := s.db.Exec(ctx, state, in.UserId, in.NotificationId)
 	if err != nil {
