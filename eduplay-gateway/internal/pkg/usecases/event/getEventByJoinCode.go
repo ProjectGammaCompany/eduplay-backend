@@ -15,11 +15,11 @@ func (s *UseCase) GetEventByJoinCode(ctx context.Context, joinCode string, userI
 	ret, err := s.eventClient.GetEventByJoinCode(ctx, &eventDto.Id{Id: joinCode})
 
 	if err != nil {
-		if err == errs.ErrNotFound {
-			return false, errs.ErrNotFound
-		}
 		s.log.With(slog.String("op", op)).Error("failed to get event id by join code", slog.String("error", err.Error()))
 		return false, err
+	}
+	if ret == nil || ret.Id == "" {
+		return false, errs.ErrNotFound
 	}
 
 	event, err := s.eventClient.GetEvent(ctx, &eventDto.Id{Id: ret.Id})

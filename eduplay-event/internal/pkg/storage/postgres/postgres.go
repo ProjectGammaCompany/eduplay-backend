@@ -2011,7 +2011,7 @@ func (s *Storage) GetEventByJoinCode(ctx context.Context, joinCode string) (stri
 	err := s.db.QueryRow(ctx, state, joinCode).Scan(&eventId)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return "", errs.ErrNotFound
+			return "", nil
 		}
 		return "", fmt.Errorf("%s: %w", op, err)
 	}
