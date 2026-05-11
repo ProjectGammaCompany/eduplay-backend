@@ -987,6 +987,7 @@ OFFSET $2;`
 func (s *Storage) GetHistory(ctx context.Context, in *dto.EventBaseFilters) (*dto.GetPublicEventsOut, error) {
 	const op = "storage.postgres.GetHistory"
 
+	// finished == true can be added
 	state := `WITH event_ratings AS (
 		SELECT 
 			eventId,
@@ -997,7 +998,7 @@ func (s *Storage) GetHistory(ctx context.Context, in *dto.EventBaseFilters) (*dt
 	), user_completed AS (
 		SELECT DISTINCT eventId
 		FROM userLinks
-		WHERE userId = $3 AND finished = true
+		WHERE userId = $3 
 	)
 	SELECT 
     e.eventId,
