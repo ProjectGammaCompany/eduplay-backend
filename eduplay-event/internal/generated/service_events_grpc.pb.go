@@ -106,7 +106,7 @@ type EventsClient interface {
 	GetBlockConditions(ctx context.Context, in *Id, opts ...grpc.CallOption) (*BlockInfo, error)
 	GetBlockTasks(ctx context.Context, in *Id, opts ...grpc.CallOption) (*Tasks, error)
 	GetTaskById(ctx context.Context, in *Id, opts ...grpc.CallOption) (*Task, error)
-	DeleteTask(ctx context.Context, in *Id, opts ...grpc.CallOption) (*MessageOut, error)
+	DeleteTask(ctx context.Context, in *UserEventIds, opts ...grpc.CallOption) (*MessageOut, error)
 	DeleteBlockById(ctx context.Context, in *Id, opts ...grpc.CallOption) (*MessageOut, error)
 	DeleteEventById(ctx context.Context, in *Id, opts ...grpc.CallOption) (*MessageOut, error)
 	PostAnswer(ctx context.Context, in *Answer, opts ...grpc.CallOption) (*Answer, error)
@@ -429,7 +429,7 @@ func (c *eventsClient) GetTaskById(ctx context.Context, in *Id, opts ...grpc.Cal
 	return out, nil
 }
 
-func (c *eventsClient) DeleteTask(ctx context.Context, in *Id, opts ...grpc.CallOption) (*MessageOut, error) {
+func (c *eventsClient) DeleteTask(ctx context.Context, in *UserEventIds, opts ...grpc.CallOption) (*MessageOut, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(MessageOut)
 	err := c.cc.Invoke(ctx, Events_DeleteTask_FullMethodName, in, out, cOpts...)
@@ -692,7 +692,7 @@ type EventsServer interface {
 	GetBlockConditions(context.Context, *Id) (*BlockInfo, error)
 	GetBlockTasks(context.Context, *Id) (*Tasks, error)
 	GetTaskById(context.Context, *Id) (*Task, error)
-	DeleteTask(context.Context, *Id) (*MessageOut, error)
+	DeleteTask(context.Context, *UserEventIds) (*MessageOut, error)
 	DeleteBlockById(context.Context, *Id) (*MessageOut, error)
 	DeleteEventById(context.Context, *Id) (*MessageOut, error)
 	PostAnswer(context.Context, *Answer) (*Answer, error)
@@ -812,7 +812,7 @@ func (UnimplementedEventsServer) GetBlockTasks(context.Context, *Id) (*Tasks, er
 func (UnimplementedEventsServer) GetTaskById(context.Context, *Id) (*Task, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetTaskById not implemented")
 }
-func (UnimplementedEventsServer) DeleteTask(context.Context, *Id) (*MessageOut, error) {
+func (UnimplementedEventsServer) DeleteTask(context.Context, *UserEventIds) (*MessageOut, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteTask not implemented")
 }
 func (UnimplementedEventsServer) DeleteBlockById(context.Context, *Id) (*MessageOut, error) {
@@ -1425,7 +1425,7 @@ func _Events_GetTaskById_Handler(srv interface{}, ctx context.Context, dec func(
 }
 
 func _Events_DeleteTask_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(Id)
+	in := new(UserEventIds)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -1437,7 +1437,7 @@ func _Events_DeleteTask_Handler(srv interface{}, ctx context.Context, dec func(i
 		FullMethod: Events_DeleteTask_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(EventsServer).DeleteTask(ctx, req.(*Id))
+		return srv.(EventsServer).DeleteTask(ctx, req.(*UserEventIds))
 	}
 	return interceptor(ctx, in, info, handler)
 }

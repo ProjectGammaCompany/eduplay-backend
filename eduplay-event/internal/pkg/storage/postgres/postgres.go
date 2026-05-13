@@ -378,9 +378,15 @@ func (s *Storage) GetGroups(ctx context.Context, eventId string) (*dto.GetGroups
 func (s *Storage) PutGroupsInCondition(ctx context.Context, in *dto.PutListIn) (string, error) {
 	const op = "storage.postgres.PutGroups"
 
-	state := `UPDATE conditions SET groupName = COALESCE($1, '{}'::text[]) WHERE conditionId = $2;`
+	state := `UPDATE conditions SET groupName = COALESCE($1, '{}'::text[]) WHERE conditionId = $2 RETURNING blockId;`
 
-	_, err := s.db.Exec(ctx, state, in.List, in.Id)
+	var blockId string
+	err := s.db.QueryRow(ctx, state, in.List, in.Id).Scan(&blockId)
+	if err != nil {
+		return "", fmt.Errorf("%s: %w", op, err)
+	}
+
+	err = s.UpdateEventLastEditionDate(ctx, blockId, true)
 	if err != nil {
 		return "", fmt.Errorf("%s: %w", op, err)
 	}
@@ -413,6 +419,11 @@ func (s *Storage) PutTaskList(ctx context.Context, in *dto.PutListIn) (string, e
 		return "", fmt.Errorf("%s: %w", op, err)
 	}
 
+	err = s.UpdateEventLastEditionDate(ctx, in.Id, true)
+	if err != nil {
+		return "", fmt.Errorf("%s: %w", op, err)
+	}
+
 	return "task list " + in.Id + " updated", nil
 }
 
@@ -437,6 +448,11 @@ func (s *Storage) PutBlockList(ctx context.Context, in *dto.PutListIn) (string, 
 			AND b.eventId = $3;`
 
 	_, err := s.db.Exec(ctx, state, order, in.List, in.Id)
+	if err != nil {
+		return "", fmt.Errorf("%s: %w", op, err)
+	}
+
+	err = s.UpdateEventLastEditionDate(ctx, in.Id, false)
 	if err != nil {
 		return "", fmt.Errorf("%s: %w", op, err)
 	}
@@ -488,6 +504,12 @@ func (s *Storage) PostEventBlock(ctx context.Context, in *dto.PostEventBlockIn) 
 		return "", fmt.Errorf("%s: %w", op, err)
 	}
 
+	state = `UPDATE events SET lastEditionDate = $1 WHERE eventId = $2;`
+	_, err = s.db.Exec(ctx, state, time.Now().UTC().Add(3*time.Hour), in.EventId)
+	if err != nil {
+		return "", fmt.Errorf("%s: %w", op, err)
+	}
+
 	return id, nil
 }
 
@@ -508,6 +530,11 @@ func (s *Storage) PutEventBlock(ctx context.Context, in *dto.PostEventBlockIn) (
 		return "", fmt.Errorf("%s: %w", op, err)
 	}
 
+	err = s.UpdateEventLastEditionDate(ctx, in.BlockId, true)
+	if err != nil {
+		return "", fmt.Errorf("%s: %w", op, err)
+	}
+
 	return "block " + in.BlockId + " updated", nil
 }
 
@@ -521,11 +548,21 @@ func (s *Storage) PutEventBlockName(ctx context.Context, in *dto.Tag) (string, e
 		return "", fmt.Errorf("%s: %w", op, err)
 	}
 
+	err = s.UpdateEventLastEditionDate(ctx, in.Id, true)
+	if err != nil {
+		return "", fmt.Errorf("%s: %w", op, err)
+	}
+
 	return "block " + in.Id + " updated", nil
 }
 
 func (s *Storage) DeleteEventBlock(ctx context.Context, blockId string) (string, error) {
 	const op = "storage.postgres.DeleteEventBlock"
+
+	err := s.UpdateEventLastEditionDate(ctx, blockId, true)
+	if err != nil {
+		return "", fmt.Errorf("%s: %w", op, err)
+	}
 
 	state := `WITH deleted_block AS (
     DELETE FROM blocks
@@ -536,11 +573,16 @@ UPDATE blocks b
 SET blockOrder = b.blockOrder - 1
 FROM deleted_block d
 WHERE b.eventId = d.eventId
-  AND b.blockOrder > d.blockOrder;
-`
+  AND b.blockOrder > d.blockOrder
+  RETURNING b.eventId;`
 
-	_, err := s.db.Exec(ctx, state, blockId)
+	_, err = s.db.Exec(ctx, state, blockId)
+	if err != nil {
+		return "", fmt.Errorf("%s: %w", op, err)
+	}
 
+	state = `DELETE FROM conditions WHERE prevBlockId = $1 OR nextBlockId = $1;`
+	_, err = s.db.Exec(ctx, state, blockId)
 	if err != nil {
 		return "", fmt.Errorf("%s: %w", op, err)
 	}
@@ -1184,6 +1226,11 @@ func (s *Storage) PostTask(ctx context.Context, in *dto.Task) (string, error) {
 		}
 	}
 
+	err = s.UpdateEventLastEditionDate(ctx, in.BlockId, true)
+	if err != nil {
+		return "", fmt.Errorf("%s: %w", op, err)
+	}
+
 	return id, nil
 }
 
@@ -1237,6 +1284,11 @@ func (s *Storage) PutTask(ctx context.Context, in *dto.Task) (*dto.PutTaskOut, e
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
 
+	err = s.UpdateEventLastEditionDate(ctx, in.BlockId, true)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
 	return &dto.PutTaskOut{Order: order, Options: options.Options}, nil
 }
 
@@ -1262,6 +1314,11 @@ func (s *Storage) PostBlockCondition(ctx context.Context, in *dto.Condition) (*d
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
 
+	err = s.UpdateEventLastEditionDate(ctx, in.PreviousBlockId, true)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
 	return &dto.PostConditionOut{ConditionId: id, BlockOrder: order}, nil
 }
 
@@ -1283,15 +1340,25 @@ func (s *Storage) PutBlockCondition(ctx context.Context, in *dto.Condition) (str
 		return "", fmt.Errorf("%s: %w", op, err)
 	}
 
+	err = s.UpdateEventLastEditionDate(ctx, in.PreviousBlockId, true)
+	if err != nil {
+		return "", fmt.Errorf("%s: %w", op, err)
+	}
+
 	return in.ConditionId, nil
 }
 
 func (s *Storage) DeleteBlockCondition(ctx context.Context, conditionId string) (string, error) {
 	const op = "storage.postgres.DeleteBlockCondition"
 
+	err := s.UpdateEventLastEditionDate(ctx, conditionId, true)
+	if err != nil {
+		return "", fmt.Errorf("%s: %w", op, err)
+	}
+
 	state := `DELETE FROM conditions WHERE conditionId = $1;`
 
-	_, err := s.db.Exec(ctx, state, conditionId)
+	_, err = s.db.Exec(ctx, state, conditionId)
 	if err != nil {
 		return "", fmt.Errorf("%s: %w", op, err)
 	}
@@ -1475,8 +1542,13 @@ func (s *Storage) GetTaskById(ctx context.Context, taskId string) (*dto.Task, er
 	return task, nil
 }
 
-func (s *Storage) DeleteTaskById(ctx context.Context, taskId string) (string, error) {
+func (s *Storage) DeleteTaskById(ctx context.Context, ids *dto.UserEventIds) (string, error) {
 	const op = "storage.postgres.DeleteTaskById"
+
+	err := s.UpdateEventLastEditionDate(ctx, ids.EventId, false)
+	if err != nil {
+		return "", fmt.Errorf("%s: %w", op, err)
+	}
 
 	state := `WITH deleted_task AS (
         DELETE FROM tasks 
@@ -1489,12 +1561,12 @@ func (s *Storage) DeleteTaskById(ctx context.Context, taskId string) (string, er
     WHERE tasks.blockId = d.blockId 
       AND tasks.taskOrder > d.taskOrder;`
 
-	_, err := s.db.Exec(ctx, state, taskId)
+	_, err = s.db.Exec(ctx, state, ids.UserId)
 	if err != nil {
 		return "", fmt.Errorf("%s: %w", op, err)
 	}
 
-	return "task " + taskId + " removed", nil
+	return "task " + ids.UserId + " removed", nil
 }
 
 func (s *Storage) PostAnswer(ctx context.Context, answer *dto.Answer) (string, error) {
@@ -1763,6 +1835,42 @@ RETURNING eventId;`
 	}
 
 	return id, nil
+}
+
+func (s *Storage) UpdateEventLastEditionDate(ctx context.Context, id string, blockId bool) error {
+	const op = "storage.postgres.UpdateEventLastEditionDate"
+
+	if blockId {
+		// state := `UPDATE events SET lastEditionDate = $1 WHERE eventId = (SELECT eventId FROM blocks WHERE blockId = $2);`
+		// ret, err := s.db.Exec(ctx, state, time.Now().UTC().Add(3*time.Hour), id)
+		// if err != nil {
+		// 	return fmt.Errorf("%s: %w", op, err)
+		// }
+
+		// if ret.RowsAffected() == 0 {
+		// 	return errs.ErrNotFound
+		// }
+
+		state := `UPDATE events SET lastEditionDate = $1 WHERE eventId = (SELECT eventId FROM blocks WHERE blockId = $2) RETURNING eventId;`
+
+		err := s.db.QueryRow(ctx, state, time.Now().UTC().Add(3*time.Hour), id).Scan(&id)
+		if err != nil {
+			return fmt.Errorf("%s: %w", op, err)
+		}
+
+		fmt.Println(id)
+
+		return nil
+	}
+
+	state := `UPDATE events SET lastEditionDate = $1 WHERE eventId = $2;`
+
+	_, err := s.db.Exec(ctx, state, time.Now().UTC().Add(3*time.Hour), id)
+	if err != nil {
+		return fmt.Errorf("%s: %w", op, err)
+	}
+
+	return nil
 }
 
 func (s *Storage) UpdateEventGroups(ctx context.Context, eventId string, groups []*dto.Group) error {

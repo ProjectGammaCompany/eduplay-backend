@@ -331,7 +331,7 @@ func (cl *Client) GetTaskById(ctx context.Context, in *events.Id) (*events.Task,
 	return out, nil
 }
 
-func (cl *Client) DeleteTaskById(ctx context.Context, in *events.Id) (*events.MessageOut, error) {
+func (cl *Client) DeleteTaskById(ctx context.Context, in *events.UserEventIds) (*events.MessageOut, error) {
 	op := "DeleteTaskById.Client"
 	out, err := cl.api.DeleteTask(ctx, in)
 	if err != nil {

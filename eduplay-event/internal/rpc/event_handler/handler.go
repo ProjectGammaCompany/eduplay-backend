@@ -40,7 +40,7 @@ type UseCase interface {
 	GetBlockConditions(ctx context.Context, in *dto.Id) (*dto.BlockInfo, error)
 	GetBlockTasks(ctx context.Context, in *dto.Id) (*dto.Tasks, error)
 	GetTaskById(ctx context.Context, in *dto.Id) (*dto.Task, error)
-	DeleteTaskById(ctx context.Context, in *dto.Id) (string, error)
+	DeleteTaskById(ctx context.Context, in *dto.UserEventIds) (string, error)
 	PostAnswer(ctx context.Context, in *dto.Answer) (*dto.Answer, error)
 	DeleteBlockById(ctx context.Context, in *dto.Id) (string, error)
 	DeleteEventById(ctx context.Context, in *dto.Id) (string, error)
@@ -382,7 +382,7 @@ func (h *Handler) GetTaskById(ctx context.Context, in *dto.Id) (*dto.Task, error
 	return ret, nil
 }
 
-func (h *Handler) DeleteTask(ctx context.Context, in *dto.Id) (*dto.MessageOut, error) {
+func (h *Handler) DeleteTask(ctx context.Context, in *dto.UserEventIds) (*dto.MessageOut, error) {
 	op := "DeleteTaskById.Handler"
 
 	message, err := h.uc.DeleteTaskById(ctx, in)

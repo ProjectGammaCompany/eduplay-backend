@@ -7,7 +7,7 @@ import (
 	dto "eduplay-event/internal/generated"
 )
 
-func (a *UseCase) DeleteTaskById(ctx context.Context, in *dto.Id) (string, error) {
+func (a *UseCase) DeleteTaskById(ctx context.Context, in *dto.UserEventIds) (string, error) {
 	const op = "Events.UseCase.DeleteTaskById"
 
 	log := a.log.With(
@@ -16,9 +16,9 @@ func (a *UseCase) DeleteTaskById(ctx context.Context, in *dto.Id) (string, error
 
 	log.Info("deleting task by id")
 
-	message, err := a.storage.DeleteTaskById(ctx, in.Id)
+	message, err := a.storage.DeleteTaskById(ctx, in)
 	if err != nil {
-		log.Error("failed to delete task by id", err.Error(), slog.String("task", in.Id))
+		log.Error("failed to delete task by id", err.Error(), slog.String("task", in.UserId))
 		return "", err
 	}
 

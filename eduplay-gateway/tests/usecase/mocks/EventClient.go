@@ -105,7 +105,7 @@ func (_m *EventClient) DeleteEventById(ctx context.Context, in *eduplay_event_v1
 }
 
 // DeleteTaskById provides a mock function with given fields: ctx, in
-func (_m *EventClient) DeleteTaskById(ctx context.Context, in *eduplay_event_v1.Id) (*eduplay_event_v1.MessageOut, error) {
+func (_m *EventClient) DeleteTaskById(ctx context.Context, in *eduplay_event_v1.UserEventIds) (*eduplay_event_v1.MessageOut, error) {
 	ret := _m.Called(ctx, in)
 
 	if len(ret) == 0 {
@@ -114,10 +114,10 @@ func (_m *EventClient) DeleteTaskById(ctx context.Context, in *eduplay_event_v1.
 
 	var r0 *eduplay_event_v1.MessageOut
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, *eduplay_event_v1.Id) (*eduplay_event_v1.MessageOut, error)); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, *eduplay_event_v1.UserEventIds) (*eduplay_event_v1.MessageOut, error)); ok {
 		return rf(ctx, in)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, *eduplay_event_v1.Id) *eduplay_event_v1.MessageOut); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, *eduplay_event_v1.UserEventIds) *eduplay_event_v1.MessageOut); ok {
 		r0 = rf(ctx, in)
 	} else {
 		if ret.Get(0) != nil {
@@ -125,7 +125,7 @@ func (_m *EventClient) DeleteTaskById(ctx context.Context, in *eduplay_event_v1.
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, *eduplay_event_v1.Id) error); ok {
+	if rf, ok := ret.Get(1).(func(context.Context, *eduplay_event_v1.UserEventIds) error); ok {
 		r1 = rf(ctx, in)
 	} else {
 		r1 = ret.Error(1)

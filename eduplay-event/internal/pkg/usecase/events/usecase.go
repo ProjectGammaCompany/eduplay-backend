@@ -41,7 +41,7 @@ type storage interface {
 	GetBlockConditionsFull(ctx context.Context, id string) (*dto.BlockInfo, error)
 	GetBlockTasks(ctx context.Context, blockId string) (*dto.Tasks, error)
 	GetTaskById(ctx context.Context, taskId string) (*dto.Task, error)
-	DeleteTaskById(ctx context.Context, taskId string) (string, error)
+	DeleteTaskById(ctx context.Context, ids *dto.UserEventIds) (string, error)
 	DeleteEventBlock(ctx context.Context, blockId string) (string, error)
 	DeleteEvent(ctx context.Context, eventId string) (string, error)
 	PostAnswer(ctx context.Context, answer *dto.Answer) (string, error)

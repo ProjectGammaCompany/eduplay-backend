@@ -4,7 +4,6 @@ import (
 	"context"
 	"eduplay-gateway/internal/http/tokens"
 	"eduplay-gateway/internal/lib"
-	eventModel "eduplay-gateway/internal/lib/models/event"
 	"eduplay-gateway/internal/storage"
 	"errors"
 	"log/slog"
@@ -18,7 +17,7 @@ import (
 
 type UseCase interface {
 	GetRole(ctx context.Context, userId string, eventId string) (int64, error)
-	DeleteTaskById(ctx context.Context, pd *eventModel.Id) (string, error)
+	DeleteTaskById(ctx context.Context, taskId string, eventId string) (string, error)
 }
 
 func New(log *slog.Logger, uc UseCase) http.HandlerFunc {
@@ -127,11 +126,7 @@ func New(log *slog.Logger, uc UseCase) http.HandlerFunc {
 			return
 		}
 
-		req := eventModel.Id{
-			Id: taskId,
-		}
-
-		ret, err := uc.DeleteTaskById(request.Context(), &req)
+		ret, err := uc.DeleteTaskById(request.Context(), taskId, eventId)
 
 		if err != nil {
 			log.Error(err.Error(), slog.String("error", err.Error()))

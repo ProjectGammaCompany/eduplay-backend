@@ -39,7 +39,7 @@ type EventClient interface {
 	GetBlockConditions(ctx context.Context, in *dto.Id) (*dto.BlockInfo, error)
 	GetBlockTasks(ctx context.Context, in *dto.Id) (*dto.Tasks, error)
 	GetTaskById(ctx context.Context, in *dto.Id) (*dto.Task, error)
-	DeleteTaskById(ctx context.Context, in *dto.Id) (*dto.MessageOut, error)
+	DeleteTaskById(ctx context.Context, in *dto.UserEventIds) (*dto.MessageOut, error)
 	DeleteBlockById(ctx context.Context, in *dto.Id) (*dto.MessageOut, error)
 	DeleteEventById(ctx context.Context, in *dto.Id) (*dto.MessageOut, error)
 	PostAnswer(ctx context.Context, in *dto.Answer) (*dto.Answer, error)

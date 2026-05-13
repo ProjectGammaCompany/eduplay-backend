@@ -36,7 +36,7 @@ service Events {
     rpc GetBlockConditions (Id) returns (BlockInfo);
     rpc GetBlockTasks(Id) returns (Tasks);
     rpc GetTaskById(Id) returns (Task);
-    rpc DeleteTask(Id) returns (MessageOut);
+    rpc DeleteTask(UserEventIds) returns (MessageOut);
     rpc DeleteBlockById(Id) returns (MessageOut);
     rpc DeleteEventById(Id) returns (MessageOut);
     rpc PostAnswer(Answer) returns (Answer); 
@@ -419,4 +419,4 @@ message EditorStatsTask {
     repeated string userAnswerIds = 6; 
     int64 UserPoints = 7;
     int64 points = 8;
-}
+} 

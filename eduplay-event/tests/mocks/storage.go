@@ -120,9 +120,9 @@ func (_m *Storage) DeleteEventBlock(ctx context.Context, blockId string) (string
 	return r0, r1
 }
 
-// DeleteTaskById provides a mock function with given fields: ctx, taskId
-func (_m *Storage) DeleteTaskById(ctx context.Context, taskId string) (string, error) {
-	ret := _m.Called(ctx, taskId)
+// DeleteTaskById provides a mock function with given fields: ctx, ids
+func (_m *Storage) DeleteTaskById(ctx context.Context, ids *eduplay_event_v1.UserEventIds) (string, error) {
+	ret := _m.Called(ctx, ids)
 
 	if len(ret) == 0 {
 		panic("no return value specified for DeleteTaskById")
@@ -130,17 +130,17 @@ func (_m *Storage) DeleteTaskById(ctx context.Context, taskId string) (string, e
 
 	var r0 string
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, string) (string, error)); ok {
-		return rf(ctx, taskId)
+	if rf, ok := ret.Get(0).(func(context.Context, *eduplay_event_v1.UserEventIds) (string, error)); ok {
+		return rf(ctx, ids)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, string) string); ok {
-		r0 = rf(ctx, taskId)
+	if rf, ok := ret.Get(0).(func(context.Context, *eduplay_event_v1.UserEventIds) string); ok {
+		r0 = rf(ctx, ids)
 	} else {
 		r0 = ret.Get(0).(string)
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
-		r1 = rf(ctx, taskId)
+	if rf, ok := ret.Get(1).(func(context.Context, *eduplay_event_v1.UserEventIds) error); ok {
+		r1 = rf(ctx, ids)
 	} else {
 		r1 = ret.Error(1)
 	}
