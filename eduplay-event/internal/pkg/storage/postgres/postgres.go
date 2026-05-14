@@ -870,8 +870,6 @@ func (s *Storage) GetPublicEvents(ctx context.Context, in *dto.EventBaseFilters)
         LIMIT $1 OFFSET $2
 	`, userParamIdx, whereClause, orderBy)
 
-	fmt.Println(state, args)
-
 	res, err := s.db.Query(ctx, state, args...)
 	if err != nil {
 		return nil, fmt.Errorf("%s: %w", op, err)
@@ -1198,7 +1196,6 @@ func (s *Storage) PostTask(ctx context.Context, in *dto.Task) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("%s: %w", op, err)
 	}
-	// fmt.Println(order)
 	order++
 
 	files := make([]string, 0)
@@ -1612,7 +1609,7 @@ func (s *Storage) PutNextStage(ctx context.Context, stage *dto.EventBlockTaskUse
 		currBlockId = &blockId
 	}
 
-	fmt.Println("currTaskId", currTaskId, "currBlockId", currBlockId, "finished", stage.Finished, "eventId", stage.EventId, "userId", stage.UserId)
+	// fmt.Println("currTaskId", currTaskId, "currBlockId", currBlockId, "finished", stage.Finished, "eventId", stage.EventId, "userId", stage.UserId)
 
 	state := `UPDATE userLinks SET currTaskId = $1, currBlockId = $2, finished = $5 WHERE userId = $3 AND eventId = $4;`
 
@@ -1811,8 +1808,6 @@ SET
 WHERE eventId = $13 
 RETURNING eventId;`
 
-	fmt.Println(state)
-
 	if in.StartDate != nil {
 		startDate = in.StartDate
 	}
@@ -1824,8 +1819,8 @@ RETURNING eventId;`
 	res := s.db.QueryRow(ctx, state, in.Title, in.Description, in.Tags, in.Cover, startDate.AsTime(), endDate.AsTime(),
 		in.Private, in.Password, time.Now().UTC().Add(3*time.Hour), in.AllowDownloading, in.GroupEvent, in.Rating, in.EventId)
 
-	fmt.Println(in.Title, in.Description, in.Tags, in.Cover, startDate.AsTime(), endDate.AsTime(),
-		in.Private, in.Password, time.Now().UTC().Add(3*time.Hour), in.AllowDownloading, in.GroupEvent, in.Rating, in.EventId)
+	// fmt.Println(in.Title, in.Description, in.Tags, in.Cover, startDate.AsTime(), endDate.AsTime(),
+	// in.Private, in.Password, time.Now().UTC().Add(3*time.Hour), in.AllowDownloading, in.GroupEvent, in.Rating, in.EventId)
 
 	var id string
 	err := res.Scan(&id)
@@ -1857,8 +1852,6 @@ func (s *Storage) UpdateEventLastEditionDate(ctx context.Context, id string, blo
 		if err != nil {
 			return fmt.Errorf("%s: %w", op, err)
 		}
-
-		fmt.Println(id)
 
 		return nil
 	}
@@ -1997,9 +1990,6 @@ func (s *Storage) GetUserStats(ctx context.Context, userId string, eventId strin
 
 	state := `SELECT SUM(points) AS total_points FROM answers WHERE userId = $1 AND taskId = ANY 
 	(SELECT taskId FROM tasks WHERE blockId = ANY (SELECT blockId FROM blocks WHERE eventId = $2));`
-
-	fmt.Println(state)
-	fmt.Println(userId, eventId)
 
 	var totalPoints sql.NullInt64
 	err := s.db.QueryRow(ctx, state, userId, eventId).Scan(&totalPoints)
@@ -2286,8 +2276,11 @@ func (s *Storage) GetUserAnswers(ctx context.Context, in *dto.UserEventIds) (cor
 		return 0, 0, fmt.Errorf("%s: %w", op, err)
 	}
 
-	state = `SELECT COUNT(*) FROM answers WHERE userId = $1 AND taskId = ANY 
-	(SELECT taskId FROM tasks WHERE blockId = ANY (SELECT blockId FROM blocks WHERE eventId = $2) AND type != 0) AND points > 0;`
+	// state = `SELECT COUNT(*) FROM answers WHERE userId = $1 AND taskId = ANY
+	// (SELECT taskId FROM tasks WHERE blockId = ANY (SELECT blockId FROM blocks WHERE eventId = $2) AND type != 0) AND points > 0;`
+
+	state = `SELECT COUNT(*) FROM (SELECT a.taskId FROM answers a JOIN tasks t ON a.taskId = t.taskId WHERE userId = $1 AND t.blockId = ANY 
+	(SELECT blockId FROM blocks WHERE eventId = $2) AND t.type != 0 AND a.points = t.points);`
 
 	res = s.db.QueryRow(ctx, state, in.UserId, in.EventId)
 
