@@ -1746,6 +1746,24 @@ func (_m *Storage) PutTimestamp(ctx context.Context, userId string, eventId stri
 	return r0, r1
 }
 
+// ResetParallelBlock provides a mock function with given fields: ctx, userId, blockId
+func (_m *Storage) ResetParallelBlock(ctx context.Context, userId string, blockId string) error {
+	ret := _m.Called(ctx, userId, blockId)
+
+	if len(ret) == 0 {
+		panic("no return value specified for ResetParallelBlock")
+	}
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, string, string) error); ok {
+		r0 = rf(ctx, userId, blockId)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 // SaveFile provides a mock function with given fields: ctx, fileName, fileKey, fileUUID
 func (_m *Storage) SaveFile(ctx context.Context, fileName string, fileKey string, fileUUID string) (string, error) {
 	ret := _m.Called(ctx, fileName, fileKey, fileUUID)

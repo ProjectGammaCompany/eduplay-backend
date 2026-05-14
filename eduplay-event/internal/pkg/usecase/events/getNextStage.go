@@ -390,6 +390,12 @@ func (a *UseCase) GetNextBlockById(ctx context.Context, log *slog.Logger, nextBl
 
 	if nextBlock.IsParallel {
 		fmt.Println("=========== ", nextBlock.IsParallel)
+
+		// err = a.storage.ResetParallelBlock(ctx, in.UserId, nextBlockId)
+		// if err != nil {
+		// 	return nil, err
+		// }
+
 		nextStageInfo.Type = "block"
 		nextStageBlock := &dto.NextStageBlock{
 			BlockId:    nextBlockId,

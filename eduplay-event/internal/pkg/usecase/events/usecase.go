@@ -73,6 +73,7 @@ type storage interface {
 	GetEventProgress(ctx context.Context, userId string, eventId string) (currTaskId string, currBlockId string, finished bool, currTaskStartTime time.Time, err error)
 	GetBlockMaxPoints(ctx context.Context, blockId string) (int64, error)
 	GetEditorUserStatsTask(ctx context.Context, userId string, taskId string) (*dto.EditorStatsTask, error)
+	ResetParallelBlock(ctx context.Context, userId string, blockId string) error
 	// PostAnswerBatch(ctx context.Context, in *dto.AnswerBatch) (*dto.MessageOut, error)
 }
 

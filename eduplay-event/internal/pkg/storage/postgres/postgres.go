@@ -2353,6 +2353,20 @@ func (s *Storage) GetEditorUserStatsTask(ctx context.Context, userId string, tas
 	return ret, nil
 }
 
+func (s *Storage) ResetParallelBlock(ctx context.Context, userId string, blockId string) error {
+	const op = "storage.postgres.ResetParallelBlock"
+
+	state := `DELETE FROM answers WHERE userId = $1 AND taskId = ANY 
+	(SELECT taskId FROM tasks WHERE blockId = $2);`
+
+	_, err := s.db.Exec(ctx, state, userId, blockId)
+	if err != nil {
+		return fmt.Errorf("%s: %w", op, err)
+	}
+
+	return nil
+}
+
 // func (s *Storage) GetUserAnswers(ctx context.Context, in *dto.UserEventIds) ([]*dto.Answer, error) {
 // 	const op = "storage.postgres.GetUserAnswers"
 
